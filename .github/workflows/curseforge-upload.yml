@@ -48,6 +48,7 @@ jobs:
             --exclude='.github' \
             --exclude='.idea' \
             --exclude='.gitignore' \
+            --exclude='build' \
             --exclude='*.psd' \
             --exclude='version.txt' \
             --exclude='changelog.txt' \
@@ -56,6 +57,8 @@ jobs:
           cd build && zip -r ../${{ env.ADDON_NAME }}-$(cat version.txt).zip ${{ env.ADDON_NAME }}
           cd .. && ls -la *.zip
 
+      # Uploads the correct zip (ElitePlayerFrame_Enhacned_CustomSkins-<version>.zip) to CurseForge.
+      # Requires all 3 secrets; if any is missing, this step fails and the upload is not performed.
       - name: Upload to CurseForge
         env:
           CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
@@ -82,6 +85,7 @@ jobs:
             "https://wow.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file"
           echo ""
 
+      # Copy of the same zip for download; GitHub packages it as addon-<version>.zip when downloaded.
       - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:

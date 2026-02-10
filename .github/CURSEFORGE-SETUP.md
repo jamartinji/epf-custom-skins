@@ -25,9 +25,11 @@ Use that number as the value of the `CURSEFORGE_PROJECT_ID` secret (e.g. `123456
 1. Go to [CurseForge API Tokens](https://authors-old.curseforge.com/account/api-tokens) (log in with your CurseForge account).
 2. Create a token and copy it. You’ll use it as `CURSEFORGE_API_TOKEN`.
 
-## 3. Get game version IDs (WoW)
+## 3. Game version (WoW) — first release
 
-CurseForge needs **game version IDs** (e.g. for WoW 12.0 retail). You can get them in either way:
+**Manual upload (first release):** If you upload the .zip manually on the CurseForge website, **you do not need the ID**. On the Upload form you will see a list of versions by name (e.g. "World of Warcraft: 12.0.0" or "Retail - 12.0"). Choose the one that matches your addon (your TOC is 120000/120010 → choose **Retail 12.0**) and publish. CurseForge uses the ID behind the scenes.
+
+**For the workflow or the API** you need the numeric **game version ID**. CurseForge needs **game version IDs** (e.g. for WoW 12.0 retail). You can get them in either way:
 
 - **From the CurseForge upload page**  
   When you upload a file manually, the form shows which game versions you’re selecting. Inspect the form/network tab or the project’s “Game versions” section to see the numeric IDs.
@@ -76,7 +78,9 @@ After saving, the workflow can use these to upload.
 - **Manually**  
   **Actions** → **CurseForge Upload** → **Run workflow**. Enter **Version** (e.g. `1.0.0`) and optionally **Changelog**.
 
-The zip is also uploaded as a **workflow artifact** so you can download it from the run page.
+**Automatic upload:** With the secrets configured, the pipeline **uploads only the correct zip to CurseForge** (`ElitePlayerFrame_Enhacned_CustomSkins-<version>.zip`). You do not need to upload anything manually.
+
+A **copy is also saved as an artifact** if you want to download it. When you download the artifact (e.g. `addon-1.0.0`), GitHub gives you a zip that *contains* the addon zip; that is a GitHub Actions limitation. If the CurseForge upload succeeded, you do not need to use the artifact to upload.
 
 ## 6. Zip contents
 
