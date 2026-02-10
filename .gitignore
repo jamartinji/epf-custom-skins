@@ -1,0 +1,21 @@
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor backups and swap
+*~
+*.swp
+*.swo
+*.bak
+
+# ignore source art
+# *.psd
+# *.ai
+# *.xcf

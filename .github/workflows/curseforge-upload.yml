@@ -1,0 +1,89 @@
+# Build addon zip and upload to CurseForge (WoW).
+# Triggers: (1) when you publish a GitHub Release → runs automatically; (2) manually from Actions → Run workflow.
+# No automatic run on push to any branch (including main).
+# Required secrets: CURSEFORGE_API_TOKEN, CURSEFORGE_PROJECT_ID, CURSEFORGE_GAME_VERSION_IDS
+
+name: CurseForge Upload
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.0.0)'
+        required: true
+      changelog:
+        description: 'Changelog text'
+        required: false
+        default: 'See release notes.'
+
+env:
+  ADDON_NAME: ElitePlayerFrame_Enhacned_CustomSkins
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version and changelog
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "${{ github.event.release.tag_name }}" > version.txt
+            echo "${{ github.event.release.body }}" > changelog.txt
+          else
+            echo "${{ github.event.inputs.version }}" > version.txt
+            echo "${{ github.event.inputs.changelog }}" > changelog.txt
+          fi
+          echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Create zip
+        run: |
+          mkdir -p build/${{ env.ADDON_NAME }}
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.idea' \
+            --exclude='.gitignore' \
+            --exclude='*.psd' \
+            --exclude='version.txt' \
+            --exclude='changelog.txt' \
+            ./ build/${{ env.ADDON_NAME }}/
+          mv version.txt build/
+          cd build && zip -r ../${{ env.ADDON_NAME }}-$(cat version.txt).zip ${{ env.ADDON_NAME }}
+          cd .. && ls -la *.zip
+
+      - name: Upload to CurseForge
+        env:
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+          CURSEFORGE_PROJECT_ID: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+          GAME_VERSION_IDS: ${{ secrets.CURSEFORGE_GAME_VERSION_IDS }}
+        run: |
+          if [ -z "$CURSEFORGE_API_TOKEN" ] || [ -z "$CURSEFORGE_PROJECT_ID" ] || [ -z "$GAME_VERSION_IDS" ]; then
+            echo "Missing secrets. Set CURSEFORGE_API_TOKEN, CURSEFORGE_PROJECT_ID, CURSEFORGE_GAME_VERSION_IDS in repo Settings → Secrets."
+            exit 1
+          fi
+          VERSION=$(cat build/version.txt)
+          # gameVersions: comma-separated IDs → JSON array [1234,5678]
+          GAME_IDS_JSON="[${GAME_VERSION_IDS}]"
+          CHANGELOG_JSON=$(jq -Rs . changelog.txt)
+          metadata=$(jq -n \
+            --argjson gameVersions "$GAME_IDS_JSON" \
+            --argjson changelog "$CHANGELOG_JSON" \
+            --arg version "$VERSION" \
+            '{changelog: $changelog, changelogType: "markdown", displayName: $version, gameVersions: $gameVersions, releaseType: "release"}')
+          curl -sS -X POST \
+            -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
+            -F "metadata=$metadata" \
+            -F "file=@${{ env.ADDON_NAME }}-${VERSION}.zip" \
+            "https://wow.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file"
+          echo ""
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: addon-${{ steps.vars.outputs.version }}
+          path: ${{ env.ADDON_NAME }}-${{ steps.vars.outputs.version }}.zip
