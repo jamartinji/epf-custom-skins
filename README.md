@@ -7,8 +7,6 @@
 
 Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com/wow/addons/elite-player-frame-enhanced)** with custom frame textures and extra selection options.
 
-Version and WoW interface compatibility are defined in the [.toc](ElitePlayerFrame_Enhacned_CustomSkins.toc) file; update the badges above when you change them.
-
 ---
 
 ## ✨ What This Add-on Adds (vs. Original)
