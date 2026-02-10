@@ -217,7 +217,7 @@ local function AddCustomSkins()
                         ["topTexCoord"] = 0/512,
                         ["bottomTexCoord"] = 256/512
                     },
-                    a.SetPointOffset(50,0)),
+                    a.SetPointOffset(42,0)),
                     a.SetTexture({
                         ["file"] = fullPath,
                         ["file-2x"] = fullPath2x,
@@ -228,7 +228,7 @@ local function AddCustomSkins()
                         ["topTexCoord"] = 256/512,
                         ["bottomTexCoord"] = 512/512
                     }
-                    ,a.SetPointOffset(180,0))
+                    ,a.SetPointOffset(172,0))
                 ),
                 a.SetPointOffset(0,0),
 
