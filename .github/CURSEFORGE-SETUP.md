@@ -1,6 +1,6 @@
 # CurseForge upload (GitHub Actions)
 
-This workflow builds a zip of the addon and uploads it to CurseForge. It runs **only when you trigger it manually** from the Actions tab.
+This workflow builds a zip of the addon and uploads it to CurseForge. It runs when you **publish a GitHub Release** (automatic) or when you **run it manually** from the Actions tab.
 
 ## 1. Create the project on CurseForge (once)
 
@@ -72,13 +72,16 @@ After saving, the workflow can use these to upload.
 
 ## 5. How to run the workflow
 
-- **Automatically when you publish a Release**  
-  In GitHub: **Releases** → **Create a new release** → choose a tag (e.g. `v1.0.0`), write the release notes → **Publish release**. The workflow runs and uploads to CurseForge with that changelog. No run on push to any branch (including main).
+- **Recommended: Create version tag (then CurseForge runs automatically)**  
+  **Actions** → **Create version tag** → **Run workflow**. This reads the version from the addon `.toc`, creates the tag (e.g. `v1.0.2`), pushes it, and **creates a GitHub Release** for that tag. Publishing the release triggers **CurseForge Upload** automatically, so the zip is built and sent to CurseForge. One click, no manual release needed.
 
-- **Manually**  
-  **Actions** → **CurseForge Upload** → **Run workflow**. Enter **Version** (e.g. `1.0.0`) and optionally **Changelog**.
+- **Manual release (tag already exists)**  
+  In GitHub: **Releases** → **Create a new release** → choose the tag (e.g. `v1.0.2`), write the release notes → **Publish release**. The CurseForge workflow runs and uploads with that changelog.
 
-**Automatic upload:** With the secrets configured, the pipeline **uploads only the correct zip to CurseForge** (`ElitePlayerFrame_Enhacned_CustomSkins-<version>.zip`). You do not need to upload anything manually.
+- **Manual upload (no release)**  
+  **Actions** → **CurseForge Upload** → **Run workflow**. Enter **Version** (e.g. `1.0.2`) and optionally **Changelog**. Use this if you only want to upload to CurseForge without creating a tag or release.
+
+**Important:** Creating **only** a tag (e.g. with `git tag v1.0.2 && git push origin v1.0.2`) does **not** trigger the CurseForge workflow. The trigger is **publishing a GitHub Release**. Use **Create version tag** so the release is created for you.
 
 A **copy is also saved as an artifact** if you want to download it. When you download the artifact (e.g. `addon-1.0.0`), GitHub gives you a zip that *contains* the addon zip; that is a GitHub Actions limitation. If the CurseForge upload succeeded, you do not need to use the artifact to upload.
 

@@ -1,6 +1,7 @@
-# Create a git tag from the version in the addon .toc file.
+# Create a git tag from the version in the addon .toc file and publish a GitHub Release.
 # Run manually from Actions → Create version tag → Run workflow.
-# Reads "## Version: X.Y.Z" from ElitePlayerFrame_Enhacned_CustomSkins.toc and creates tag vX.Y.Z.
+# Reads "## Version: X.Y.Z" from ElitePlayerFrame_Enhacned_CustomSkins.toc, creates tag vX.Y.Z,
+# then creates a GitHub Release for that tag. Publishing the release triggers the CurseForge upload.
 
 name: Create version tag
 
@@ -48,3 +49,15 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           echo "Created and pushed tag $TAG"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: |
+            Release ${{ steps.version.outputs.tag }}.
+            See [changelog.txt](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/changelog.txt) for details.
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
