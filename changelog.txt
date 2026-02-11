@@ -1,0 +1,26 @@
+================================================================================
+EPF Custom Skins - Changelog
+================================================================================
+
+v1.0.2
+------
+- Fixed Notes-esES typo in .toc (personalizadas).
+- Texture config: added displayName for generic Warlock skin.
+- Fixed blackdragon texture issue and changed warlock demo and default textures
+
+v1.0.1
+------
+- Split addon into TextureDefinitions.lua (data) and Core.lua (logic).
+- Added configurable defaultFrameLayout and optional per-entry layout (sizes, texCoords, pointOffset).
+- README: documented layout and contributing (PR/fork for new textures).
+- GitHub Action: Create version tag (reads version from .toc, creates and pushes tag).
+- Fixed Restoration Druid Texture
+
+v1.0.0
+------
+- Initial release.
+- Custom frame textures for Elite Player Frame (Enhanced).
+- Selection by class, specialization, race, and faction.
+- Auto-update on specialization change.
+
+================================================================================
