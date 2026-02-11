@@ -2,11 +2,16 @@
 EPF Custom Skins - Changelog
 ================================================================================
 
+v1.0.3
+------
+- Addon folder and all references renamed from Enhacned to Enhanced (correct spelling).
+- TOC file renamed to ElitePlayerFrame_Enhanced_CustomSkins.toc.
+
 v1.0.2
 ------
 - Fixed Notes-esES typo in .toc (personalizadas).
 - Texture config: added displayName for generic Warlock skin.
-- Fixed blackdragon texture issue and changed warlock demo and default textures
+- Fixed BlackDragon texture issue and changed warlock demo and default textures
 
 v1.0.1
 ------

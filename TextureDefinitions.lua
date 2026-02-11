@@ -5,7 +5,7 @@ EPF_CustomSkins_Definitions = EPF_CustomSkins_Definitions or {}
 
 local D = EPF_CustomSkins_Definitions
 
-D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhacned_CustomSkins\\assets\\"
+D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
 
 -- Optional fields per textureConfig entry:
 --   class   = required, e.g. "WARLOCK", "DRUID"

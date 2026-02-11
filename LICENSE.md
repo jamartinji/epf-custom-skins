@@ -1,6 +1,6 @@
 # License
 
-**EPF Custom Skins** (ElitePlayerFrame_Enhacned_CustomSkins)  
+**EPF Custom Skins** (ElitePlayerFrame_Enhanced_CustomSkins)  
 Copyright (c) Drakeinhart
 
 ---

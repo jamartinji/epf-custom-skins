@@ -49,7 +49,7 @@ local function AddCustomSkins()
         return
     end
 
-    local folderPath = D.folderPath or "Interface\\AddOns\\ElitePlayerFrame_Enhacned_CustomSkins\\assets\\"
+    local folderPath = D.folderPath or "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
     local defaultFrameLayout = D.defaultFrameLayout
 
     for _, data in ipairs(D.textureConfig) do
