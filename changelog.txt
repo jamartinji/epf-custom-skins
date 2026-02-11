@@ -2,6 +2,10 @@
 EPF Custom Skins - Changelog
 ================================================================================
 
+v1.0.4
+------
+- Fixed Interface version in .toc.
+
 v1.0.3
 ------
 - Addon folder and all references renamed from Enhacned to Enhanced (correct spelling).
