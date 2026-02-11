@@ -93,4 +93,4 @@ The zip is built from the repo root and excludes:
 - `*.psd`
 - `version.txt`, `changelog.txt` (only used during the workflow)
 
-The zip root folder is `ElitePlayerFrame_Enhacned_CustomSkins/`, so users get the correct addon folder when they extract it.
+The zip root folder is `ElitePlayerFrame_Enhanced_CustomSkins/`, so users get the correct addon folder when they extract it.

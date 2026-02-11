@@ -22,7 +22,7 @@ jobs:
       - name: Get version from TOC
         id: version
         run: |
-          TOC="ElitePlayerFrame_Enhacned_CustomSkins.toc"
+          TOC="ElitePlayerFrame_Enhanced_CustomSkins.toc"
           if [ ! -f "$TOC" ]; then
             echo "::error::File $TOC not found"
             exit 1

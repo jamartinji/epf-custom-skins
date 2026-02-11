@@ -19,7 +19,7 @@ on:
         default: 'from changelog.txt'
 
 env:
-  ADDON_NAME: ElitePlayerFrame_Enhacned_CustomSkins
+  ADDON_NAME: ElitePlayerFrame_Enhanced_CustomSkins
 
 jobs:
   upload:
@@ -35,7 +35,7 @@ jobs:
             echo "${{ github.event.release.tag_name }}" | sed 's/^v//' > version.txt
             echo "${{ github.event.release.body }}" > changelog.txt
           else
-            TOC="ElitePlayerFrame_Enhacned_CustomSkins.toc"
+            TOC="ElitePlayerFrame_Enhanced_CustomSkins.toc"
             VERSION_INPUT="${{ github.event.inputs.version }}"
             if [ -n "$VERSION_INPUT" ] && [ "$VERSION_INPUT" != "from .toc" ]; then
               echo "$VERSION_INPUT" > version.txt
@@ -77,7 +77,7 @@ jobs:
           cd build && zip -r ../${{ env.ADDON_NAME }}-$(cat version.txt).zip ${{ env.ADDON_NAME }}
           cd .. && ls -la *.zip
 
-      # Uploads the correct zip (ElitePlayerFrame_Enhacned_CustomSkins-<version>.zip) to CurseForge.
+      # Uploads the correct zip (ElitePlayerFrame_Enhanced_CustomSkins-<version>.zip) to CurseForge.
       # Requires all 3 secrets; if any is missing, this step fails and the upload is not performed.
       - name: Upload to CurseForge
         env:
