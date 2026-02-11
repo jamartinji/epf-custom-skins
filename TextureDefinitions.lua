@@ -143,7 +143,7 @@ D.textureConfig = {
     -- { class = "WARRIOR",     name = "warrior",     ext = "png" },
 
     -- [ ACTIVE TEXTURES (TESTING) ]
-    { class = "WARLOCK", name = "warlock", ext = "png" },
+    { class = "WARLOCK", name = "warlock", ext = "png", displayName = "Warlock" },
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected. Choose via /epf frame N.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },

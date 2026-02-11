@@ -3,7 +3,7 @@
 ## Title: EPF Custom Skins
 ## Notes: Custom frame textures for Elite Player Frame (Enhanced). Adds spec, race, and faction-based skins; updates on spec change.
 ## Notes-deDE: Benutzerdefinierte Rahmen-Texturen für Elite Player Frame (Enhanced). Skins nach Spezialisierung, Rasse und Fraktion; aktualisiert sich beim Spezialisierungswechsel.
-## Notes-esES: Texturas de marco personalicd ..zadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
+## Notes-esES: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
 ## Notes-esMX: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
 ## Notes-frFR: Textures de cadre personnalisées pour Elite Player Frame (Enhanced). Skins par spécialisation, race et faction ; mise à jour au changement de spé.
 ## Notes-itIT: Texture di cornice personalizzate per Elite Player Frame (Enhanced). Skin per specializzazione, razza e fazione; si aggiorna al cambio specializzazione.
@@ -12,7 +12,7 @@
 ## Notes-ruRU: Пользовательские текстуры рамки для Elite Player Frame (Enhanced). Скины по специализации, расе и фракции; обновляется при смене специализации.
 ## Notes-zhCN: 为 Elite Player Frame (Enhanced) 自定义框架纹理。支持专精、种族和阵营皮肤；切换专精时自动更新。
 ## Notes-zhTW: 為 Elite Player Frame (Enhanced) 自訂框架紋理。支援專精、種族與陣營皮膚；切換專精時自動更新。
-## Version: 1.0.1
+## Version: 1.0.2
 ## Author: Drakeinhart
 ## Dependencies: ElitePlayerFrame_Enhanced
 ## Group: ElitePlayerFrame_Enhanced
