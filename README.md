@@ -34,12 +34,24 @@ Version and WoW interface compatibility are defined in the [.toc](ElitePlayerFra
 
 1. Put texture files (e.g. PNG) in the add-on’s **`assets/`** folder.
 2. Add **`-2x`** versions (e.g. `warlock-2x.png`) for high-DPI.
-3. Edit **`CustomFrameModes.lua`** and add or edit entries in the **`textureConfig`** table. Each entry has:
+3. Edit **`TextureDefinitions.lua`** and add or edit entries in the **`textureConfig`** table. Each entry has:
    - **class** (required): e.g. `"WARLOCK"`, `"DRUID"`.
    - **name** and **ext**: file name and extension (e.g. `"warlock"`, `"png"`).
    - **spec** (optional): specialization ID for spec-only skins.
    - **race** (optional): race API string (e.g. `"Human"`, `"Scourge"`, `"Dracthyr"`).
    - **faction** (optional): `"Alliance"` or `"Horde"`. Only applied when `/epf faction` is on.
+   - **displayName** (optional): menu label (e.g. for manual-only textures).
+   - **layout** (optional): custom frame layout for this entry; see below. If omitted, `defaultFrameLayout` is used.
+
+### Frame layout
+
+In **`TextureDefinitions.lua`**, **`defaultFrameLayout`** defines sizes, texture coordinates (UV), and positions for each texture layer and for the rest icon. All entries in `textureConfig` use it unless they set their own **`layout`**.
+
+- **`defaultFrameLayout`** has:
+  - **`layers`**: array of layer tables. Each layer has **`width`**, **`height`**, **`leftTexCoord`**, **`rightTexCoord`**, **`topTexCoord`**, **`bottomTexCoord`**, and **`pointOffset`** = `{ x, y }`.
+  - **`restIconOffset`**: `{ x, y }` for the rest icon position.
+
+To use different dimensions or positions for a specific texture, add a **`layout`** to that entry with the same structure (e.g. different `width`/`height` or `pointOffset` per layer). Example: a texture that uses a 1024×512 atlas with different crop and offsets would set `layout = { layers = { ... }, restIconOffset = { -3, 13 } }` on that entry.
 
 ### Load order and priority
 
@@ -79,7 +91,9 @@ So for automatic behaviour: **`/epf frame 1`** and leave **`/epf class`** on. To
 You are welcome to:
 
 - **Propose a pull request (PR)** to add new skins or improve this addon.
-- **Fork this addon** and create your own addon with your own skins (or a different set of textures). You may use this project as a base and publish your fork under the same or a compatible license (see [LICENSE](LICENSE.md)).
+- **Fork this addon** to maintain your own set of textures; you may use this project as a base and publish your fork under the same or a compatible license (see [LICENSE](LICENSE.md)).
+
+There is no “user folder” for custom textures; to add textures, please submit a PR or use a fork.
 
 ---
 

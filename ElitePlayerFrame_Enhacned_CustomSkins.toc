@@ -3,7 +3,7 @@
 ## Title: EPF Custom Skins
 ## Notes: Custom frame textures for Elite Player Frame (Enhanced). Adds spec, race, and faction-based skins; updates on spec change.
 ## Notes-deDE: Benutzerdefinierte Rahmen-Texturen für Elite Player Frame (Enhanced). Skins nach Spezialisierung, Rasse und Fraktion; aktualisiert sich beim Spezialisierungswechsel.
-## Notes-esES: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
+## Notes-esES: Texturas de marco personalicd ..zadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
 ## Notes-esMX: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
 ## Notes-frFR: Textures de cadre personnalisées pour Elite Player Frame (Enhanced). Skins par spécialisation, race et faction ; mise à jour au changement de spé.
 ## Notes-itIT: Texture di cornice personalizzate per Elite Player Frame (Enhanced). Skin per specializzazione, razza e fazione; si aggiorna al cambio specializzazione.
@@ -31,4 +31,5 @@
 ## IconTexture: Interface\AddOns\ElitePlayerFrame_Enhacned_CustomSkins\assets\icon.png
 ## IconAtlas: Adventure-Mission-Gold-Dragon
 
-CustomFrameModes.lua
+TextureDefinitions.lua
+Core.lua
