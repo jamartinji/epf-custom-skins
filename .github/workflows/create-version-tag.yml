@@ -37,12 +37,12 @@ jobs:
           echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION → tag v${VERSION}"
 
-      - name: Create and push tag
+      - name: Create and push tag (if missing)
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "::error::Tag $TAG already exists. Bump the version in the .toc file or delete the tag to recreate."
-            exit 1
+            echo "Tag $TAG already exists. Skipping tag creation; creating Release only."
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
