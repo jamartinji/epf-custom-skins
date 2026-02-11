@@ -1,0 +1,35 @@
+## Interface: 120010
+## X-OnlyTestInterface: 120010
+## Title: EPF Custom Skins
+## Notes: Custom frame textures for Elite Player Frame (Enhanced). Adds spec, race, and faction-based skins; updates on spec change.
+## Notes-deDE: Benutzerdefinierte Rahmen-Texturen für Elite Player Frame (Enhanced). Skins nach Spezialisierung, Rasse und Fraktion; aktualisiert sich beim Spezialisierungswechsel.
+## Notes-esES: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
+## Notes-esMX: Texturas de marco personalizadas para Elite Player Frame (Enhanced). Skins por especialización, raza y facción; se actualiza al cambiar de especialización.
+## Notes-frFR: Textures de cadre personnalisées pour Elite Player Frame (Enhanced). Skins par spécialisation, race et faction ; mise à jour au changement de spé.
+## Notes-itIT: Texture di cornice personalizzate per Elite Player Frame (Enhanced). Skin per specializzazione, razza e fazione; si aggiorna al cambio specializzazione.
+## Notes-koKR: Elite Player Frame (Enhanced)용 사용자 지정 프레임 텍스처. 특성, 종족, 진영별 스킨; 특성 변경 시 자동 업데이트.
+## Notes-ptBR: Texturas de quadro personalizadas para Elite Player Frame (Enhanced). Skins por especialização, raça e facção; atualiza ao trocar de especialização.
+## Notes-ruRU: Пользовательские текстуры рамки для Elite Player Frame (Enhanced). Скины по специализации, расе и фракции; обновляется при смене специализации.
+## Notes-zhCN: 为 Elite Player Frame (Enhanced) 自定义框架纹理。支持专精、种族和阵营皮肤；切换专精时自动更新。
+## Notes-zhTW: 為 Elite Player Frame (Enhanced) 自訂框架紋理。支援專精、種族與陣營皮膚；切換專精時自動更新。
+## Version: 1.0.3
+## Author: Drakeinhart
+## Dependencies: ElitePlayerFrame_Enhanced
+## Group: ElitePlayerFrame_Enhanced
+## Category: Unit Frames
+## Category-deDE: Einheitenfenster
+## Category-esES: Marcos de unidades
+## Category-esMX: Marcos de unidades
+## Category-frFR: Portraits d'unités
+## Category-itIT: Riquadri delle unità
+## Category-koKR: 개체창
+## Category-ptBR: Quadros de unidade
+## Category-ruRU: Рамки юнитов
+## Category-zhCN: 单位框体
+## Category-zhTW: 單位框架
+## AllowLoadGameType: mainline
+## IconTexture: Interface\AddOns\ElitePlayerFrame_Enhanced_CustomSkins\assets\icon.png
+## IconAtlas: Adventure-Mission-Gold-Dragon
+
+TextureDefinitions.lua
+Core.lua
