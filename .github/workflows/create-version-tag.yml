@@ -1,0 +1,50 @@
+# Create a git tag from the version in the addon .toc file.
+# Run manually from Actions → Create version tag → Run workflow.
+# Reads "## Version: X.Y.Z" from ElitePlayerFrame_Enhacned_CustomSkins.toc and creates tag vX.Y.Z.
+
+name: Create version tag
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from TOC
+        id: version
+        run: |
+          TOC="ElitePlayerFrame_Enhacned_CustomSkins.toc"
+          if [ ! -f "$TOC" ]; then
+            echo "::error::File $TOC not found"
+            exit 1
+          fi
+          VERSION=$(grep -E '^\s*##\s*Version\s*:' "$TOC" | sed 's/.*Version\s*:\s*//' | tr -d ' \r\n')
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not parse version from $TOC (expected line like '## Version: 1.0.1')"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION → tag v${VERSION}"
+
+      - name: Create and push tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists. Bump the version in the .toc file or delete the tag to recreate."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Created and pushed tag $TAG"
