@@ -219,74 +219,85 @@ local updateFrameModeList = function() end
 -- Check if ScrollBox API is available (Retail 10.0+); use LinearView for a single-column list
 local hasScrollBoxAPI = (CreateScrollBoxListLinearView or CreateScrollBoxListGridView) and ScrollUtil and ScrollUtil.InitScrollBoxListWithScrollBar and CreateDataProvider
 if hasScrollBoxAPI then
-    -- Search box container (with magnifying glass) above the list
-    local searchBoxContainer = CreateFrame("Frame", nil, group3, BackdropTemplate)
+    -- Search box: use WoW's SearchBoxTemplate (like LiteMount) so the magnifying glass is visible
+    -- LiteMount: UI/MountsFilter.xml uses <EditBox inherits="SearchBoxTemplate" parentKey="Search" />
+    local searchBoxContainer = CreateFrame("Frame", nil, group3)
     searchBoxContainer:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
     searchBoxContainer:SetPoint("TOPRIGHT", group3, "TOPRIGHT", -SECTION_PADDING - 24, 0)
     searchBoxContainer:SetHeight(24)
-    if searchBoxContainer.SetBackdrop then
-        searchBoxContainer:SetBackdrop({
+
+    local searchEditBox, searchPlaceholder
+    local currentSearchFilter = ""
+    local okTemplate = pcall(function()
+        searchEditBox = CreateFrame("EditBox", nil, searchBoxContainer, "SearchBoxTemplate")
+    end)
+    if okTemplate and searchEditBox then
+        -- SearchBoxTemplate includes the magnifying glass and placeholder; use Blizzard's handler
+        searchEditBox:SetPoint("LEFT", 6, 0)
+        searchEditBox:SetPoint("RIGHT", -6, 0)
+        searchEditBox:SetPoint("TOP", 0, 0)
+        searchEditBox:SetPoint("BOTTOM", 0, 0)
+        searchEditBox:SetMaxLetters(80)
+        if searchEditBox.Instructions then
+            searchEditBox.Instructions:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
+        end
+        searchEditBox:SetScript("OnTextChanged", function(self)
+            if SearchBoxTemplate_OnTextChanged then SearchBoxTemplate_OnTextChanged(self) end
+            local text = self:GetText()
+            if text and text:len() > 0 then
+                currentSearchFilter = text:gsub("^%s+", ""):gsub("%s+$", ""):lower()
+            else
+                currentSearchFilter = ""
+            end
+            if updateFrameModeList then updateFrameModeList() end
+        end)
+    else
+        -- Fallback: no SearchBoxTemplate (e.g. some Classic builds); manual box without icon
+        if searchEditBox then searchEditBox = nil end
+        searchBoxContainer:SetBackdrop(BackdropTemplate and {
             bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
             edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = true,
-            tileSize = 16,
-            edgeSize = 8,
+            tile = true, tileSize = 16, edgeSize = 8,
             insets = { left = 4, right = 4, top = 2, bottom = 2 }
-        })
-        searchBoxContainer:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
-        if searchBoxContainer.SetBackdropBorderColor then
-            searchBoxContainer:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+        } or nil)
+        if searchBoxContainer.SetBackdrop then
+            searchBoxContainer:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
+            if searchBoxContainer.SetBackdropBorderColor then searchBoxContainer:SetBackdropBorderColor(0.35, 0.35, 0.35, 1) end
         end
+        searchEditBox = CreateFrame("EditBox", nil, searchBoxContainer)
+        searchEditBox:SetPoint("LEFT", 8, 0)
+        searchEditBox:SetPoint("RIGHT", -8, 0)
+        searchEditBox:SetPoint("TOP", 0, 0)
+        searchEditBox:SetPoint("BOTTOM", 0, 0)
+        searchEditBox:SetFontObject("GameFontHighlight")
+        searchEditBox:SetAutoFocus(false)
+        searchEditBox:SetMaxLetters(80)
+        searchPlaceholder = searchEditBox:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        searchPlaceholder:SetPoint("LEFT", searchEditBox, "LEFT", 0, 0)
+        searchPlaceholder:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
+        searchPlaceholder:SetTextColor(0.5, 0.5, 0.5, 0.8)
+        searchEditBox:SetScript("OnEscapePressed", function(self)
+            self:ClearFocus()
+            self:SetText("")
+            currentSearchFilter = ""
+            if updateFrameModeList then updateFrameModeList() end
+        end)
+        searchEditBox:SetScript("OnTextChanged", function(self)
+            local text = self:GetText()
+            if searchPlaceholder then searchPlaceholder:SetShown(not text or text:len() == 0) end
+            if text and text:len() > 0 then currentSearchFilter = text:gsub("^%s+", ""):gsub("%s+$", ""):lower()
+            else currentSearchFilter = "" end
+            if updateFrameModeList then updateFrameModeList() end
+        end)
+        searchEditBox:SetScript("OnEditFocusGained", function(self) if searchPlaceholder then searchPlaceholder:Hide() end end)
+        searchEditBox:SetScript("OnEditFocusLost", function(self) if searchPlaceholder and (not self:GetText() or self:GetText():len() == 0) then searchPlaceholder:Show() end end)
     end
-
-    local searchIcon = searchBoxContainer:CreateTexture(nil, "ARTWORK")
-    searchIcon:SetPoint("LEFT", 6, 0)
-    searchIcon:SetSize(14, 14)
-    -- Use WoW's built-in magnifying glass if available; otherwise a simple icon
-    local ok = pcall(function() searchIcon:SetTexture("Interface\\Common\\UI-SearchMagnifyingGlass") end)
-    if not ok or not searchIcon:GetTexture() then
-        searchIcon:SetColorTexture(0.6, 0.6, 0.6, 0.9)
-    end
-
-    local searchEditBox = CreateFrame("EditBox", nil, searchBoxContainer)
-    searchEditBox:SetPoint("LEFT", searchIcon, "RIGHT", 4, 0)
-    searchEditBox:SetPoint("RIGHT", -6, 0)
-    searchEditBox:SetPoint("TOP", 0, 0)
-    searchEditBox:SetPoint("BOTTOM", 0, 0)
-    searchEditBox:SetFontObject("GameFontHighlight")
-    searchEditBox:SetAutoFocus(false)
-    searchEditBox:SetMaxLetters(80)
-    local currentSearchFilter = ""
     searchEditBox:SetScript("OnEscapePressed", function(self)
         self:ClearFocus()
         self:SetText("")
         currentSearchFilter = ""
         if updateFrameModeList then updateFrameModeList() end
     end)
-    searchEditBox:SetScript("OnEnter", function(self)
-        if self:GetText() == "" then
-            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-            GameTooltip:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
-            GameTooltip:Show()
-        end
-    end)
-    searchEditBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    local searchPlaceholder = searchEditBox:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    searchPlaceholder:SetPoint("LEFT", searchEditBox, "LEFT", 0, 0)
-    searchPlaceholder:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
-    searchPlaceholder:SetTextColor(0.5, 0.5, 0.5, 0.8)
-    searchEditBox:SetScript("OnTextChanged", function(self)
-        local text = self:GetText()
-        if searchPlaceholder then searchPlaceholder:SetShown(not text or text:len() == 0) end
-        if text then
-            currentSearchFilter = text:gsub("^%s+", ""):gsub("%s+$", ""):lower()
-        else
-            currentSearchFilter = ""
-        end
-        if updateFrameModeList then updateFrameModeList() end
-    end)
-    searchEditBox:SetScript("OnEditFocusGained", function(self) if searchPlaceholder then searchPlaceholder:Hide() end end)
-    searchEditBox:SetScript("OnEditFocusLost", function(self) if searchPlaceholder and (not self:GetText() or self:GetText():len() == 0) then searchPlaceholder:Show() end end)
 
     local scrollBox = CreateFrame("Frame", nil, group3, "WowScrollBoxList")
     scrollBox:SetPoint("TOPLEFT", searchBoxContainer, "BOTTOMLEFT", 0, -6)
