@@ -21,15 +21,19 @@ local function onDelayTick(self, elapsed)
     self.wait = nil
     pendingUpdate = false
     runUpdate()
-    -- Second pass in case GetSpecialization() was not updated yet
-    self.wait = 0
-    self:SetScript("OnUpdate", function(s, e)
-        s.wait = s.wait + e
-        if s.wait < DELAY then return end
-        s:SetScript("OnUpdate", nil)
-        s.wait = nil
-        runUpdate()
-    end)
+    -- Second pass: GetSpecialization() can lag one frame; use timer when available
+    if C_Timer and C_Timer.After then
+        C_Timer.After(DELAY, runUpdate)
+    else
+        self.wait = 0
+        self:SetScript("OnUpdate", function(s, e)
+            s.wait = (s.wait or 0) + e
+            if s.wait < DELAY then return end
+            s:SetScript("OnUpdate", nil)
+            s.wait = nil
+            runUpdate()
+        end)
+    end
 end
 
 eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
@@ -49,12 +53,19 @@ local function AddCustomSkins()
         return
     end
 
-    local folderPath = D.folderPath or "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
+    local folderPath = D.folderPath
+    if not folderPath then
+        print("|cff00ff00EPF Custom Skins|r |cffff0000folderPath not set in TextureDefinitions.|r")
+        return
+    end
     local defaultFrameLayout = D.defaultFrameLayout
 
     for _, data in ipairs(D.textureConfig) do
         ElitePlayerFrame_Enhanced:AddCustomFrameMode(function(a)
-            if not baseAddon then baseAddon = a end
+            if not baseAddon then
+                baseAddon = a
+                EPF_CustomSkins_BaseAddon = a
+            end
 
             local className = a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class
             local classColor = a.safeIndex(a.CLASSES, data.class, "color") or CreateColor(1, 1, 1)

@@ -1,6 +1,11 @@
-================================================================================
+===============================
 EPF Custom Skins - Changelog
-================================================================================
+===============================
+
+v1.0.5
+------
+- New configuration panel: integrated Elite Player Frame (Enhanced) options (Display, Class selection, Faction selection), Output level dropdown, and Reset button.
+- Textures: Added base hunter texture
 
 v1.0.4
 ------
@@ -31,5 +36,3 @@ v1.0.0
 - Custom frame textures for Elite Player Frame (Enhanced).
 - Selection by class, specialization, race, and faction.
 - Auto-update on specialization change.
-
-================================================================================

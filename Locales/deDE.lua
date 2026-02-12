@@ -1,0 +1,28 @@
+-- [ LOCALE: deDE ]
+EPF_CustomSkins_Locales = EPF_CustomSkins_Locales or {}
+EPF_CustomSkins_Locales.deDE = {
+    Apply = "Anwenden",
+    Preview = "Vorschau",
+    SelectTextureVisually = "Textur visuell auswählen",
+    FrameModeList = "Rahmenmodi (0 = Standard, 1 = automatisch, 2+ = benutzerdefiniert):",
+    OptionsTitle = "EPF Custom Skins",
+    OptionsSubtitle = "Optionen",
+    AddonNotReady = "Elite Player Frame (Enhanced) ist noch nicht bereit. Bitte nach dem Einloggen erneut versuchen.",
+    DefaultNoTexture = "Standard (keine Textur)",
+    Off = "Aus",
+    Automatic = "Automatisch",
+    Custom = "Benutzerdefiniert",
+    SectionMainAddon = "Elite Player Frame (Enhanced) Optionen",
+    Display = "Anzeige",
+    DisplayDesc = "Rahmenänderungen am Spielerfenster ein- oder ausblenden.",
+    ClassSelection = "Klassenauswahl",
+    ClassSelectionDesc = "Im Auto-Modus Rahmen nach Klasse/Spezialisierung wählen.",
+    FactionSelection = "Fraktionsauswahl",
+    FactionSelectionDesc = "Im Auto-Modus Rahmen nach Fraktion wählen.",
+    OutputLevel = "Nachrichtenausgabestufe",
+    OutputLevelDesc = "Nachrichtenmenge (0 = kritisch, höher = mehr Debug).",
+    SectionTextures = "Verfügbare Texturen",
+    SearchFilter = "Filtern...",
+    Reset = "Zurücksetzen",
+    ResetDesc = "Elite Player Frame (Enhanced) Einstellungen auf Standard zurücksetzen.",
+}

@@ -1,0 +1,28 @@
+-- [ LOCALE: koKR ]
+EPF_CustomSkins_Locales = EPF_CustomSkins_Locales or {}
+EPF_CustomSkins_Locales.koKR = {
+    Apply = "적용",
+    Preview = "미리 보기",
+    SelectTextureVisually = "텍스처 시각적으로 선택",
+    FrameModeList = "프레임 모드 (0 = 기본, 1 = 자동, 2+ = 사용자 지정):",
+    OptionsTitle = "EPF Custom Skins",
+    OptionsSubtitle = "옵션",
+    AddonNotReady = "Elite Player Frame (Enhanced)가 아직 준비되지 않았습니다. 로그인 후 다시 시도하세요.",
+    DefaultNoTexture = "기본값 (텍스처 없음)",
+    Off = "없음",
+    Automatic = "자동",
+    Custom = "사용자 지정",
+    SectionMainAddon = "Elite Player Frame (Enhanced) 옵션",
+    Display = "표시",
+    DisplayDesc = "플레이어 프레임 수정 사항 표시 또는 숨기기.",
+    ClassSelection = "직업 선택",
+    ClassSelectionDesc = "자동 모드에서 직업/특성별 프레임 선택.",
+    FactionSelection = "진영 선택",
+    FactionSelectionDesc = "자동 모드에서 진영별 프레임 선택.",
+    OutputLevel = "메시지 출력 수준",
+    OutputLevelDesc = "메시지 상세도 (0 = 중요, 높을수록 더 많은 디버그).",
+    SectionTextures = "사용 가능한 텍스처",
+    SearchFilter = "필터...",
+    Reset = "초기화",
+    ResetDesc = "Elite Player Frame (Enhanced) 설정을 기본값으로 초기화.",
+}

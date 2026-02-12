@@ -1,0 +1,28 @@
+-- [ LOCALE: zhTW ]
+EPF_CustomSkins_Locales = EPF_CustomSkins_Locales or {}
+EPF_CustomSkins_Locales.zhTW = {
+    Apply = "套用",
+    Preview = "預覽",
+    SelectTextureVisually = "視覺化選擇材質",
+    FrameModeList = "框架模式（0 = 預設，1 = 自動，2+ = 自訂）：",
+    OptionsTitle = "EPF Custom Skins",
+    OptionsSubtitle = "選項",
+    AddonNotReady = "Elite Player Frame (Enhanced) 尚未就緒。請登入後再試。",
+    DefaultNoTexture = "預設（無材質）",
+    Off = "無",
+    Automatic = "自動",
+    Custom = "自訂",
+    SectionMainAddon = "Elite Player Frame (Enhanced) 選項",
+    Display = "顯示",
+    DisplayDesc = "顯示或隱藏玩家框架的修改。",
+    ClassSelection = "依職業選擇",
+    ClassSelectionDesc = "自動模式下依職業/專精選擇框架。",
+    FactionSelection = "依陣營選擇",
+    FactionSelectionDesc = "自動模式下依陣營選擇框架。",
+    OutputLevel = "訊息輸出層級",
+    OutputLevelDesc = "訊息詳細程度（0 = 關鍵，越高 = 越多除錯）。",
+    SectionTextures = "可用材質",
+    SearchFilter = "篩選...",
+    Reset = "重設",
+    ResetDesc = "將 Elite Player Frame (Enhanced) 設定重設為預設。",
+}
