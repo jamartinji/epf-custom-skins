@@ -40,20 +40,23 @@ local PAD = 16
 local GROUP_SPACING = 20
 local SECTION_PADDING = 10
 
+-- Section/list backdrop: ChatFrame background + Tooltip border, insets 3
+local CONTAINER_BACKDROP = {
+    bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left = 3, right = 3, top = 3, bottom = 3 }
+}
+
 local function setSectionBackdrop(frame)
     if not frame.SetBackdrop and BackdropTemplateMixin then
         Mixin(frame, BackdropTemplateMixin)
     end
     if frame.SetBackdrop then
-        frame:SetBackdrop({
-            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = { left = 0, right = 0, top = 0, bottom = 0 }
-        })
-        frame:SetBackdropColor(0.1, 0.1, 0.1, 0.6)
+        frame:SetBackdrop(CONTAINER_BACKDROP)
+        frame:SetBackdropColor(0.2, 0.2, 0.2, 0.5)
         if frame.SetBackdropBorderColor then
             frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
         end
@@ -148,7 +151,6 @@ btnReset:SetScript("OnClick", function()
     addon.settings.factionSelection = def.factionSelection
     addon.settings.outputLevel = def.outputLevel
     if addon.Update then addon:Update(true) end
-    -- Set checkboxes from defaults; toggle opposite first to force template redraw
     local function setCheck(btn, value)
         btn:SetChecked(value and 0 or 1)
         btn:SetChecked(value and 1 or 0)
@@ -213,14 +215,10 @@ local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 listLabel:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
 listLabel:SetText(getSectionTexturesLabel())
 
--- Placeholder for the list update function
 local updateFrameModeList = function() end
 
--- Check if ScrollBox API is available (Retail 10.0+); use LinearView for a single-column list
 local hasScrollBoxAPI = (CreateScrollBoxListLinearView or CreateScrollBoxListGridView) and ScrollUtil and ScrollUtil.InitScrollBoxListWithScrollBar and CreateDataProvider
 if hasScrollBoxAPI then
-    -- Search box: use WoW's SearchBoxTemplate (like LiteMount) so the magnifying glass is visible
-    -- LiteMount: UI/MountsFilter.xml uses <EditBox inherits="SearchBoxTemplate" parentKey="Search" />
     local searchBoxContainer = CreateFrame("Frame", nil, group3)
     searchBoxContainer:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
     searchBoxContainer:SetPoint("TOPRIGHT", group3, "TOPRIGHT", -SECTION_PADDING - 24, 0)
@@ -232,7 +230,6 @@ if hasScrollBoxAPI then
         searchEditBox = CreateFrame("EditBox", nil, searchBoxContainer, "SearchBoxTemplate")
     end)
     if okTemplate and searchEditBox then
-        -- SearchBoxTemplate includes the magnifying glass and placeholder; use Blizzard's handler
         searchEditBox:SetPoint("LEFT", 6, 0)
         searchEditBox:SetPoint("RIGHT", -6, 0)
         searchEditBox:SetPoint("TOP", 0, 0)
@@ -252,7 +249,6 @@ if hasScrollBoxAPI then
             if updateFrameModeList then updateFrameModeList() end
         end)
     else
-        -- Fallback: no SearchBoxTemplate (e.g. some Classic builds); manual box without icon
         if searchEditBox then searchEditBox = nil end
         searchBoxContainer:SetBackdrop(BackdropTemplate and {
             bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -299,13 +295,24 @@ if hasScrollBoxAPI then
         if updateFrameModeList then updateFrameModeList() end
     end)
 
-    local scrollBox = CreateFrame("Frame", nil, group3, "WowScrollBoxList")
-    scrollBox:SetPoint("TOPLEFT", searchBoxContainer, "BOTTOMLEFT", 0, -6)
-    scrollBox:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -24, 6)
+    local listContainer = CreateFrame("Frame", nil, group3, BackdropTemplate)
+    listContainer:SetPoint("TOPLEFT", searchBoxContainer, "BOTTOMLEFT", 0, -6)
+    listContainer:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -24, 6)
+    if listContainer.SetBackdrop then
+        listContainer:SetBackdrop(CONTAINER_BACKDROP)
+        listContainer:SetBackdropColor(0.2, 0.2, 0.2, 0.5)
+        if listContainer.SetBackdropBorderColor then
+            listContainer:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        end
+    end
+
+    local scrollBox = CreateFrame("Frame", nil, listContainer, "WowScrollBoxList")
+    scrollBox:SetPoint("TOPLEFT", 8, -8)
+    scrollBox:SetPoint("BOTTOMRIGHT", -8, 8)
 
     local scrollBar = CreateFrame("EventFrame", nil, group3, "MinimalScrollBar")
-    scrollBar:SetPoint("TOPLEFT", scrollBox, "TOPRIGHT", 6, 0)
-    scrollBar:SetPoint("BOTTOMLEFT", scrollBox, "BOTTOMRIGHT", 6, 0)
+    scrollBar:SetPoint("TOPLEFT", listContainer, "TOPRIGHT", 6, 0)
+    scrollBar:SetPoint("BOTTOMLEFT", listContainer, "BOTTOMRIGHT", 6, 0)
 
     local function applyFrameMode(index)
         local addon = getBaseAddon()
@@ -317,14 +324,11 @@ if hasScrollBoxAPI then
                 if addon and addon.Update then pcall(function() addon:Update(true) end) end
             end)
         end
-        -- Update selection visuals
         if scrollBox.GetDataProvider then
             scrollBox:ForEachFrame(function(button, elementData)
                 local isSelected = (addon.settings.frameMode == elementData.index)
-                if isSelected then
-                    button:LockHighlight()
-                else
-                    button:UnlockHighlight()
+                if button.SelectedTexture then
+                    button.SelectedTexture:SetShown(isSelected)
                 end
             end)
         end
@@ -347,7 +351,6 @@ if hasScrollBoxAPI then
         return format("[%d] %s", i, displayName)
     end
 
-    -- Strip color codes for search/filter (plain text, lower case)
     local function getModeDisplayNamePlain(modes, i, L)
         local raw = getModeDisplayName(modes, i, L)
         if not raw then return "" end
@@ -355,18 +358,25 @@ if hasScrollBoxAPI then
     end
 
     local function InitButton(button, elementData)
-        -- Create text region if it doesn't exist
         if not button.Text then
-            button.Text = button:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+            button.Text = button:CreateFontString(nil, "ARTWORK", "GameFontWhite")
             button.Text:SetPoint("LEFT", 10, 0)
             button.Text:SetPoint("RIGHT", -10, 0)
             button.Text:SetJustifyH("LEFT")
 
-            -- Set up a highlight texture for mouseover
             local highlight = button:CreateTexture(nil, "HIGHLIGHT")
             highlight:SetAllPoints()
-            highlight:SetColorTexture(1, 1, 1, 0.15)
+            local ok = pcall(function() highlight:SetAtlas("Options_List_Hover") end)
+            if not ok or not highlight:GetAtlas() then
+                highlight:SetColorTexture(1, 1, 1, 0.15)
+            end
             button:SetHighlightTexture(highlight)
+
+            local selected = button:CreateTexture(nil, "BACKGROUND")
+            selected:SetAllPoints(button)
+            pcall(function() selected:SetAtlas("Options_List_Active") end)
+            button.SelectedTexture = selected
+            selected:Hide()
         end
 
         local index = elementData.index
@@ -380,15 +390,11 @@ if hasScrollBoxAPI then
 
         local addon = getBaseAddon()
         local isSelected = (addon and addon.settings and addon.settings.frameMode == index)
-
-        if isSelected then
-            button:LockHighlight()
-        else
-            button:UnlockHighlight()
+        if button.SelectedTexture then
+            button.SelectedTexture:SetShown(isSelected)
         end
     end
 
-    -- Define the update function
     updateFrameModeList = function()
         local addon = getBaseAddon()
         if not addon or not addon.FRAME_MODES then return end
@@ -411,15 +417,13 @@ if hasScrollBoxAPI then
         scrollBox:SetDataProvider(dataProvider)
     end
 
-    -- Use LinearView for a single-column list (GridView(2) expects a different layout and can show nothing)
     local view = CreateScrollBoxListLinearView and CreateScrollBoxListLinearView() or CreateScrollBoxListGridView(1)
-    view:SetElementExtent(24)
+    view:SetElementExtent(20)
     view:SetElementInitializer("Button", InitButton)
     view:SetPadding(5, 5, 5, 5, 5)
 
     ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
 else
-    -- Fallback for older clients or if API is missing
     local errorLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontRed")
     errorLabel:SetPoint("CENTER", 0, 0)
     errorLabel:SetText("ScrollBox API not available on this client version.")
@@ -439,8 +443,6 @@ panel:SetScript("OnShow", function()
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
     listLabel:SetText(getSectionTexturesLabel())
     refreshMainAddonChecks()
-
-    -- Call the list update function (will be the real one if API exists, or no-op)
     updateFrameModeList()
 end)
 
