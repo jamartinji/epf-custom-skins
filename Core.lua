@@ -49,12 +49,19 @@ local function AddCustomSkins()
         return
     end
 
-    local folderPath = D.folderPath or "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
+    local folderPath = D.folderPath
+    if not folderPath then
+        print("|cff00ff00EPF Custom Skins|r |cffff0000folderPath not set in TextureDefinitions.|r")
+        return
+    end
     local defaultFrameLayout = D.defaultFrameLayout
 
     for _, data in ipairs(D.textureConfig) do
         ElitePlayerFrame_Enhanced:AddCustomFrameMode(function(a)
-            if not baseAddon then baseAddon = a end
+            if not baseAddon then
+                baseAddon = a
+                EPF_CustomSkins_BaseAddon = a
+            end
 
             local className = a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class
             local classColor = a.safeIndex(a.CLASSES, data.class, "color") or CreateColor(1, 1, 1)

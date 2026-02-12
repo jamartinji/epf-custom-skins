@@ -132,7 +132,7 @@ D.textureConfig = {
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
     -- { class = "DRUID",       name = "druid",       ext = "png" },
     -- { class = "EVOKER",      name = "evoker",      ext = "png" },
-    -- { class = "HUNTER",      name = "hunter",      ext = "png" },
+    { class = "HUNTER",      name = "hunter",      ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
     -- { class = "MONK",        name = "monk",        ext = "png" },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },

@@ -1,0 +1,27 @@
+-- [ LOCALE: ruRU ]
+EPF_CustomSkins_Locales = EPF_CustomSkins_Locales or {}
+EPF_CustomSkins_Locales.ruRU = {
+    Apply = "Применить",
+    Preview = "Предпросмотр",
+    SelectTextureVisually = "Выбрать текстуру визуально",
+    FrameModeList = "Режимы рамки (0 = по умолчанию, 1 = авто, 2+ = свои):",
+    OptionsTitle = "EPF Custom Skins",
+    OptionsSubtitle = "настройки",
+    AddonNotReady = "Elite Player Frame (Enhanced) ещё не готов. Попробуйте после входа в игру.",
+    DefaultNoTexture = "По умолчанию (без текстуры)",
+    Off = "Нет",
+    Automatic = "Авто",
+    Custom = "Своё",
+    SectionMainAddon = "Настройки Elite Player Frame (Enhanced)",
+    Display = "Отображение",
+    DisplayDesc = "Показывать или скрывать изменения рамки игрока.",
+    ClassSelection = "Выбор по классу",
+    ClassSelectionDesc = "В режиме Авто выбирать рамку по классу/спеку.",
+    FactionSelection = "Выбор по фракции",
+    FactionSelectionDesc = "В режиме Авто выбирать рамку по фракции.",
+    OutputLevelMessages = "Уровень вывода сообщений",
+    OutputLevelDesc = "Подробность сообщений (0 = критично, выше = больше отладки).",
+    AvailableTextures = "Доступные текстуры",
+    Reset = "Сбросить",
+    ResetDesc = "Сбросить настройки Elite Player Frame (Enhanced) по умолчанию.",
+}

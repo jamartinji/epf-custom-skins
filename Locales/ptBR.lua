@@ -1,0 +1,27 @@
+-- [ LOCALE: ptBR ]
+EPF_CustomSkins_Locales = EPF_CustomSkins_Locales or {}
+EPF_CustomSkins_Locales.ptBR = {
+    Apply = "Aplicar",
+    Preview = "Visualizar",
+    SelectTextureVisually = "Selecionar textura visualmente",
+    FrameModeList = "Modos de quadro (0 = padrão, 1 = automático, 2+ = personalizados):",
+    OptionsTitle = "EPF Custom Skins",
+    OptionsSubtitle = "opções",
+    AddonNotReady = "Elite Player Frame (Enhanced) ainda não está pronto. Tente novamente após entrar no jogo.",
+    DefaultNoTexture = "Padrão (sem textura)",
+    Off = "Nenhum",
+    Automatic = "Automático",
+    Custom = "Personalizado",
+    SectionMainAddon = "Opções do Elite Player Frame (Enhanced)",
+    Display = "Exibir",
+    DisplayDesc = "Mostrar ou ocultar as modificações do quadro do jogador.",
+    ClassSelection = "Seleção por classe",
+    ClassSelectionDesc = "No modo Auto, escolher quadro por classe/especialização.",
+    FactionSelection = "Seleção por facção",
+    FactionSelectionDesc = "No modo Auto, escolher quadro por facção.",
+    OutputLevelMessages = "Nível de saída de mensagens",
+    OutputLevelDesc = "Detalhe das mensagens (0 = crítico, maior = mais debug).",
+    AvailableTextures = "Texturas disponíveis",
+    Reset = "Redefinir",
+    ResetDesc = "Redefinir opções do Elite Player Frame (Enhanced) para o padrão.",
+}
