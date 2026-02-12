@@ -1,6 +1,5 @@
 -- [ OPTIONS ] Configuration panel for EPF Custom Skins.
 -- Access: Esc → System → AddOns → EPF Custom Skins
--- Uses EPF_CustomSkins_L (see Locale.lua and Locales/).
 
 EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
 
@@ -8,10 +7,9 @@ local ADDON_NAME = "EPF Custom Skins"
 local ADDON_LOADED_NAME = "ElitePlayerFrame_Enhanced_CustomSkins"
 local OPTIONS_SUBTITLE = "options"
 
--- Usar la misma tabla global que Locale.lua (igual que el resto de cadenas traducidas)
 local L = EPF_CustomSkins_L or {}
 
--- Texto "Texturas disponibles" leyendo directo de la tabla de locale (evita problemas con la clave SectionTextures)
+-- SectionTextures label: read from locale table directly to avoid key lookup issues
 local function getSectionTexturesLabel()
     local loc = (GetLocale and GetLocale()) or "enUS"
     if loc == "es" and EPF_CustomSkins_Locales and EPF_CustomSkins_Locales.esES then loc = "esES" end
@@ -45,7 +43,6 @@ local function setSectionBackdrop(frame)
         Mixin(frame, BackdropTemplateMixin)
     end
     if frame.SetBackdrop then
-        -- Insets a 0 para que el fondo llegue al borde (sin margen raro entre borde y fondo)
         frame:SetBackdrop({
             bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
             edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -61,10 +58,9 @@ local function setSectionBackdrop(frame)
     end
 end
 
--- BackdropTemplate para Retail (9.0+); setSectionBackdrop aplica Mixin si hace falta
+-- BackdropTemplate required on Retail (9.0+); setSectionBackdrop applies Mixin if missing
 local BackdropTemplate = "BackdropTemplate"
 
--- ----- Group 1: Opciones generales + nivel de salida (todo en un solo marco) -----
 local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group1:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
 group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
@@ -97,7 +93,6 @@ checkFactionLabel:SetPoint("LEFT", checkFaction, "RIGHT", 4, 0)
 checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
 checkFaction.tooltipText = L.FactionSelectionDesc or "In Auto mode, choose frame by faction."
 
--- Nivel de salida (dentro del mismo marco): texto ampliado con descripción
 local outputLabel = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 outputLabel:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -14)
 outputLabel:SetText(L.OutputLevel or "Message output level")
@@ -109,7 +104,6 @@ outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher
 outputDesc:SetTextColor(0.7, 0.7, 0.7)
 outputDesc:SetJustifyH("LEFT")
 
--- Desplegable alineado con el texto (misma columna izquierda)
 local outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group1, "UIDropDownMenuTemplate")
 outputDropdown:SetPoint("TOPLEFT", outputDesc, "BOTTOMLEFT", 0, -4)
 if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
@@ -152,7 +146,7 @@ btnReset:SetScript("OnClick", function()
     addon.settings.factionSelection = def.factionSelection
     addon.settings.outputLevel = def.outputLevel
     if addon.Update then addon:Update(true) end
-    -- Marcar las casillas directamente con los valores por defecto (cambio opuesto primero para forzar redibujado)
+    -- Set checkboxes from defaults; toggle opposite first to force template redraw
     local function setCheck(btn, value)
         btn:SetChecked(value and 0 or 1)
         btn:SetChecked(value and 1 or 0)
@@ -208,7 +202,6 @@ checkFaction:SetScript("OnClick", function(self)
     end
 end)
 
--- ----- Group 2: Available textures (2 columns) -----
 local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group3:SetPoint("TOPLEFT", group1, "BOTTOMLEFT", 0, -GROUP_SPACING)
 group3:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
@@ -218,7 +211,6 @@ local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 listLabel:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
 listLabel:SetText(getSectionTexturesLabel())
 
--- Margen derecho para que la barra de desplazamiento no salga del panel
 local SCROLL_BAR_INSET = 24
 local scrollFrame = CreateFrame("ScrollFrame", "EPFCustomSkinsFrameListScroll", group3, "UIPanelScrollFrameTemplate")
 scrollFrame:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
@@ -232,7 +224,6 @@ local ROW_HEIGHT = 24
 local BUTTON_WIDTH_APPLY = 52
 local COLUMN_LABEL_WIDTH = 175
 local COLUMN_GAP = 16
--- Ancho total por celda (etiqueta + espacio + botón) para que las dos columnas no se pisen
 local CELL_WIDTH = COLUMN_LABEL_WIDTH + BUTTON_WIDTH_APPLY + 12
 local MIN_LIST_WIDTH = CELL_WIDTH * 2 + COLUMN_GAP
 
@@ -360,7 +351,6 @@ panel:SetScript("OnShow", function()
     buildFrameModeList()
 end)
 
--- Register when addon has loaded
 local function registerOptions()
     if InterfaceOptions_AddCategory then
         InterfaceOptions_AddCategory(panel)
