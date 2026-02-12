@@ -23,6 +23,7 @@ EPF_CustomSkins_Locales.enUS = {
     OutputLevel = "Message output level",
     OutputLevelDesc = "Message verbosity (0 = critical, higher = more debug).",
     SectionTextures = "Available textures",
+    SearchFilter = "Filter...",
     Reset = "Reset",
     ResetDesc = "Reset Elite Player Frame (Enhanced) settings to defaults.",
 }

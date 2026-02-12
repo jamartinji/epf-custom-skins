@@ -22,6 +22,7 @@ EPF_CustomSkins_Locales.esMX = {
     OutputLevel = "Nivel de salida de mensajes",
     OutputLevelDesc = "Cantidad de mensajes (0 = crítico, mayor = más depuración).",
     SectionTextures = "Texturas disponibles",
+    SearchFilter = "Filtrar...",
     Reset = "Restablecer",
     ResetDesc = "Restablecer opciones de Elite Player Frame (Enhanced) a valores por defecto.",
 }

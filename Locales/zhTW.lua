@@ -22,6 +22,7 @@ EPF_CustomSkins_Locales.zhTW = {
     OutputLevel = "訊息輸出層級",
     OutputLevelDesc = "訊息詳細程度（0 = 關鍵，越高 = 越多除錯）。",
     SectionTextures = "可用材質",
+    SearchFilter = "篩選...",
     Reset = "重設",
     ResetDesc = "將 Elite Player Frame (Enhanced) 設定重設為預設。",
 }

@@ -22,6 +22,7 @@ EPF_CustomSkins_Locales.deDE = {
     OutputLevel = "Nachrichtenausgabestufe",
     OutputLevelDesc = "Nachrichtenmenge (0 = kritisch, höher = mehr Debug).",
     SectionTextures = "Verfügbare Texturen",
+    SearchFilter = "Filtern...",
     Reset = "Zurücksetzen",
     ResetDesc = "Elite Player Frame (Enhanced) Einstellungen auf Standard zurücksetzen.",
 }

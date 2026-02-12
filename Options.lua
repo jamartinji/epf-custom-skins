@@ -218,8 +218,66 @@ local updateFrameModeList = function() end
 -- Check if ScrollBox API is available (Retail 10.0+); use LinearView for a single-column list
 local hasScrollBoxAPI = (CreateScrollBoxListLinearView or CreateScrollBoxListGridView) and ScrollUtil and ScrollUtil.InitScrollBoxListWithScrollBar and CreateDataProvider
 if hasScrollBoxAPI then
+    -- Search box container (with magnifying glass) above the list
+    local searchBoxContainer = CreateFrame("Frame", nil, group3, BackdropTemplate)
+    searchBoxContainer:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
+    searchBoxContainer:SetPoint("TOPRIGHT", group3, "TOPRIGHT", -SECTION_PADDING - 24, 0)
+    searchBoxContainer:SetHeight(24)
+    if searchBoxContainer.SetBackdrop then
+        searchBoxContainer:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 8,
+            insets = { left = 4, right = 4, top = 2, bottom = 2 }
+        })
+        searchBoxContainer:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
+        if searchBoxContainer.SetBackdropBorderColor then
+            searchBoxContainer:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+        end
+    end
+
+    local searchIcon = searchBoxContainer:CreateTexture(nil, "ARTWORK")
+    searchIcon:SetPoint("LEFT", 6, 0)
+    searchIcon:SetSize(14, 14)
+    -- Use WoW's built-in magnifying glass if available; otherwise a simple icon
+    local ok = pcall(function() searchIcon:SetTexture("Interface\\Common\\UI-SearchMagnifyingGlass") end)
+    if not ok or not searchIcon:GetTexture() then
+        searchIcon:SetColorTexture(0.6, 0.6, 0.6, 0.9)
+    end
+
+    local searchEditBox = CreateFrame("EditBox", nil, searchBoxContainer)
+    searchEditBox:SetPoint("LEFT", searchIcon, "RIGHT", 4, 0)
+    searchEditBox:SetPoint("RIGHT", -6, 0)
+    searchEditBox:SetPoint("TOP", 0, 0)
+    searchEditBox:SetPoint("BOTTOM", 0, 0)
+    searchEditBox:SetFontObject("GameFontHighlight")
+    searchEditBox:SetAutoFocus(false)
+    searchEditBox:SetMaxLetters(80)
+    local currentSearchFilter = ""
+    searchEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() self:SetText("") end)
+    searchEditBox:SetScript("OnEnter", function(self) if self:GetText() == "" then GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") GameTooltip:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...") GameTooltip:Show() end end)
+    searchEditBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    local searchPlaceholder = searchEditBox:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    searchPlaceholder:SetPoint("LEFT", searchEditBox, "LEFT", 0, 0)
+    searchPlaceholder:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
+    searchPlaceholder:SetTextColor(0.5, 0.5, 0.5, 0.8)
+    searchEditBox:SetScript("OnTextChanged", function(self)
+        local text = self:GetText()
+        if searchPlaceholder then searchPlaceholder:SetShown(not text or text:len() == 0) end
+        if text then
+            currentSearchFilter = text:gsub("^%s+", ""):gsub("%s+$", ""):lower()
+        else
+            currentSearchFilter = ""
+        end
+        if updateFrameModeList then updateFrameModeList() end
+    end)
+    searchEditBox:SetScript("OnEditFocusGained", function(self) if searchPlaceholder then searchPlaceholder:Hide() end end)
+    searchEditBox:SetScript("OnEditFocusLost", function(self) if searchPlaceholder and (not self:GetText() or self:GetText():len() == 0) then searchPlaceholder:Show() end end)
+
     local scrollBox = CreateFrame("Frame", nil, group3, "WowScrollBoxList")
-    scrollBox:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
+    scrollBox:SetPoint("TOPLEFT", searchBoxContainer, "BOTTOMLEFT", 0, -6)
     scrollBox:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -24, 6)
 
     local scrollBar = CreateFrame("EventFrame", nil, group3, "MinimalScrollBar")
@@ -264,6 +322,13 @@ if hasScrollBoxAPI then
             return format("|cff%02x%02x%02x[%d] %s|r", r * 255, g * 255, b * 255, i, displayName)
         end
         return format("[%d] %s", i, displayName)
+    end
+
+    -- Strip color codes for search/filter (plain text, lower case)
+    local function getModeDisplayNamePlain(modes, i, L)
+        local raw = getModeDisplayName(modes, i, L)
+        if not raw then return "" end
+        return raw:gsub("|c%x%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):lower()
     end
 
     local function InitButton(button, elementData)
@@ -312,8 +377,12 @@ if hasScrollBoxAPI then
             if type(k) == "number" and k > maxIndex then maxIndex = k end
         end
 
+        local L = EPF_CustomSkins_L or {}
+        local filter = currentSearchFilter
         for i = 0, maxIndex do
-            dataProvider:Insert({index = i, allModes = modes})
+            if filter == "" or (getModeDisplayNamePlain(modes, i, L):find(filter, 1, true)) then
+                dataProvider:Insert({index = i, allModes = modes})
+            end
         end
 
         scrollBox:SetDataProvider(dataProvider)

@@ -22,6 +22,7 @@ EPF_CustomSkins_Locales.ruRU = {
     OutputLevel = "Уровень вывода сообщений",
     OutputLevelDesc = "Подробность сообщений (0 = критично, выше = больше отладки).",
     SectionTextures = "Доступные текстуры",
+    SearchFilter = "Фильтр...",
     Reset = "Сбросить",
     ResetDesc = "Сбросить настройки Elite Player Frame (Enhanced) по умолчанию.",
 }

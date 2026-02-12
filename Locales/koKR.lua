@@ -22,6 +22,7 @@ EPF_CustomSkins_Locales.koKR = {
     OutputLevel = "메시지 출력 수준",
     OutputLevelDesc = "메시지 상세도 (0 = 중요, 높을수록 더 많은 디버그).",
     SectionTextures = "사용 가능한 텍스처",
+    SearchFilter = "필터...",
     Reset = "초기화",
     ResetDesc = "Elite Player Frame (Enhanced) 설정을 기본값으로 초기화.",
 }
