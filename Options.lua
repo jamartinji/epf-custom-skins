@@ -36,6 +36,14 @@ local function getBaseAddon()
     return EPF_CustomSkins_BaseAddon or (ElitePlayerFrame_Enhanced and ElitePlayerFrame_Enhanced.Initialised and ElitePlayerFrame_Enhanced:Initialised() and ElitePlayerFrame_Enhanced or nil)
 end
 
+local BASE_SETTINGS_GLOBAL = "ElitePlayerFrame_Enhanced_Settings"
+local function getBaseSettings()
+    local sv = _G[BASE_SETTINGS_GLOBAL]
+    if sv then return sv end
+    local addon = getBaseAddon()
+    return (addon and addon.settings) and addon.settings or nil
+end
+
 local PAD = 16
 local GROUP_SPACING = 20
 local SECTION_PADDING = 10
@@ -136,6 +144,46 @@ outputDropdown.initialize = function()
     end
 end
 
+local function setCheckFromSetting(btn, value)
+    local checked = (value == true or value == 1)
+    btn:SetChecked(checked)
+    if InterfaceOptionsPanel_CheckButton_Update then
+        InterfaceOptionsPanel_CheckButton_Update(btn)
+    end
+end
+
+local function refreshMainAddonChecks()
+    local settings = getBaseSettings()
+    if settings then
+        setCheckFromSetting(checkDisplay, settings.display)
+        setCheckFromSetting(checkClass, settings.classSelection)
+        setCheckFromSetting(checkFaction, settings.factionSelection)
+    end
+    local addon = getBaseAddon()
+    if addon and addon.settings and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+        UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
+        UIDropDownMenu_SetSelectedValue(outputDropdown, addon.settings.outputLevel)
+        if UIDropDownMenu_Refresh then
+            UIDropDownMenu_Refresh(outputDropdown)
+        end
+    end
+end
+
+local function updateUIFromDefaults(def)
+    if not def then return end
+    setCheckFromSetting(checkDisplay, def.display)
+    setCheckFromSetting(checkClass, def.classSelection)
+    setCheckFromSetting(checkFaction, def.factionSelection)
+    local addon = getBaseAddon()
+    if addon and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+        UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
+        UIDropDownMenu_SetSelectedValue(outputDropdown, def.outputLevel)
+        if UIDropDownMenu_Refresh then
+            UIDropDownMenu_Refresh(outputDropdown)
+        end
+    end
+end
+
 local btnReset = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
 btnReset:SetSize(100, 22)
 btnReset:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -24, -16)
@@ -151,38 +199,20 @@ btnReset:SetScript("OnClick", function()
     addon.settings.factionSelection = def.factionSelection
     addon.settings.outputLevel = def.outputLevel
     if addon.Update then addon:Update(true) end
-    local function setCheck(btn, value)
-        btn:SetChecked(value and 0 or 1)
-        btn:SetChecked(value and 1 or 0)
-    end
-    setCheck(checkDisplay, def.display)
-    setCheck(checkClass, def.classSelection)
-    setCheck(checkFaction, def.factionSelection)
-    if addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
-        UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
-        UIDropDownMenu_SetSelectedValue(outputDropdown, def.outputLevel)
+    local defCopy = {
+        display = def.display,
+        classSelection = def.classSelection,
+        factionSelection = def.factionSelection,
+        outputLevel = def.outputLevel,
+    }
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+            updateUIFromDefaults(defCopy)
+        end)
+    else
+        updateUIFromDefaults(defCopy)
     end
 end)
-
-local function updateCheckButtonVisual(btn, checked)
-    btn:SetChecked(checked and 1 or 0)
-    if InterfaceOptionsPanel_CheckButton_Update then
-        InterfaceOptionsPanel_CheckButton_Update(btn)
-    end
-end
-
-local function refreshMainAddonChecks()
-    local addon = getBaseAddon()
-    if addon and addon.settings then
-        updateCheckButtonVisual(checkDisplay, addon.settings.display)
-        updateCheckButtonVisual(checkClass, addon.settings.classSelection)
-        updateCheckButtonVisual(checkFaction, addon.settings.factionSelection)
-        if addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
-            UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
-            UIDropDownMenu_SetSelectedValue(outputDropdown, addon.settings.outputLevel)
-        end
-    end
-end
 
 checkDisplay:SetScript("OnClick", function(self)
     local addon = getBaseAddon()
@@ -444,6 +474,9 @@ panel:SetScript("OnShow", function()
     listLabel:SetText(getSectionTexturesLabel())
     refreshMainAddonChecks()
     updateFrameModeList()
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0, refreshMainAddonChecks)
+    end
 end)
 
 local function registerOptions()
