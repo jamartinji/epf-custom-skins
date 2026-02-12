@@ -1,7 +1,7 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.0.4-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![Version](https://img.shields.io/badge/Version-1.0.5-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
 [![WoW](https://img.shields.io/badge/WoW-12.0%20(TWW)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 
@@ -25,6 +25,25 @@ Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com
 ## 📌 Requirements
 
 - **ElitePlayerFrame_Enhanced** must be installed and enabled.
+
+## 📥 Installation
+
+1. Install **Elite Player Frame (Enhanced)** first.
+2. Download or clone this addon and place the **ElitePlayerFrame_Enhanced_CustomSkins** folder inside your WoW `_classic_era_` or `_retail_` **Interface\AddOns** directory.
+3. Enable both addons in the character selection screen (AddOns button) or in-game (Esc → System → AddOns).
+
+---
+
+## ⚙️ Options Panel
+
+The addon adds a configuration panel under **Esc → System → AddOns → EPF Custom Skins** (or **Interface → AddOns** depending on client). From there you can:
+
+- **Display** — Show or hide the player frame modifications (same as base addon).
+- **Class selection** — In Auto mode, choose frame by class/spec/race (default: on).
+- **Faction selection** — In Auto mode, choose frame by faction when textures have `faction` set (default: on).
+- **Message output level** — Verbosity of addon messages (0 = critical only, higher = more debug).
+- **Reset** — Reset Elite Player Frame (Enhanced) settings to defaults.
+- **Available textures** — Scrollable list of all frame modes (default, automatic, and each custom texture). Use the **Filter** box to search by name; **click a row** to select that texture (same as `/epf frame N`).
 
 ---
 
