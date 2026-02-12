@@ -31,7 +31,8 @@ title:SetPoint("TOPLEFT", 16, -16)
 title:SetText(ADDON_NAME .. " " .. "|cff808080(" .. (L.OptionsSubtitle or OPTIONS_SUBTITLE) .. ")|r")
 
 local function getBaseAddon()
-    return EPF_CustomSkins_BaseAddon
+    -- Prefer reference set by CustomSkins; fallback to base addon so options work even if load order differs
+    return EPF_CustomSkins_BaseAddon or (ElitePlayerFrame_Enhanced and ElitePlayerFrame_Enhanced.Initialised and ElitePlayerFrame_Enhanced:Initialised() and ElitePlayerFrame_Enhanced or nil)
 end
 
 local PAD = 16
@@ -211,137 +212,125 @@ local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 listLabel:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
 listLabel:SetText(getSectionTexturesLabel())
 
-local SCROLL_BAR_INSET = 24
-local scrollFrame = CreateFrame("ScrollFrame", "EPFCustomSkinsFrameListScroll", group3, "UIPanelScrollFrameTemplate")
-scrollFrame:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
-scrollFrame:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -SCROLL_BAR_INSET - SECTION_PADDING, SECTION_PADDING)
+-- Placeholder for the list update function
+local updateFrameModeList = function() end
 
-local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-scrollChild:SetSize(400, 1)
-scrollFrame:SetScrollChild(scrollChild)
+-- Check if ScrollBox API is available (Retail 10.0+); use LinearView for a single-column list
+local hasScrollBoxAPI = (CreateScrollBoxListLinearView or CreateScrollBoxListGridView) and ScrollUtil and ScrollUtil.InitScrollBoxListWithScrollBar and CreateDataProvider
+if hasScrollBoxAPI then
+    local scrollBox = CreateFrame("Frame", nil, group3, "WowScrollBoxList")
+    scrollBox:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
+    scrollBox:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -24, 6)
 
-local ROW_HEIGHT = 24
-local BUTTON_WIDTH_APPLY = 22
-local COLUMN_GAP = 28
-local MIN_CELL_WIDTH = 180
+    local scrollBar = CreateFrame("EventFrame", nil, group3, "MinimalScrollBar")
+    scrollBar:SetPoint("TOPLEFT", scrollBox, "TOPRIGHT", 6, 0)
+    scrollBar:SetPoint("BOTTOMLEFT", scrollBox, "BOTTOMRIGHT", 6, 0)
 
-local function applyFrameMode(index)
-    local addon = getBaseAddon()
-    if not addon or not addon.settings then return end
-    addon.settings.frameMode = index
-    if addon.Update then addon:Update(true) end
-    if C_Timer and C_Timer.After then
-        C_Timer.After(0, function()
-            if addon and addon.Update then pcall(function() addon:Update(true) end) end
-        end)
-    end
-end
-
-local function getModeDisplayName(modes, i, L)
-    local mode = modes[i]
-    local displayName
-    if i == 0 then
-        displayName = L.DefaultNoTexture or "Default (no texture)"
-    elseif mode and mode.name then
-        displayName = tostring(mode.name)
-    else
-        displayName = (i == 1 and (L.Automatic or "Automatic")) or (L.Custom or "Custom")
-    end
-    if mode and mode.color and mode.color.GetRGB then
-        local r, g, b = mode.color:GetRGB()
-        return format("|cff%02x%02x%02x[%d] %s|r", r * 255, g * 255, b * 255, i, displayName)
-    end
-    return format("[%d] %s", i, displayName)
-end
-
-local function buildFrameModeList()
-    local addon = getBaseAddon()
-    local L = EPF_CustomSkins_L or {}
-
-    if not addon or not addon.FRAME_MODES then
-        scrollChild:SetHeight(ROW_HEIGHT)
-        scrollChild:SetWidth(MIN_CELL_WIDTH * 2 + COLUMN_GAP)
-        local cell = scrollChild["cell0"]
-        if not cell then
-            cell = CreateFrame("Frame", nil, scrollChild)
-            cell:SetHeight(ROW_HEIGHT)
-            cell:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
-            cell:SetPoint("RIGHT", scrollChild, "RIGHT", 0, 0)
-            cell.label = cell:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-            cell.label:SetPoint("LEFT", cell, "LEFT", 0, 0)
-            cell.label:SetJustifyH("LEFT")
-            scrollChild["cell0"] = cell
+    local function applyFrameMode(index)
+        local addon = getBaseAddon()
+        if not addon or not addon.settings then return end
+        addon.settings.frameMode = index
+        if addon.Update then addon:Update(true) end
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0, function()
+                if addon and addon.Update then pcall(function() addon:Update(true) end) end
+            end)
         end
-        cell.label:SetText(L.AddonNotReady or "Addon not ready. Try again after logging in.")
-        cell.label:SetTextColor(1, 0.4, 0.2)
-        if cell.btn then cell.btn:Hide() end
-        cell:Show()
-        for j = 1, 120 do
-            local c = scrollChild["cell" .. j]
-            if c then c:Hide() end
-        end
-        return
-    end
-
-    local modes = addon.FRAME_MODES
-    local maxIndex = 0
-    for k in pairs(modes) do
-        if type(k) == "number" and k > maxIndex then maxIndex = k end
-    end
-
-    local numRows = math.ceil((maxIndex + 1) / 2)
-    local listHeight = numRows * ROW_HEIGHT
-    local listWidth = math.max(MIN_CELL_WIDTH * 2 + COLUMN_GAP, scrollFrame:GetWidth() - 20)
-    local cellWidth = (listWidth - COLUMN_GAP) / 2
-    scrollChild:SetHeight(listHeight)
-    scrollChild:SetWidth(listWidth)
-
-    for i = 0, maxIndex do
-        local col = i % 2
-        local row = math.floor(i / 2)
-        local cellX = col * (cellWidth + COLUMN_GAP)
-        local cell = scrollChild["cell" .. i]
-        if not cell then
-            cell = CreateFrame("Frame", nil, scrollChild)
-            cell:SetHeight(ROW_HEIGHT)
-            cell:SetSize(cellWidth, ROW_HEIGHT)
-
-            cell.label = cell:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-            cell.label:SetPoint("LEFT", cell, "LEFT", 0, 0)
-            cell.label:SetPoint("RIGHT", cell, "RIGHT", -BUTTON_WIDTH_APPLY - 6, 0)
-            cell.label:SetJustifyH("LEFT")
-            cell.label:SetWordWrap(false)
-
-            cell.btn = CreateFrame("Button", nil, cell, "UIPanelButtonTemplate")
-            cell.btn:SetSize(BUTTON_WIDTH_APPLY, 20)
-            cell.btn:SetPoint("RIGHT", cell, "RIGHT", 0, 0)
-            cell.btn:SetText("»")
-            cell.btn:SetScript("OnEnter", function(btn)
-                if btn.tooltipText then
-                    GameTooltip:SetOwner(btn, "ANCHOR_RIGHT")
-                    GameTooltip:SetText(btn.tooltipText, 1, 1, 1)
-                    GameTooltip:Show()
+        -- Update selection visuals
+        if scrollBox.GetDataProvider then
+            scrollBox:ForEachFrame(function(button, elementData)
+                local isSelected = (addon.settings.frameMode == elementData.index)
+                if isSelected then
+                    button:LockHighlight()
+                else
+                    button:UnlockHighlight()
                 end
             end)
-            cell.btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-            scrollChild["cell" .. i] = cell
         end
-        cell:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", cellX, -(row * ROW_HEIGHT))
-        cell:SetSize(cellWidth, ROW_HEIGHT)
-        cell.btn:Show()
+    end
 
-        local nameStr = getModeDisplayName(modes, i, L)
-        cell.label:SetText(nameStr)
-        cell.label:SetTextColor(1, 1, 1)
-        cell.btn:SetText("»")
-        cell.btn.tooltipText = L.Apply or "Apply"
-        cell.btn:SetScript("OnClick", function() applyFrameMode(i) end)
-        cell:Show()
+    local function getModeDisplayName(modes, i, L)
+        local mode = modes[i]
+        local displayName
+        if i == 0 then
+            displayName = L.DefaultNoTexture or "Default (no texture)"
+        elseif mode and mode.name then
+            displayName = tostring(mode.name)
+        else
+            displayName = (i == 1 and (L.Automatic or "Automatic")) or (L.Custom or "Custom")
+        end
+        if mode and mode.color and mode.color.GetRGB then
+            local r, g, b = mode.color:GetRGB()
+            return format("|cff%02x%02x%02x[%d] %s|r", r * 255, g * 255, b * 255, i, displayName)
+        end
+        return format("[%d] %s", i, displayName)
     end
-    for j = maxIndex + 1, 120 do
-        local c = scrollChild["cell" .. j]
-        if c then c:Hide() end
+
+    local function InitButton(button, elementData)
+        -- Create text region if it doesn't exist
+        if not button.Text then
+            button.Text = button:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+            button.Text:SetPoint("LEFT", 10, 0)
+            button.Text:SetPoint("RIGHT", -10, 0)
+            button.Text:SetJustifyH("LEFT")
+
+            -- Set up a highlight texture for mouseover
+            local highlight = button:CreateTexture(nil, "HIGHLIGHT")
+            highlight:SetAllPoints()
+            highlight:SetColorTexture(1, 1, 1, 0.15)
+            button:SetHighlightTexture(highlight)
+        end
+
+        local index = elementData.index
+        local L = EPF_CustomSkins_L or {}
+        local displayName = getModeDisplayName(elementData.allModes, index, L)
+        button.Text:SetText(displayName)
+
+        button:SetScript("OnClick", function()
+            applyFrameMode(index)
+        end)
+
+        local addon = getBaseAddon()
+        local isSelected = (addon and addon.settings and addon.settings.frameMode == index)
+
+        if isSelected then
+            button:LockHighlight()
+        else
+            button:UnlockHighlight()
+        end
     end
+
+    -- Define the update function
+    updateFrameModeList = function()
+        local addon = getBaseAddon()
+        if not addon or not addon.FRAME_MODES then return end
+
+        local dataProvider = CreateDataProvider()
+        local modes = addon.FRAME_MODES
+        local maxIndex = 0
+        for k in pairs(modes) do
+            if type(k) == "number" and k > maxIndex then maxIndex = k end
+        end
+
+        for i = 0, maxIndex do
+            dataProvider:Insert({index = i, allModes = modes})
+        end
+
+        scrollBox:SetDataProvider(dataProvider)
+    end
+
+    -- Use LinearView for a single-column list (GridView(2) expects a different layout and can show nothing)
+    local view = CreateScrollBoxListLinearView and CreateScrollBoxListLinearView() or CreateScrollBoxListGridView(1)
+    view:SetElementExtent(24)
+    view:SetElementInitializer("Button", InitButton)
+    view:SetPadding(5, 5, 5, 5, 5)
+
+    ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
+else
+    -- Fallback for older clients or if API is missing
+    local errorLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontRed")
+    errorLabel:SetPoint("CENTER", 0, 0)
+    errorLabel:SetText("ScrollBox API not available on this client version.")
 end
 
 panel:SetScript("OnShow", function()
@@ -358,7 +347,9 @@ panel:SetScript("OnShow", function()
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
     listLabel:SetText(getSectionTexturesLabel())
     refreshMainAddonChecks()
-    buildFrameModeList()
+
+    -- Call the list update function (will be the real one if API exists, or no-op)
+    updateFrameModeList()
 end)
 
 local function registerOptions()
@@ -379,4 +370,3 @@ eventFrame:SetScript("OnEvent", function(_, event, addonName)
         registerOptions()
     end
 end)
-
