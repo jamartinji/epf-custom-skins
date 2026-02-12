@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.itIT = {
     ClassSelectionDesc = "In modalità Auto, scegli la cornice per classe/spec.",
     FactionSelection = "Selezione per fazione",
     FactionSelectionDesc = "In modalità Auto, scegli la cornice per fazione.",
-    OutputLevelMessages = "Livello messaggi in uscita",
+    OutputLevel = "Livello messaggi in uscita",
     OutputLevelDesc = "Verbosità messaggi (0 = critico, più alto = più debug).",
-    AvailableTextures = "Texture disponibili",
+    SectionTextures = "Texture disponibili",
     Reset = "Reimposta",
     ResetDesc = "Reimposta le opzioni di Elite Player Frame (Enhanced) ai valori predefiniti.",
 }

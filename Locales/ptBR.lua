@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.ptBR = {
     ClassSelectionDesc = "No modo Auto, escolher quadro por classe/especialização.",
     FactionSelection = "Seleção por facção",
     FactionSelectionDesc = "No modo Auto, escolher quadro por facção.",
-    OutputLevelMessages = "Nível de saída de mensagens",
+    OutputLevel = "Nível de saída de mensagens",
     OutputLevelDesc = "Detalhe das mensagens (0 = crítico, maior = mais debug).",
-    AvailableTextures = "Texturas disponíveis",
+    SectionTextures = "Texturas disponíveis",
     Reset = "Redefinir",
     ResetDesc = "Redefinir opções do Elite Player Frame (Enhanced) para o padrão.",
 }

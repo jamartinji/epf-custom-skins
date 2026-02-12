@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.zhTW = {
     ClassSelectionDesc = "自動模式下依職業/專精選擇框架。",
     FactionSelection = "依陣營選擇",
     FactionSelectionDesc = "自動模式下依陣營選擇框架。",
-    OutputLevelMessages = "訊息輸出層級",
+    OutputLevel = "訊息輸出層級",
     OutputLevelDesc = "訊息詳細程度（0 = 關鍵，越高 = 越多除錯）。",
-    AvailableTextures = "可用材質",
+    SectionTextures = "可用材質",
     Reset = "重設",
     ResetDesc = "將 Elite Player Frame (Enhanced) 設定重設為預設。",
 }

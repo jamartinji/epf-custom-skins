@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.esMX = {
     ClassSelectionDesc = "En modo Auto, elegir marco por clase/especialización.",
     FactionSelection = "Selección por facción",
     FactionSelectionDesc = "En modo Auto, elegir marco por facción.",
-    OutputLevelMessages = "Nivel de salida de mensajes",
+    OutputLevel = "Nivel de salida de mensajes",
     OutputLevelDesc = "Cantidad de mensajes (0 = crítico, mayor = más depuración).",
-    AvailableTextures = "Texturas disponibles",
+    SectionTextures = "Texturas disponibles",
     Reset = "Restablecer",
     ResetDesc = "Restablecer opciones de Elite Player Frame (Enhanced) a valores por defecto.",
 }

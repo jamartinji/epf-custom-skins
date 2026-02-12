@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.koKR = {
     ClassSelectionDesc = "자동 모드에서 직업/특성별 프레임 선택.",
     FactionSelection = "진영 선택",
     FactionSelectionDesc = "자동 모드에서 진영별 프레임 선택.",
-    OutputLevelMessages = "메시지 출력 수준",
+    OutputLevel = "메시지 출력 수준",
     OutputLevelDesc = "메시지 상세도 (0 = 중요, 높을수록 더 많은 디버그).",
-    AvailableTextures = "사용 가능한 텍스처",
+    SectionTextures = "사용 가능한 텍스처",
     Reset = "초기화",
     ResetDesc = "Elite Player Frame (Enhanced) 설정을 기본값으로 초기화.",
 }

@@ -20,9 +20,9 @@ EPF_CustomSkins_Locales.enUS = {
     ClassSelectionDesc = "In Auto mode, choose frame by your class/spec.",
     FactionSelection = "Faction selection",
     FactionSelectionDesc = "In Auto mode, choose frame by faction.",
-    OutputLevelMessages = "Message output level",
+    OutputLevel = "Message output level",
     OutputLevelDesc = "Message verbosity (0 = critical, higher = more debug).",
-    AvailableTextures = "Available textures",
+    SectionTextures = "Available textures",
     Reset = "Reset",
     ResetDesc = "Reset Elite Player Frame (Enhanced) settings to defaults.",
 }

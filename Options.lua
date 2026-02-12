@@ -8,16 +8,21 @@ local ADDON_NAME = "EPF Custom Skins"
 local ADDON_LOADED_NAME = "ElitePlayerFrame_Enhanced_CustomSkins"
 local OPTIONS_SUBTITLE = "options"
 
--- Obtener tabla de traducciones para el idioma actual (GetLocale puede no estar listo al cargar el addon)
-local function getL()
+-- Usar la misma tabla global que Locale.lua (igual que el resto de cadenas traducidas)
+local L = EPF_CustomSkins_L or {}
+
+-- Texto "Texturas disponibles" leyendo directo de la tabla de locale (evita problemas con la clave SectionTextures)
+local function getSectionTexturesLabel()
     local loc = (GetLocale and GetLocale()) or "enUS"
+    if loc == "es" and EPF_CustomSkins_Locales and EPF_CustomSkins_Locales.esES then loc = "esES" end
     local locales = EPF_CustomSkins_Locales
-    if not locales then return EPF_CustomSkins_L or {} end
-    local fallback = locales.enUS or {}
-    local t = locales[loc] or {}
-    return setmetatable(t, { __index = function(_, k) return fallback[k] end })
+    if not locales then return "Available textures" end
+    local t = locales[loc]
+    if t and t.SectionTextures then return t.SectionTextures end
+    t = locales.enUS
+    if t and t.SectionTextures then return t.SectionTextures end
+    return "Available textures"
 end
-local L = getL()
 
 local panel = CreateFrame("Frame", "EPFCustomSkinsOptionsPanel", UIParent)
 panel.name = ADDON_NAME
@@ -33,15 +38,41 @@ end
 
 local PAD = 16
 local GROUP_SPACING = 20
+local SECTION_PADDING = 10
 
--- ----- Group 1: General options (Display, Class, Faction) in one row -----
-local group1 = CreateFrame("Frame", nil, panel)
+local function setSectionBackdrop(frame)
+    if not frame.SetBackdrop and BackdropTemplateMixin then
+        Mixin(frame, BackdropTemplateMixin)
+    end
+    if frame.SetBackdrop then
+        -- Insets a 0 para que el fondo llegue al borde (sin margen raro entre borde y fondo)
+        frame:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = { left = 0, right = 0, top = 0, bottom = 0 }
+        })
+        frame:SetBackdropColor(0.1, 0.1, 0.1, 0.6)
+        if frame.SetBackdropBorderColor then
+            frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        end
+    end
+end
+
+-- BackdropTemplate para Retail (9.0+); setSectionBackdrop aplica Mixin si hace falta
+local BackdropTemplate = "BackdropTemplate"
+
+-- ----- Group 1: Opciones generales + nivel de salida (todo en un solo marco) -----
+local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group1:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
-group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD - 100, 0) -- leave space for Reset
-group1:SetHeight(44)
+group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
+group1:SetHeight(44 + 50 + SECTION_PADDING * 2 + 18)
+setSectionBackdrop(group1)
 
 local sectionMain = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-sectionMain:SetPoint("TOPLEFT", 0, 0)
+sectionMain:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
 sectionMain:SetText(L.SectionMainAddon or "Elite Player Frame (Enhanced) options")
 
 local CHECK_SPACING = 180
@@ -66,18 +97,21 @@ checkFactionLabel:SetPoint("LEFT", checkFaction, "RIGHT", 4, 0)
 checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
 checkFaction.tooltipText = L.FactionSelectionDesc or "In Auto mode, choose frame by faction."
 
--- ----- Group 2: Message output level -----
-local group2 = CreateFrame("Frame", nil, panel)
-group2:SetPoint("TOPLEFT", group1, "BOTTOMLEFT", 0, -GROUP_SPACING)
-group2:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
-group2:SetHeight(50)
+-- Nivel de salida (dentro del mismo marco): texto ampliado con descripción
+local outputLabel = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+outputLabel:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -14)
+outputLabel:SetText(L.OutputLevel or "Message output level")
+outputLabel:SetJustifyH("LEFT")
 
-local outputLabel = group2:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-outputLabel:SetPoint("TOPLEFT", 0, 0)
-outputLabel:SetText(L.OutputLevelMessages or "Message output level")
+local outputDesc = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+outputDesc:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", 0, -2)
+outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug).")
+outputDesc:SetTextColor(0.7, 0.7, 0.7)
+outputDesc:SetJustifyH("LEFT")
 
-local outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group2, "UIDropDownMenuTemplate")
-outputDropdown:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", -16, -4)
+-- Desplegable alineado con el texto (misma columna izquierda)
+local outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group1, "UIDropDownMenuTemplate")
+outputDropdown:SetPoint("TOPLEFT", outputDesc, "BOTTOMLEFT", 0, -4)
 if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
 outputDropdown.initialize = function()
     local addon = getBaseAddon()
@@ -118,18 +152,33 @@ btnReset:SetScript("OnClick", function()
     addon.settings.factionSelection = def.factionSelection
     addon.settings.outputLevel = def.outputLevel
     if addon.Update then addon:Update(true) end
-    refreshMainAddonChecks()
-    if addon.OUTPUT_LEVELS and UIDropDownMenu_SetSelectedValue then
-        UIDropDownMenu_SetSelectedValue(outputDropdown, addon.settings.outputLevel)
+    -- Marcar las casillas directamente con los valores por defecto (cambio opuesto primero para forzar redibujado)
+    local function setCheck(btn, value)
+        btn:SetChecked(value and 0 or 1)
+        btn:SetChecked(value and 1 or 0)
+    end
+    setCheck(checkDisplay, def.display)
+    setCheck(checkClass, def.classSelection)
+    setCheck(checkFaction, def.factionSelection)
+    if addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+        UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
+        UIDropDownMenu_SetSelectedValue(outputDropdown, def.outputLevel)
     end
 end)
+
+local function updateCheckButtonVisual(btn, checked)
+    btn:SetChecked(checked and 1 or 0)
+    if InterfaceOptionsPanel_CheckButton_Update then
+        InterfaceOptionsPanel_CheckButton_Update(btn)
+    end
+end
 
 local function refreshMainAddonChecks()
     local addon = getBaseAddon()
     if addon and addon.settings then
-        checkDisplay:SetChecked(addon.settings.display)
-        checkClass:SetChecked(addon.settings.classSelection)
-        checkFaction:SetChecked(addon.settings.factionSelection)
+        updateCheckButtonVisual(checkDisplay, addon.settings.display)
+        updateCheckButtonVisual(checkClass, addon.settings.classSelection)
+        updateCheckButtonVisual(checkFaction, addon.settings.factionSelection)
         if addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
             UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
             UIDropDownMenu_SetSelectedValue(outputDropdown, addon.settings.outputLevel)
@@ -159,20 +208,21 @@ checkFaction:SetScript("OnClick", function(self)
     end
 end)
 
--- ----- Group 3: Available textures (2 columns) -----
-local group3 = CreateFrame("Frame", nil, panel)
-group3:SetPoint("TOPLEFT", group2, "BOTTOMLEFT", 0, -GROUP_SPACING)
+-- ----- Group 2: Available textures (2 columns) -----
+local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
+group3:SetPoint("TOPLEFT", group1, "BOTTOMLEFT", 0, -GROUP_SPACING)
 group3:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
+setSectionBackdrop(group3)
 
 local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-listLabel:SetPoint("TOPLEFT", 0, 0)
-listLabel:SetText(L.AvailableTextures or "Available textures")
+listLabel:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
+listLabel:SetText(getSectionTexturesLabel())
 
 -- Margen derecho para que la barra de desplazamiento no salga del panel
 local SCROLL_BAR_INSET = 24
 local scrollFrame = CreateFrame("ScrollFrame", "EPFCustomSkinsFrameListScroll", group3, "UIPanelScrollFrameTemplate")
 scrollFrame:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", 0, -6)
-scrollFrame:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -SCROLL_BAR_INSET, 0)
+scrollFrame:SetPoint("BOTTOMRIGHT", group3, "BOTTOMRIGHT", -SCROLL_BAR_INSET - SECTION_PADDING, SECTION_PADDING)
 
 local scrollChild = CreateFrame("Frame", nil, scrollFrame)
 scrollChild:SetSize(400, 1)
@@ -217,7 +267,7 @@ end
 
 local function buildFrameModeList()
     local addon = getBaseAddon()
-    local L = getL()
+    local L = EPF_CustomSkins_L or {}
 
     if not addon or not addon.FRAME_MODES then
         scrollChild:SetHeight(ROW_HEIGHT)
@@ -294,17 +344,18 @@ local function buildFrameModeList()
 end
 
 panel:SetScript("OnShow", function()
-    local L = getL()
+    local L = EPF_CustomSkins_L or {}
     panel.name = ADDON_NAME
     title:SetText(ADDON_NAME .. " " .. "|cff808080(" .. (L.OptionsSubtitle or OPTIONS_SUBTITLE) .. ")|r")
     sectionMain:SetText(L.SectionMainAddon or "Elite Player Frame (Enhanced) options")
     checkDisplayLabel:SetText(L.Display or "Display")
     checkClassLabel:SetText(L.ClassSelection or "Class selection")
     checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
-    outputLabel:SetText(L.OutputLevelMessages or "Message output level")
+    outputLabel:SetText(L.OutputLevel or "Message output level")
+    outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug).")
     btnReset:SetText(L.Reset or "Reset")
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
-    listLabel:SetText(L.AvailableTextures or "Available textures")
+    listLabel:SetText(getSectionTexturesLabel())
     refreshMainAddonChecks()
     buildFrameModeList()
 end)

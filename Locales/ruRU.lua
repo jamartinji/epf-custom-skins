@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.ruRU = {
     ClassSelectionDesc = "В режиме Авто выбирать рамку по классу/спеку.",
     FactionSelection = "Выбор по фракции",
     FactionSelectionDesc = "В режиме Авто выбирать рамку по фракции.",
-    OutputLevelMessages = "Уровень вывода сообщений",
+    OutputLevel = "Уровень вывода сообщений",
     OutputLevelDesc = "Подробность сообщений (0 = критично, выше = больше отладки).",
-    AvailableTextures = "Доступные текстуры",
+    SectionTextures = "Доступные текстуры",
     Reset = "Сбросить",
     ResetDesc = "Сбросить настройки Elite Player Frame (Enhanced) по умолчанию.",
 }

@@ -19,9 +19,9 @@ EPF_CustomSkins_Locales.deDE = {
     ClassSelectionDesc = "Im Auto-Modus Rahmen nach Klasse/Spezialisierung wählen.",
     FactionSelection = "Fraktionsauswahl",
     FactionSelectionDesc = "Im Auto-Modus Rahmen nach Fraktion wählen.",
-    OutputLevelMessages = "Nachrichtenausgabestufe",
+    OutputLevel = "Nachrichtenausgabestufe",
     OutputLevelDesc = "Nachrichtenmenge (0 = kritisch, höher = mehr Debug).",
-    AvailableTextures = "Verfügbare Texturen",
+    SectionTextures = "Verfügbare Texturen",
     Reset = "Zurücksetzen",
     ResetDesc = "Elite Player Frame (Enhanced) Einstellungen auf Standard zurücksetzen.",
 }
