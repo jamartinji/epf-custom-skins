@@ -221,11 +221,9 @@ scrollChild:SetSize(400, 1)
 scrollFrame:SetScrollChild(scrollChild)
 
 local ROW_HEIGHT = 24
-local BUTTON_WIDTH_APPLY = 52
-local COLUMN_LABEL_WIDTH = 175
-local COLUMN_GAP = 16
-local CELL_WIDTH = COLUMN_LABEL_WIDTH + BUTTON_WIDTH_APPLY + 12
-local MIN_LIST_WIDTH = CELL_WIDTH * 2 + COLUMN_GAP
+local BUTTON_WIDTH_APPLY = 22
+local COLUMN_GAP = 28
+local MIN_CELL_WIDTH = 180
 
 local function applyFrameMode(index)
     local addon = getBaseAddon()
@@ -262,7 +260,7 @@ local function buildFrameModeList()
 
     if not addon or not addon.FRAME_MODES then
         scrollChild:SetHeight(ROW_HEIGHT)
-        scrollChild:SetWidth(MIN_LIST_WIDTH)
+        scrollChild:SetWidth(MIN_CELL_WIDTH * 2 + COLUMN_GAP)
         local cell = scrollChild["cell0"]
         if not cell then
             cell = CreateFrame("Frame", nil, scrollChild)
@@ -293,18 +291,20 @@ local function buildFrameModeList()
 
     local numRows = math.ceil((maxIndex + 1) / 2)
     local listHeight = numRows * ROW_HEIGHT
+    local listWidth = math.max(MIN_CELL_WIDTH * 2 + COLUMN_GAP, scrollFrame:GetWidth() - 20)
+    local cellWidth = (listWidth - COLUMN_GAP) / 2
     scrollChild:SetHeight(listHeight)
-    scrollChild:SetWidth(math.max(MIN_LIST_WIDTH, scrollFrame:GetWidth() - 20))
+    scrollChild:SetWidth(listWidth)
 
     for i = 0, maxIndex do
         local col = i % 2
         local row = math.floor(i / 2)
-        local cellX = col * (CELL_WIDTH + COLUMN_GAP)
+        local cellX = col * (cellWidth + COLUMN_GAP)
         local cell = scrollChild["cell" .. i]
         if not cell then
             cell = CreateFrame("Frame", nil, scrollChild)
             cell:SetHeight(ROW_HEIGHT)
-            cell:SetSize(CELL_WIDTH, ROW_HEIGHT)
+            cell:SetSize(cellWidth, ROW_HEIGHT)
 
             cell.label = cell:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
             cell.label:SetPoint("LEFT", cell, "LEFT", 0, 0)
@@ -315,16 +315,26 @@ local function buildFrameModeList()
             cell.btn = CreateFrame("Button", nil, cell, "UIPanelButtonTemplate")
             cell.btn:SetSize(BUTTON_WIDTH_APPLY, 20)
             cell.btn:SetPoint("RIGHT", cell, "RIGHT", 0, 0)
+            cell.btn:SetText("»")
+            cell.btn:SetScript("OnEnter", function(btn)
+                if btn.tooltipText then
+                    GameTooltip:SetOwner(btn, "ANCHOR_RIGHT")
+                    GameTooltip:SetText(btn.tooltipText, 1, 1, 1)
+                    GameTooltip:Show()
+                end
+            end)
+            cell.btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
             scrollChild["cell" .. i] = cell
         end
         cell:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", cellX, -(row * ROW_HEIGHT))
-        cell:SetSize(CELL_WIDTH, ROW_HEIGHT)
+        cell:SetSize(cellWidth, ROW_HEIGHT)
         cell.btn:Show()
 
         local nameStr = getModeDisplayName(modes, i, L)
         cell.label:SetText(nameStr)
         cell.label:SetTextColor(1, 1, 1)
-        cell.btn:SetText(L.Apply or "Apply")
+        cell.btn:SetText("»")
+        cell.btn.tooltipText = L.Apply or "Apply"
         cell.btn:SetScript("OnClick", function() applyFrameMode(i) end)
         cell:Show()
     end
