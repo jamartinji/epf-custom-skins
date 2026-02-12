@@ -21,15 +21,19 @@ local function onDelayTick(self, elapsed)
     self.wait = nil
     pendingUpdate = false
     runUpdate()
-    -- Second pass in case GetSpecialization() was not updated yet
-    self.wait = 0
-    self:SetScript("OnUpdate", function(s, e)
-        s.wait = s.wait + e
-        if s.wait < DELAY then return end
-        s:SetScript("OnUpdate", nil)
-        s.wait = nil
-        runUpdate()
-    end)
+    -- Second pass: GetSpecialization() can lag one frame; use timer when available
+    if C_Timer and C_Timer.After then
+        C_Timer.After(DELAY, runUpdate)
+    else
+        self.wait = 0
+        self:SetScript("OnUpdate", function(s, e)
+            s.wait = (s.wait or 0) + e
+            if s.wait < DELAY then return end
+            s:SetScript("OnUpdate", nil)
+            s.wait = nil
+            runUpdate()
+        end)
+    end
 end
 
 eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")

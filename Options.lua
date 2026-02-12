@@ -1,6 +1,7 @@
 -- [ OPTIONS ] Configuration panel for EPF Custom Skins.
 -- Access: Esc → System → AddOns → EPF Custom Skins
 
+-- Reserved for future addon-specific saved options (see TOC SavedVariables).
 EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
 
 local ADDON_NAME = "EPF Custom Skins"
@@ -256,8 +257,19 @@ if hasScrollBoxAPI then
     searchEditBox:SetAutoFocus(false)
     searchEditBox:SetMaxLetters(80)
     local currentSearchFilter = ""
-    searchEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() self:SetText("") end)
-    searchEditBox:SetScript("OnEnter", function(self) if self:GetText() == "" then GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") GameTooltip:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...") GameTooltip:Show() end end)
+    searchEditBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        self:SetText("")
+        currentSearchFilter = ""
+        if updateFrameModeList then updateFrameModeList() end
+    end)
+    searchEditBox:SetScript("OnEnter", function(self)
+        if self:GetText() == "" then
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+            GameTooltip:SetText(EPF_CustomSkins_L and (EPF_CustomSkins_L.SearchFilter or "Filter...") or "Filter...")
+            GameTooltip:Show()
+        end
+    end)
     searchEditBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
     local searchPlaceholder = searchEditBox:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     searchPlaceholder:SetPoint("LEFT", searchEditBox, "LEFT", 0, 0)

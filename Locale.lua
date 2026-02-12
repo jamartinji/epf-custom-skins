@@ -6,9 +6,11 @@ local loc = (GetLocale and GetLocale()) or "enUS"
 -- Some clients return "es" instead of "esES"; use esES when available
 if loc == "es" and EPF_CustomSkins_Locales.esES then loc = "esES" end
 local fallback = EPF_CustomSkins_Locales.enUS or {}
-fallback.OutputLevel = fallback.OutputLevel or "Message output level"
-fallback.SectionTextures = fallback.SectionTextures or "Available textures"
-fallback.SearchFilter = fallback.SearchFilter or "Filter..."
+local defaultStrings = {
+    OutputLevel = "Message output level",
+    SectionTextures = "Available textures",
+    SearchFilter = "Filter...",
+}
 EPF_CustomSkins_L = setmetatable(EPF_CustomSkins_Locales[loc] or {}, {
-    __index = function(_, k) return fallback[k] or k end
+    __index = function(_, k) return fallback[k] or defaultStrings[k] or k end
 })
