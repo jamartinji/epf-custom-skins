@@ -8,7 +8,7 @@ local D = EPF_CustomSkins_Definitions
 D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
 
 -- Optional fields per textureConfig entry:
---   class   = required, e.g. "WARLOCK", "DRUID"
+--   class   = optional; e.g. "WARLOCK", "DRUID". Omit for race-only entries (use displayName).
 --   spec    = optional, specialization ID (e.g. 265 = Affliction)
 --   race    = optional, race file string from API (see examples below)
 --   faction = optional, "Alliance" or "Horde" (respects /epf faction when set)
@@ -118,7 +118,7 @@ D.textureConfig = {
     -- { class = "SHAMAN", spec = 264, name = "shaman_resto", ext = "png" },       -- Restoration
 
     -- [ WARLOCK ]
-    -- Affliction: overrides only pointOffset from default layout (adjust values as needed).
+    -- Affliction: overrides only pointOffset from default layout.
     { class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png",
         layout = {
             layers = {
@@ -135,7 +135,7 @@ D.textureConfig = {
     -- { class = "WARRIOR", spec = 72, name = "warrior_fury", ext = "png" },       -- Fury
     -- { class = "WARRIOR", spec = 73, name = "warrior_prot", ext = "png" },       -- Protection
 
-    -- [ GENERIC CLASS TEXTURES ] Used when no specialization above matches. Uncomment to enable.
+    -- [ GENERIC CLASS TEXTURES ] Used when no specialization above matches.
     -- { class = "DEATHKNIGHT", name = "deathknight", ext = "png" },
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
     -- { class = "DRUID",       name = "druid",       ext = "png" },
@@ -149,6 +149,17 @@ D.textureConfig = {
     { class = "SHAMAN", name = "shaman", ext = "png" },
     -- { class = "WARLOCK",     name = "warlock",     ext = "png" },
     -- { class = "WARRIOR",     name = "warrior",     ext = "png" },
+
+    -- [ GENERIC RACE TEXTURES ] Used when no specialization above matches.
+    -- Race-only (no class): any Undead character. Use displayName; class is omitted.
+    { race = "Scourge", name = "undead", ext = "png", displayName = "Undead",
+        layout = {
+            layers = {
+                { pointOffset = { 42, 16 } },
+                { pointOffset = { 172, 16 } },
+            },
+        },
+    },
 
     -- [ ALTERNATIVE TEXTURES ]
     { name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },

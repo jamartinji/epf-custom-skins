@@ -67,8 +67,8 @@ local function AddCustomSkins()
                 EPF_CustomSkins_BaseAddon = a
             end
 
-            local className = a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class
-            local classColor = a.safeIndex(a.CLASSES, data.class, "color") or CreateColor(1, 1, 1)
+            local className = data.class and (a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class) or (data.race or "?")
+            local classColor = (data.class and a.safeIndex(a.CLASSES, data.class, "color")) or CreateColor(1, 1, 1)
 
             local fullPath = folderPath .. data.name .. "." .. data.ext
             local fullPath2x = folderPath .. data.name .. "-2x." .. data.ext
@@ -119,8 +119,10 @@ local function AddCustomSkins()
                 a.SetLayeredTextures(unpack(textureLayers)),
                 a.SetPointOffset(restIconOffset[1], restIconOffset[2]),
                 function(addon)
-                    if not addon.settings.classSelection then return false end
-                    if addon.info.character.class ~= data.class then return false end
+                    if data.class then
+                        if not addon.settings.classSelection then return false end
+                        if addon.info.character.class ~= data.class then return false end
+                    end
                     if data.faction then
                         if not addon.settings.factionSelection then return false end
                         if addon.info.character.faction ~= data.faction then return false end
