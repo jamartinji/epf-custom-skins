@@ -2,6 +2,12 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.0.6
+------
+- Layouts now only need to declare fields to override (e.g. pointOffset) instead of the full layout.
+- Textures: Revamped warlock affliction and destruction textures, and added base shaman texture.
+- Texts: Removed (Custom) suffix from default class textures.
+
 v1.0.5
 ------
 - New configuration panel: integrated Elite Player Frame (Enhanced) options (Display, Class selection, Faction selection), Output level dropdown, and Reset button.
