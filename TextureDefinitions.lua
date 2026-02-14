@@ -122,8 +122,8 @@ D.textureConfig = {
     { class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png",
         layout = {
             layers = {
-                { pointOffset = { 42, 0 } },
-                { pointOffset = { 172, 0 } },
+                { pointOffset = { 42, -10 } },
+                { pointOffset = { 172, -10 } },
             },
         },
     },
