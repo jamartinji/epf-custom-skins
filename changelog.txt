@@ -2,6 +2,11 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.0.7
+------
+- Textures: Fix affliction texture offset and added scourge frame
+
+
 v1.0.6
 ------
 - Layouts now only need to declare fields to override (e.g. pointOffset) instead of the full layout.
