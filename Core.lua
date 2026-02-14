@@ -84,16 +84,21 @@ local function AddCustomSkins()
                 end
                 if data.race then menuName = menuName .. " - " .. data.race end
                 if data.faction then menuName = menuName .. " - " .. data.faction end
-                if not data.spec and not data.race and not data.faction then
-                    menuName = menuName .. " (Custom)"
-                end
             end
 
             local layout = data.layout or defaultFrameLayout
             local restIconOffset = layout.restIconOffset or defaultFrameLayout.restIconOffset
+            local defaultLayers = defaultFrameLayout.layers
+            local customLayers = layout.layers or {}
 
             local textureLayers = {}
-            for i, layer in ipairs(layout.layers or defaultFrameLayout.layers) do
+            for i = 1, #defaultLayers do
+                -- Merge: default layer + overlay only fields present in custom layer for this index
+                local def = defaultLayers[i]
+                local custom = customLayers[i] or {}
+                local layer = {}
+                for k, v in pairs(def) do layer[k] = v end
+                for k, v in pairs(custom) do layer[k] = v end
                 local tex = {
                     ["file"] = fullPath,
                     ["file-2x"] = fullPath2x,

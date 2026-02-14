@@ -15,8 +15,8 @@ D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets
 --   name        = texture file name (without path/extension)
 --   ext         = file extension, e.g. "png"
 --   displayName = optional; menu label (e.g. for manual-only textures)
---   layout      = optional; table with layers (width, height, texCoords, pointOffset) and restIconOffset.
---                 If not set, defaultFrameLayout is used (see below).
+--   layout      = optional; table with layers and/or restIconOffset. If set, each layer is merged with
+--                 defaultFrameLayout: only declare fields you want to override (e.g. pointOffset).
 --
 -- Race examples (exact string): "Human", "Dwarf", "NightElf", "Gnome", "Draenei", "Worgen",
 --   "Orc", "Scourge", "Tauren", "Troll", "BloodElf", "Goblin", "Pandaren",
@@ -118,7 +118,15 @@ D.textureConfig = {
     -- { class = "SHAMAN", spec = 264, name = "shaman_resto", ext = "png" },       -- Restoration
 
     -- [ WARLOCK ]
-    { class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png" },-- Affliction
+    -- Affliction: overrides only pointOffset from default layout (adjust values as needed).
+    { class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 42, 0 } },
+                { pointOffset = { 172, 0 } },
+            },
+        },
+    },
     { class = "WARLOCK", spec = 266, name = "warlock_demonology", ext = "png" },-- Demonology
     { class = "WARLOCK", spec = 267, name = "warlock_destro", ext = "png" },    -- Destruction
 
@@ -132,18 +140,19 @@ D.textureConfig = {
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
     -- { class = "DRUID",       name = "druid",       ext = "png" },
     -- { class = "EVOKER",      name = "evoker",      ext = "png" },
-    { class = "HUNTER",      name = "hunter",      ext = "png" },
+    { class = "HUNTER", name = "hunter", ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
     -- { class = "MONK",        name = "monk",        ext = "png" },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
     -- { class = "ROGUE",       name = "rogue",       ext = "png" },
-    -- { class = "SHAMAN",      name = "shaman",      ext = "png" },
+    { class = "SHAMAN", name = "shaman", ext = "png" },
     -- { class = "WARLOCK",     name = "warlock",     ext = "png" },
     -- { class = "WARRIOR",     name = "warrior",     ext = "png" },
 
-    -- [ ACTIVE TEXTURES (TESTING) ]
-    { class = "WARLOCK", name = "warlock", ext = "png", displayName = "Warlock" },
+    -- [ ALTERNATIVE TEXTURES ]
+    { name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
+    { name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected. Choose via /epf frame N.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },
