@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.frFR = {
     ClassSelectionDesc = "En mode Auto, choisir le cadre par classe/spécialisation.",
     FactionSelection = "Sélection par faction",
     FactionSelectionDesc = "En mode Auto, choisir le cadre par faction.",
+    HideInInstance = "Masquer en instance",
+    HideInInstanceDesc = "Utiliser le cadre par défaut en donjons, raids, champs de bataille et arènes.",
     OutputLevel = "Niveau de sortie des messages",
     OutputLevelDesc = "Verbositée des messages (0 = critique, plus = plus de debug).",
     SectionTextures = "Textures disponibles",

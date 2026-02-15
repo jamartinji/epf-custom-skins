@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.zhCN = {
     ClassSelectionDesc = "自动模式下按职业/专精选择框架。",
     FactionSelection = "按阵营选择",
     FactionSelectionDesc = "自动模式下按阵营选择框架。",
+    HideInInstance = "副本中隐藏",
+    HideInInstanceDesc = "在地下城、团队副本、战场和竞技场中使用默认框架。",
     OutputLevel = "消息输出级别",
     OutputLevelDesc = "消息详细程度（0 = 关键，越高 = 越多调试）。",
     SectionTextures = "可用材质",

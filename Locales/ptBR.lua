@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.ptBR = {
     ClassSelectionDesc = "No modo Auto, escolher quadro por classe/especialização.",
     FactionSelection = "Seleção por facção",
     FactionSelectionDesc = "No modo Auto, escolher quadro por facção.",
+    HideInInstance = "Ocultar em instância",
+    HideInInstanceDesc = "Usar quadro padrão em masmorras, raides, campos de batalha e arenas.",
     OutputLevel = "Nível de saída de mensagens",
     OutputLevelDesc = "Detalhe das mensagens (0 = crítico, maior = mais debug).",
     SectionTextures = "Texturas disponíveis",

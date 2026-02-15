@@ -4,9 +4,10 @@ EPF Custom Skins - Changelog
 
 v1.0.8
 ------
+- Options: "Hide in instance". Hides the frame while instanced.
 - Textures:
   - Fixed default textures 'class'
-  - Added pandaren texture
+  - Added pandaren and monk textures
 
 v1.0.7
 ------

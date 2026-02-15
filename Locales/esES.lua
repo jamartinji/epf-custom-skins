@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.esES = {
     ClassSelectionDesc = "En modo Auto, elegir marco por clase/especialización.",
     FactionSelection = "Selección por facción",
     FactionSelectionDesc = "En modo Auto, elegir marco por facción.",
+    HideInInstance = "Ocultar en instancia",
+    HideInInstanceDesc = "Usar marco por defecto en mazmorras, bandas, campos de batalla y arenas.",
     OutputLevel = "Nivel de salida de mensajes",
     OutputLevelDesc = "Cantidad de mensajes (0 = crítico, mayor = más depuración).",
     SectionTextures = "Texturas disponibles",

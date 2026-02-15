@@ -142,7 +142,13 @@ D.textureConfig = {
     -- { class = "EVOKER",      name = "evoker",      ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
-    { class = "MONK", name = "monk", ext = "png" },
+    { class = "MONK", name = "monk", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 42, 10 } },
+                { pointOffset = { 172, 10 } },
+            },
+        }, },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
     -- { class = "ROGUE",       name = "rogue",       ext = "png" },
@@ -160,7 +166,7 @@ D.textureConfig = {
             },
         },
     },
-    { race = "Pandaren", name = "pandaren512-2x", ext = "png", displayName = "Pandaren" },
+    { race = "Pandaren", name = "pandaren", ext = "png", displayName = "Pandaren" },
 
     -- [ ALTERNATIVE TEXTURES ]
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },

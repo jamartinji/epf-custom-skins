@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.itIT = {
     ClassSelectionDesc = "In modalità Auto, scegli la cornice per classe/spec.",
     FactionSelection = "Selezione per fazione",
     FactionSelectionDesc = "In modalità Auto, scegli la cornice per fazione.",
+    HideInInstance = "Nascondi in istanza",
+    HideInInstanceDesc = "Usa la cornice predefinita in dungeon, incursioni, campi di battaglia e arene.",
     OutputLevel = "Livello messaggi in uscita",
     OutputLevelDesc = "Verbosità messaggi (0 = critico, più alto = più debug).",
     SectionTextures = "Texture disponibili",

@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.deDE = {
     ClassSelectionDesc = "Im Auto-Modus Rahmen nach Klasse/Spezialisierung wählen.",
     FactionSelection = "Fraktionsauswahl",
     FactionSelectionDesc = "Im Auto-Modus Rahmen nach Fraktion wählen.",
+    HideInInstance = "In Instanz ausblenden",
+    HideInInstanceDesc = "Standardrahmen in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen verwenden.",
     OutputLevel = "Nachrichtenausgabestufe",
     OutputLevelDesc = "Nachrichtenmenge (0 = kritisch, höher = mehr Debug).",
     SectionTextures = "Verfügbare Texturen",
