@@ -2,10 +2,15 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.0.8
+------
+- Textures:
+  - Fixed default textures 'class'
+  - Added pandaren texture
+
 v1.0.7
 ------
 - Textures: Fix affliction texture offset and added scourge frame
-
 
 v1.0.6
 ------

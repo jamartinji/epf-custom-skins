@@ -142,7 +142,7 @@ D.textureConfig = {
     -- { class = "EVOKER",      name = "evoker",      ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
-    -- { class = "MONK",        name = "monk",        ext = "png" },
+    { class = "MONK", name = "monk", ext = "png" },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
     -- { class = "ROGUE",       name = "rogue",       ext = "png" },
@@ -160,10 +160,11 @@ D.textureConfig = {
             },
         },
     },
+    { race = "Pandaren", name = "pandaren512-2x", ext = "png", displayName = "Pandaren" },
 
     -- [ ALTERNATIVE TEXTURES ]
-    { name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
-    { name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
+    { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
+    { class = "WARLOCK", name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected. Choose via /epf frame N.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },
