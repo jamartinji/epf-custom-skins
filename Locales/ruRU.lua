@@ -19,6 +19,8 @@ EPF_CustomSkins_Locales.ruRU = {
     ClassSelectionDesc = "В режиме Авто выбирать рамку по классу/спеку.",
     FactionSelection = "Выбор по фракции",
     FactionSelectionDesc = "В режиме Авто выбирать рамку по фракции.",
+    HideInInstance = "Скрывать в подземелье",
+    HideInInstanceDesc = "Использовать рамку по умолчанию в подземельях, рейдах, полях боя и аренах.",
     OutputLevel = "Уровень вывода сообщений",
     OutputLevelDesc = "Подробность сообщений (0 = критично, выше = больше отладки).",
     SectionTextures = "Доступные текстуры",

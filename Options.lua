@@ -77,7 +77,7 @@ local BackdropTemplate = "BackdropTemplate"
 local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group1:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
 group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
-group1:SetHeight(44 + 50 + SECTION_PADDING * 2 + 18)
+group1:SetHeight(44 + 50 + 32 + SECTION_PADDING * 2 + 18 + 36)
 setSectionBackdrop(group1)
 
 local sectionMain = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -106,8 +106,18 @@ checkFactionLabel:SetPoint("LEFT", checkFaction, "RIGHT", 4, 0)
 checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
 checkFaction.tooltipText = L.FactionSelectionDesc or "In Auto mode, choose frame by faction."
 
+-- [ EPF Custom Skins option: hide in instance ]
+local opts = EPF_CustomSkins_Options
+if opts.hideInInstance == nil then opts.hideInInstance = false end
+local checkHideInInstance = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
+checkHideInInstance:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -12)
+local checkHideInInstanceLabel = checkHideInInstance:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+checkHideInInstanceLabel:SetPoint("LEFT", checkHideInInstance, "RIGHT", 4, 0)
+checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
+checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
+
 local outputLabel = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-outputLabel:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -14)
+outputLabel:SetPoint("TOPLEFT", checkHideInInstance, "BOTTOMLEFT", 0, -14)
 outputLabel:SetText(L.OutputLevel or "Message output level")
 outputLabel:SetJustifyH("LEFT")
 
@@ -159,6 +169,7 @@ local function refreshMainAddonChecks()
         setCheckFromSetting(checkClass, settings.classSelection)
         setCheckFromSetting(checkFaction, settings.factionSelection)
     end
+    setCheckFromSetting(checkHideInInstance, EPF_CustomSkins_Options.hideInInstance)
     local addon = getBaseAddon()
     if addon and addon.settings and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
@@ -174,6 +185,7 @@ local function updateUIFromDefaults(def)
     setCheckFromSetting(checkDisplay, def.display)
     setCheckFromSetting(checkClass, def.classSelection)
     setCheckFromSetting(checkFaction, def.factionSelection)
+    setCheckFromSetting(checkHideInInstance, def.hideInInstance == nil and false or def.hideInInstance)
     local addon = getBaseAddon()
     if addon and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
@@ -198,12 +210,14 @@ btnReset:SetScript("OnClick", function()
     addon.settings.classSelection = def.classSelection
     addon.settings.factionSelection = def.factionSelection
     addon.settings.outputLevel = def.outputLevel
+    EPF_CustomSkins_Options.hideInInstance = false
     if addon.Update then addon:Update(true) end
     local defCopy = {
         display = def.display,
         classSelection = def.classSelection,
         factionSelection = def.factionSelection,
         outputLevel = def.outputLevel,
+        hideInInstance = false,
     }
     if C_Timer and C_Timer.After then
         C_Timer.After(0, function()
@@ -234,6 +248,11 @@ checkFaction:SetScript("OnClick", function(self)
         addon.settings.factionSelection = self:GetChecked()
         if addon.Update then addon:Update(true) end
     end
+end)
+checkHideInInstance:SetScript("OnClick", function(self)
+    EPF_CustomSkins_Options.hideInInstance = self:GetChecked()
+    local addon = getBaseAddon()
+    if addon and addon.Update then addon:Update(true) end
 end)
 
 local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
@@ -467,6 +486,8 @@ panel:SetScript("OnShow", function()
     checkDisplayLabel:SetText(L.Display or "Display")
     checkClassLabel:SetText(L.ClassSelection or "Class selection")
     checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
+    checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
+    checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
     outputLabel:SetText(L.OutputLevel or "Message output level")
     outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug).")
     btnReset:SetText(L.Reset or "Reset")

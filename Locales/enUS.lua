@@ -20,6 +20,8 @@ EPF_CustomSkins_Locales.enUS = {
     ClassSelectionDesc = "In Auto mode, choose frame by your class/spec.",
     FactionSelection = "Faction selection",
     FactionSelectionDesc = "In Auto mode, choose frame by faction.",
+    HideInInstance = "Hide in instance",
+    HideInInstanceDesc = "Use default frame in instances, raids, battlegrounds and arenas.",
     OutputLevel = "Message output level",
     OutputLevelDesc = "Message verbosity (0 = critical, higher = more debug).",
     SectionTextures = "Available textures",

@@ -1,6 +1,12 @@
 -- [ ADDON LOGIC ] Spec-change handling and registration with ElitePlayerFrame_Enhanced.
 -- Texture data is in TextureDefinitions.lua (EPF_CustomSkins_Definitions).
 
+-- Own options (SavedVariables: EPF_CustomSkins_Options in TOC)
+EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
+if EPF_CustomSkins_Options.hideInInstance == nil then
+    EPF_CustomSkins_Options.hideInInstance = false
+end
+
 local baseAddon = nil
 local DELAY = 0.25
 local pendingUpdate = false
@@ -37,7 +43,14 @@ local function onDelayTick(self, elapsed)
 end
 
 eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 eventFrame:SetScript("OnEvent", function(_, event)
+    if event == "ZONE_CHANGED_NEW_AREA" then
+        if baseAddon and baseAddon.Update and EPF_CustomSkins_Options.hideInInstance then
+            pcall(function() baseAddon:Update(true) end)
+        end
+        return
+    end
     if event ~= "PLAYER_SPECIALIZATION_CHANGED" or pendingUpdate then return end
     pendingUpdate = true
     delayFrame.wait = 0
@@ -143,6 +156,17 @@ local function AddCustomSkins()
                 end
             }
         end)
+    end
+
+    -- [ Hide in instance ] Hook base addon GetTexture so in instances we use default frame when option is on.
+    if baseAddon and baseAddon.GetTexture and baseAddon.TEXTURES then
+        local origGetTexture = baseAddon.GetTexture
+        function baseAddon.GetTexture()
+            if EPF_CustomSkins_Options.hideInInstance and IsInInstance() then
+                return baseAddon.TEXTURES[1]
+            end
+            return origGetTexture()
+        end
     end
 
     print("|cff00ff00EPF Custom Skins:|r Textures loaded (with specialization support).")
