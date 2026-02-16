@@ -73,7 +73,7 @@ end
 -- BackdropTemplate required on Retail (9.0+); setSectionBackdrop applies Mixin if missing
 local BackdropTemplate = "BackdropTemplate"
 
--- Opciones (columna derecha 30%); posición fijada en OnShow a la derecha de group3
+-- Options column (right, 40%); position set in OnShow to the right of group3
 local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
 group1:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
@@ -249,7 +249,7 @@ checkHideInInstance:SetScript("OnClick", function(self)
     if addon and addon.Update then addon:Update(true) end
 end)
 
--- Texturas (columna izquierda 70%); posición y ancho en OnShow
+-- Textures column (left, 60%); position and width set in OnShow
 local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
 group3:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
 group3:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, 24)
@@ -476,7 +476,7 @@ end
 panel:SetScript("OnShow", function()
     local L = EPF_CustomSkins_L or {}
     panel.name = ADDON_NAME
-    -- Layout 60% / 40%: izquierda texturas, derecha opciones
+    -- Layout 60% / 40%: left textures, right options
     local panelW = panel:GetWidth()
     if panelW and panelW > 0 then
         group3:SetWidth(panelW * 0.6)
