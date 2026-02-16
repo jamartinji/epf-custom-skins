@@ -6,7 +6,6 @@ EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
 
 local ADDON_NAME = "EPF Custom Skins"
 local ADDON_LOADED_NAME = "ElitePlayerFrame_Enhanced_CustomSkins"
-local OPTIONS_SUBTITLE = "options"
 
 local L = EPF_CustomSkins_L or {}
 
@@ -29,7 +28,7 @@ panel:Hide()
 
 local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 16, -16)
-title:SetText(ADDON_NAME .. " " .. "|cff808080(" .. (L.OptionsSubtitle or OPTIONS_SUBTITLE) .. ")|r")
+title:SetText(ADDON_NAME)
 
 local function getBaseAddon()
     -- Prefer reference set by CustomSkins; fallback to base addon so options work even if load order differs
@@ -74,17 +73,17 @@ end
 -- BackdropTemplate required on Retail (9.0+); setSectionBackdrop applies Mixin if missing
 local BackdropTemplate = "BackdropTemplate"
 
+-- Opciones (columna derecha 30%); posición fijada en OnShow a la derecha de group3
 local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
-group1:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
 group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
-group1:SetHeight(44 + 50 + 32 + SECTION_PADDING * 2 + 18 + 36)
+group1:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
 setSectionBackdrop(group1)
 
 local sectionMain = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 sectionMain:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
-sectionMain:SetText(L.SectionMainAddon or "Elite Player Frame (Enhanced) options")
+sectionMain:SetText(L.SectionMainAddon or "Opciones")
 
-local CHECK_SPACING = 180
+local ROW_SPACING = 8
 local checkDisplay = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
 checkDisplay:SetPoint("TOPLEFT", sectionMain, "BOTTOMLEFT", 0, -6)
 local checkDisplayLabel = checkDisplay:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -93,14 +92,14 @@ checkDisplayLabel:SetText(L.Display or "Display")
 checkDisplay.tooltipText = L.DisplayDesc or "Show or hide the player frame modifications."
 
 local checkClass = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
-checkClass:SetPoint("LEFT", checkDisplay, "RIGHT", CHECK_SPACING, 0)
+checkClass:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -ROW_SPACING)
 local checkClassLabel = checkClass:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 checkClassLabel:SetPoint("LEFT", checkClass, "RIGHT", 4, 0)
 checkClassLabel:SetText(L.ClassSelection or "Class selection")
 checkClass.tooltipText = L.ClassSelectionDesc or "In Auto mode, choose frame by class/spec."
 
 local checkFaction = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
-checkFaction:SetPoint("LEFT", checkClass, "RIGHT", CHECK_SPACING, 0)
+checkFaction:SetPoint("TOPLEFT", checkClass, "BOTTOMLEFT", 0, -ROW_SPACING)
 local checkFactionLabel = checkFaction:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 checkFactionLabel:SetPoint("LEFT", checkFaction, "RIGHT", 4, 0)
 checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
@@ -110,7 +109,7 @@ checkFaction.tooltipText = L.FactionSelectionDesc or "In Auto mode, choose frame
 local opts = EPF_CustomSkins_Options
 if opts.hideInInstance == nil then opts.hideInInstance = false end
 local checkHideInInstance = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
-checkHideInInstance:SetPoint("TOPLEFT", checkDisplay, "BOTTOMLEFT", 0, -12)
+checkHideInInstance:SetPoint("TOPLEFT", checkFaction, "BOTTOMLEFT", 0, -12)
 local checkHideInInstanceLabel = checkHideInInstance:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 checkHideInInstanceLabel:SetPoint("LEFT", checkHideInInstance, "RIGHT", 4, 0)
 checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
@@ -121,14 +120,9 @@ outputLabel:SetPoint("TOPLEFT", checkHideInInstance, "BOTTOMLEFT", 0, -14)
 outputLabel:SetText(L.OutputLevel or "Message output level")
 outputLabel:SetJustifyH("LEFT")
 
-local outputDesc = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-outputDesc:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", 0, -2)
-outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug).")
-outputDesc:SetTextColor(0.7, 0.7, 0.7)
-outputDesc:SetJustifyH("LEFT")
-
 local outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group1, "UIDropDownMenuTemplate")
-outputDropdown:SetPoint("TOPLEFT", outputDesc, "BOTTOMLEFT", 0, -4)
+outputDropdown:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", 0, -4)
+outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
 if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
 outputDropdown.initialize = function()
     local addon = getBaseAddon()
@@ -255,9 +249,10 @@ checkHideInInstance:SetScript("OnClick", function(self)
     if addon and addon.Update then addon:Update(true) end
 end)
 
+-- Texturas (columna izquierda 70%); posición y ancho en OnShow
 local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
-group3:SetPoint("TOPLEFT", group1, "BOTTOMLEFT", 0, -GROUP_SPACING)
-group3:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
+group3:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
+group3:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, 24)
 setSectionBackdrop(group3)
 
 local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -481,15 +476,28 @@ end
 panel:SetScript("OnShow", function()
     local L = EPF_CustomSkins_L or {}
     panel.name = ADDON_NAME
-    title:SetText(ADDON_NAME .. " " .. "|cff808080(" .. (L.OptionsSubtitle or OPTIONS_SUBTITLE) .. ")|r")
-    sectionMain:SetText(L.SectionMainAddon or "Elite Player Frame (Enhanced) options")
+    -- Layout 60% / 40%: izquierda texturas, derecha opciones
+    local panelW = panel:GetWidth()
+    if panelW and panelW > 0 then
+        group3:SetWidth(panelW * 0.6)
+        group1:SetWidth(panelW * 0.4)
+        group3:ClearAllPoints()
+        group3:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
+        group3:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, 24)
+        group1:ClearAllPoints()
+        group1:SetPoint("TOPLEFT", group3, "TOPRIGHT", GROUP_SPACING, 0)
+        group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
+        group1:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
+    end
+    title:SetText(ADDON_NAME)
+    sectionMain:SetText(L.SectionMainAddon or "Opciones")
     checkDisplayLabel:SetText(L.Display or "Display")
     checkClassLabel:SetText(L.ClassSelection or "Class selection")
     checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
     checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
     checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
     outputLabel:SetText(L.OutputLevel or "Message output level")
-    outputDesc:SetText(L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug).")
+    outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
     btnReset:SetText(L.Reset or "Reset")
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
     listLabel:SetText(getSectionTexturesLabel())
