@@ -2,6 +2,10 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.0.10
+------
+- Fix: Texture filename
+
 v1.0.9
 ------
 - Options panel: Changed to two columns layout and simplified the texts to fit.
