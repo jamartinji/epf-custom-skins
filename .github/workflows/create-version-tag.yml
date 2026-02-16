@@ -1,10 +1,16 @@
 # Create a git tag from the version in the addon .toc and publish a GitHub Release.
-# Run manually from Actions → Create version tag → Run workflow.
-# Only creates the tag and the release. To upload to CurseForge, run "CurseForge Upload" separately (manual or after publishing a release).
+# Triggers: (1) on push to main when the .toc file changed (e.g. version bump on merge);
+#           (2) manually from Actions → Create version tag → Run workflow.
+# If the tag for the current TOC version already exists, the workflow does nothing.
+# Publishing the release triggers "CurseForge Upload" automatically.
 
 name: Create version tag
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'ElitePlayerFrame_Enhanced_CustomSkins.toc'
   workflow_dispatch:
 
 permissions:
@@ -36,13 +42,21 @@ jobs:
           echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION → tag v${VERSION}"
 
-      - name: Create and push tag (if missing)
+      - name: Check if tag already exists
+        id: check
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists. Skipping tag creation; creating Release only."
-            exit 0
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists. Skipping tag and release."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create and push tag (if missing)
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release $TAG"
@@ -50,6 +64,7 @@ jobs:
           echo "Created and pushed tag $TAG"
 
       - name: Create GitHub Release
+        if: steps.check.outputs.skip != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
