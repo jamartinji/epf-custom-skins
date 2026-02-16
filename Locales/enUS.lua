@@ -12,8 +12,7 @@ EPF_CustomSkins_Locales.enUS = {
     Off = "Off",
     Automatic = "Automatic",
     Custom = "Custom",
-    -- Main addon options (Elite Player Frame Enhanced)
-    SectionMainAddon = "Elite Player Frame (Enhanced) options",
+    SectionMainAddon = "Options",
     Display = "Display",
     DisplayDesc = "Show or hide the player frame modifications.",
     ClassSelection = "Class selection",

@@ -128,7 +128,14 @@ D.textureConfig = {
         },
     },
     { class = "WARLOCK", spec = 266, name = "warlock_demonology", ext = "png" },-- Demonology
-    { class = "WARLOCK", spec = 267, name = "warlock_destro", ext = "png" },    -- Destruction
+    { class = "WARLOCK", spec = 267, name = "warlock_destro", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 42, 6 } },
+                { pointOffset = { 172, 6 } },
+            },
+        },
+    },    -- Destruction
 
     -- [ WARRIOR ]
     -- { class = "WARRIOR", spec = 71, name = "warrior_arms", ext = "png" },       -- Arms
@@ -148,7 +155,8 @@ D.textureConfig = {
                 { pointOffset = { 42, 10 } },
                 { pointOffset = { 172, 10 } },
             },
-        }, },
+        },
+    },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
     -- { class = "ROGUE",       name = "rogue",       ext = "png" },
@@ -171,6 +179,14 @@ D.textureConfig = {
     -- [ ALTERNATIVE TEXTURES ]
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
     { class = "WARLOCK", name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
+    { class = "WARLOCK", name = "destro_succubus", ext = "png", displayName = "Inferno Succubus",
+        layout = {
+            layers = {
+                { pointOffset = { 42, 6 } },
+                { pointOffset = { 172, 6 } },
+            },
+        },
+    },
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected. Choose via /epf frame N.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },
