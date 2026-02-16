@@ -5,6 +5,9 @@ EPF Custom Skins - Changelog
 v1.0.9
 ------
 - Options panel: Changed to two columns layout and simplified the texts to fit.
+- Textures:
+  - Updated destruction warlock design (added an infernal)
+  - Added alternative destruction warlock design (with succubus instead of infernal)
 
 v1.0.8
 ------
