@@ -108,7 +108,7 @@ D.textureConfig = {
     -- { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png" },      -- Shadow
 
     -- [ ROGUE ]
-    -- { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png" }, -- Assassination
+    { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png" }, -- Assassination
     -- { class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png" },        -- Outlaw
     -- { class = "ROGUE", spec = 261, name = "rogue_subtlety", ext = "png" },      -- Subtlety
 
@@ -145,7 +145,7 @@ D.textureConfig = {
     -- [ GENERIC CLASS TEXTURES ] Used when no specialization above matches.
     -- { class = "DEATHKNIGHT", name = "deathknight", ext = "png" },
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
-    -- { class = "DRUID",       name = "druid",       ext = "png" },
+    { class = "DRUID",name = "druid", ext = "png" },
     -- { class = "EVOKER",      name = "evoker",      ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
@@ -159,7 +159,7 @@ D.textureConfig = {
     },
     -- { class = "PALADIN",     name = "paladin",     ext = "png" },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
-    -- { class = "ROGUE",       name = "rogue",       ext = "png" },
+    { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman", ext = "png" },
     -- { class = "WARLOCK",     name = "warlock",     ext = "png" },
     -- { class = "WARRIOR",     name = "warrior",     ext = "png" },
