@@ -2,6 +2,14 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.0.11
+------
+- Fix: KR addon category text
+- Textures:
+  - Optimized textures to reduce image size deleting unnecessary parts.
+  - Added Assassination Rogue, Base Rogue and Base Druid textures
+
+
 v1.0.10
 ------
 - Fix: Texture filename
