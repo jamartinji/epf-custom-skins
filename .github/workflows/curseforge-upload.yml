@@ -20,6 +20,7 @@ on:
 
 env:
   ADDON_NAME: ElitePlayerFrame_Enhanced_CustomSkins
+  ZIP_NAME: EPFECS
 
 jobs:
   upload:
@@ -74,10 +75,10 @@ jobs:
             --exclude='changelog.txt' \
             ./ build/${{ env.ADDON_NAME }}/
           mv version.txt build/
-          cd build && zip -r ../${{ env.ADDON_NAME }}-$(cat version.txt).zip ${{ env.ADDON_NAME }}
+          cd build && zip -r ../${{ env.ZIP_NAME }}-$(cat version.txt).zip ${{ env.ADDON_NAME }}
           cd .. && ls -la *.zip
 
-      # Uploads the correct zip (ElitePlayerFrame_Enhanced_CustomSkins-<version>.zip) to CurseForge.
+      # Uploads the zip (name EPFECS-<version>.zip); inside it follows the folder ADDON_NAME for correct installation.
       # Requires all 3 secrets; if any is missing, this step fails and the upload is not performed.
       - name: Upload to CurseForge
         env:
@@ -101,7 +102,7 @@ jobs:
           curl -sS -X POST \
             -H "X-Api-Token: $CURSEFORGE_API_TOKEN" \
             -F "metadata=$metadata" \
-            -F "file=@${{ env.ADDON_NAME }}-${VERSION}.zip" \
+            -F "file=@${{ env.ZIP_NAME }}-${VERSION}.zip" \
             "https://wow.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file"
           echo ""
 
@@ -110,4 +111,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: addon-${{ steps.vars.outputs.version }}
-          path: ${{ env.ADDON_NAME }}-${{ steps.vars.outputs.version }}.zip
+          path: ${{ env.ZIP_NAME }}-${{ steps.vars.outputs.version }}.zip
