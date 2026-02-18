@@ -103,10 +103,13 @@ local function AddCustomSkins()
             local restIconOffset = layout.restIconOffset or defaultFrameLayout.restIconOffset
             local defaultLayers = defaultFrameLayout.layers
             local customLayers = layout.layers or {}
+            local singleLayer = data.singleLayer
 
             local textureLayers = {}
-            for i = 1, #defaultLayers do
-                -- Merge: default layer + overlay only fields present in custom layer for this index
+            local layerCount = singleLayer and 1 or #defaultLayers
+            local startIndex = 1
+            for j = 1, layerCount do
+                local i = singleLayer and 1 or j
                 local def = defaultLayers[i]
                 local custom = customLayers[i] or {}
                 local layer = {}
@@ -123,13 +126,20 @@ local function AddCustomSkins()
                     ["bottomTexCoord"] = layer.bottomTexCoord,
                 }
                 local ox, oy = layer.pointOffset[1], layer.pointOffset[2]
-                textureLayers[i] = a.SetTexture(tex, a.SetPointOffset(ox, oy))
+                textureLayers[j] = a.SetTexture(tex, a.SetPointOffset(ox, oy))
+            end
+
+            local layered
+            if singleLayer then
+                layered = a.SetLayeredTextures(nil, textureLayers[1])
+            else
+                layered = a.SetLayeredTextures(unpack(textureLayers))
             end
 
             return {
                 menuName,
                 classColor,
-                a.SetLayeredTextures(unpack(textureLayers)),
+                layered,
                 a.SetPointOffset(restIconOffset[1], restIconOffset[2]),
                 function(addon)
                     if data.class then

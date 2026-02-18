@@ -15,6 +15,7 @@ D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets
 --   name        = texture file name (without path/extension)
 --   ext         = file extension, e.g. "png"
 --   displayName = optional; menu label (e.g. for manual-only textures)
+--   singleLayer = optional; if true, only one layer is used (Portrait/top). Define just layout.layers[1] with the correct offset.
 --   layout      = optional; table with layers and/or restIconOffset. If set, each layer is merged with
 --                 defaultFrameLayout: only declare fields you want to override (e.g. pointOffset).
 --
@@ -145,8 +146,8 @@ D.textureConfig = {
     -- [ GENERIC CLASS TEXTURES ] Used when no specialization above matches.
     -- { class = "DEATHKNIGHT", name = "deathknight", ext = "png" },
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
-    { class = "DRUID",name = "druid", ext = "png" },
-    -- { class = "EVOKER",      name = "evoker",      ext = "png" },
+    { class = "DRUID", name = "druid", ext = "png" },
+    { class = "EVOKER", name = "evoker", ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
     -- { class = "MAGE",        name = "mage",        ext = "png" },
     { class = "MONK", name = "monk", ext = "png",
@@ -166,6 +167,7 @@ D.textureConfig = {
 
     -- [ GENERIC RACE TEXTURES ] Used when no specialization above matches.
     -- Race-only (no class): any Undead character. Use displayName; class is omitted.
+    { race = "Dracthyr", name = "dracthyr", ext = "png", displayName = "Dracthyr" },
     { race = "Scourge", name = "undead", ext = "png", displayName = "Undead",
         layout = {
             layers = {
@@ -175,6 +177,16 @@ D.textureConfig = {
         },
     },
     { race = "Pandaren", name = "pandaren", ext = "png", displayName = "Pandaren" },
+
+    -- [ FACTION (no class) ] After class/race; used when no class texture matched.
+    { faction = "Horde", name = "horde", ext = "png", displayName = "Horde",
+        layout = {
+            layers = {
+                { pointOffset = { 65, -10 } },
+                { pointOffset = { 195, -10 } },
+            },
+        },
+    },
 
     -- [ ALTERNATIVE TEXTURES ]
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },

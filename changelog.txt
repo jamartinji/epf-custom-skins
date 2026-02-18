@@ -2,6 +2,14 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.0
+------
+- New: Extra atlas support via TextureDefinitionsExtra.lua (file extra-2x.png, 1024x1024 with 256x256 cells).
+- New: singleLayer option so a texture uses only one layer (Portrait) with its own layout; no need to define two layers for these entries.
+- TextureDefinitions: Faction (Horde) entry and optional singleLayer documented in header comments.
+- Extra atlas: added skins Serpent, Winged Moon, Dragon, Valkyr, Cataclysm Dragon, Winged Moon Wide, Valkyr Wide). Each uses singleLayer and custom size/pointOffset.
+
+
 v1.0.11
 ------
 - Fix: KR addon category text
