@@ -2,6 +2,10 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.1
+------
+- Fix: Updloaded missing file
+
 v1.1.0
 ------
 - New: Extra atlas support via TextureDefinitionsExtra.lua (file extra-2x.png, 1024x1024 with 256x256 cells).
