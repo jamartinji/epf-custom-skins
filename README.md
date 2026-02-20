@@ -1,7 +1,7 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.1.1-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![Version](https://img.shields.io/badge/Version-1.1.2-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
 [![WoW](https://img.shields.io/badge/WoW-12.0%20(TWW)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 

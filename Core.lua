@@ -99,6 +99,14 @@ local function AddCustomSkins()
                 if data.faction then menuName = menuName .. " - " .. data.faction end
             end
 
+            if data.menuColor then
+                local colorCode = data.menuColor
+                if not colorCode:find("^|c") then
+                    colorCode = "|cff" .. colorCode
+                end
+                menuName = colorCode .. menuName .. "|r"
+            end
+
             local layout = data.layout or defaultFrameLayout
             local restIconOffset = layout.restIconOffset or defaultFrameLayout.restIconOffset
             local defaultLayers = defaultFrameLayout.layers

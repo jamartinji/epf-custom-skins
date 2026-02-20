@@ -5,7 +5,7 @@ local D = EPF_CustomSkins_Definitions
 if not D or not D.textureConfig then return end
 
 local extraEntries = {
-    -- Cell (0,0)
+    -- Cell (1,1) (1)
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Serpent",
         layout = {
             layers = {
@@ -13,7 +13,7 @@ local extraEntries = {
             },
         },
     },
-    -- Cell (1,0)
+    -- Cell (1,2) (2)
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Winged Moon",
         layout = {
             layers = {
@@ -21,23 +21,23 @@ local extraEntries = {
             },
         },
     },
-    -- Cell (2,0)
-    --{ class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, goldTint = true, displayName = "Extra 3",
-    --    layout = {
-    --        layers = {
-    --            { width = 128, height = 128, leftTexCoord = 512/1024, rightTexCoord = 768/1024, topTexCoord = 0/1024, bottomTexCoord = 256/1024, pointOffset = { 128, 0 } },
-    --        },
-    --    },
-    --},
-    -- Cell (3,0)
-    --{ class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, goldTint = true, displayName = "Extra 4",
-    --    layout = {
-    --        layers = {
-    --            { width = 128, height = 128, leftTexCoord = 768/1024, rightTexCoord = 1024/1024, topTexCoord = 0/1024, bottomTexCoord = 256/1024, pointOffset = { 128, 0 } },
-    --        },
-    --    },
-    --},
-    -- Cell (0,1)
+     --Cell (1,3) (3)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Gryphon",
+        layout = {
+            layers = {
+                { width = 92, height = 92, leftTexCoord = 512/1024, rightTexCoord = 768/1024, topTexCoord = 0/1024, bottomTexCoord = 256/1024, pointOffset = { 10, 10 } },
+            },
+        },
+    },
+    -- Cell (1,4) (4)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Wyvern",
+        layout = {
+            layers = {
+                { width = 92, height = 92, leftTexCoord = 768/1024, rightTexCoord = 1024/1024, topTexCoord = 0/1024, bottomTexCoord = 256/1024, pointOffset = { 9, 11 } },
+            },
+        },
+    },
+    -- Cell (2,1) (5) — row 2
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Dragon",
         layout = {
             layers = {
@@ -45,7 +45,7 @@ local extraEntries = {
             },
         },
     },
-    -- Cell (1,1)
+    -- Cell (2,2) (6)
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Valkyr",
         layout = {
             layers = {
@@ -53,32 +53,56 @@ local extraEntries = {
             },
         },
     },
-    -- Cell (2,1)
-    --{ class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, goldTint = true, displayName = "Extra 7",
-    --    layout = {
-    --        layers = {
-    --            { width = 128, height = 128, leftTexCoord = 512/1024, rightTexCoord = 768/1024, topTexCoord = 256/1024, bottomTexCoord = 512/1024, pointOffset = { 128, 0 } },
-    --        },
-    --    },
-    --},
-    -- Cell (3,1)
-    --{ class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Extra 8",
-    --    layout = {
-    --        layers = {
-    --            { width = 128, height = 128, leftTexCoord = 768/1024, rightTexCoord = 1024/1024, topTexCoord = 256/1024, bottomTexCoord = 512/1024, pointOffset = { 128, 0 } },
-    --        },
-    --    },
-    --},
-    -- Cell (0,2) — row 2
-    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Cataclysm Dragon",
+    -- Cell (2,3) (7)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Gryphon 2",
         layout = {
             layers = {
-                { width = 92, height = 92, leftTexCoord = 0/1024, rightTexCoord = 256/1024, topTexCoord = 512/1024, bottomTexCoord = 768/1024, pointOffset = { 8, 3 } },
+                { width = 92, height = 92, leftTexCoord = 512/1024, rightTexCoord = 768/1024, topTexCoord = 256/1024, bottomTexCoord = 512/1024, pointOffset = { 10, 10 } },
             },
         },
     },
-    -- Row 3 (bottom): 2 images, each 2 cells wide (512px)
-    -- Left half (cells 0–1)
+    -- Cell (2,4) (8)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Wyvern 2",
+        layout = {
+            layers = {
+                { width = 92, height = 92, leftTexCoord = 768/1024, rightTexCoord = 1024/1024, topTexCoord = 256/1024, bottomTexCoord = 512/1024, pointOffset = { 10, 11 } },
+            },
+        },
+    },
+    -- Cell (3,1) (9) — row 3
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Cataclysm Dragon",
+        layout = {
+            layers = {
+                { width = 92, height = 92, leftTexCoord = 0/1024, rightTexCoord = 256/1024, topTexCoord = 512/1024, bottomTexCoord = 768/1024, pointOffset = { 8, 5 } },
+            },
+        },
+    },
+    -- Cell (3,2) (10)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Dual Wings",
+        layout = {
+            layers = {
+                { width = 142, height = 142, leftTexCoord = 256/1024, rightTexCoord = 512/1024, topTexCoord = 512/1024, bottomTexCoord = 768/1024, pointOffset = { 36, 0 } },
+            },
+        },
+    },
+    -- Cell (3,3) (11)
+    --{ class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "TBD",
+    --    layout = {
+    --        layers = {
+    --            { width = 92, height = 92, leftTexCoord = 0/1024, rightTexCoord = 256/1024, topTexCoord = 512/1024, bottomTexCoord = 768/1024, pointOffset = { 8, 3 } },
+    --        },
+    --    },
+    --},
+    -- Cell (3,4) (12)
+    { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Manticore",
+        layout = {
+            layers = {
+                { width = 100, height = 100, leftTexCoord = 768/1024, rightTexCoord = 1024/1024, topTexCoord = 512/1024, bottomTexCoord = 768/1024, pointOffset = { 16, 12 } },
+            },
+        },
+    },
+    -- Row 4 (bottom): 2 images, each 2 cells wide (512px)
+    -- Left half (cells 1–2)
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Winged Moon Wide",
         layout = {
             layers = {
@@ -86,7 +110,7 @@ local extraEntries = {
             },
         },
     },
-    -- Right half (cells 2–3)
+    -- Right half (cells 3–4)
     { class = "CUSTOM", name = "extra", ext = "png", singleLayer = true, displayName = "Valkyr Wide",
         layout = {
             layers = {
