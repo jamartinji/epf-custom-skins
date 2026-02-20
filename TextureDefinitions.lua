@@ -179,6 +179,14 @@ D.textureConfig = {
     { race = "Pandaren", name = "pandaren", ext = "png", displayName = "Pandaren" },
 
     -- [ FACTION (no class) ] After class/race; used when no class texture matched.
+    { faction = "Alliance", name = "alliance", ext = "png", displayName = "Alliance",
+        layout = {
+            layers = {
+                { pointOffset = { 42, -2} },
+                { pointOffset = { 171, -3 } },
+            },
+        },
+    },
     { faction = "Horde", name = "horde", ext = "png", displayName = "Horde",
         layout = {
             layers = {

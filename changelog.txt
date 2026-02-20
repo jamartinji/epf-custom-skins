@@ -2,6 +2,13 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.2
+------
+- Textures:
+  - Added Faction Alliance entry
+  - Added some extra custom textures.
+
+
 v1.1.1
 ------
 - Fix: Updloaded missing file
