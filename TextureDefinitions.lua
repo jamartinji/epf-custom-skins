@@ -18,6 +18,7 @@ D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets
 --   singleLayer = optional; if true, only one layer is used (Portrait/top). Define just layout.layers[1] with the correct offset.
 --   layout      = optional; table with layers and/or restIconOffset. If set, each layer is merged with
 --                 defaultFrameLayout: only declare fields you want to override (e.g. pointOffset).
+--   menuColor   = optional; hex color code for the menu name (e.g. "00ff00" or "|cff00ff00").
 --
 -- Race examples (exact string): "Human", "Dwarf", "NightElf", "Gnome", "Draenei", "Worgen",
 --   "Orc", "Scourge", "Tauren", "Troll", "BloodElf", "Goblin", "Pandaren",
@@ -179,7 +180,7 @@ D.textureConfig = {
     { race = "Pandaren", name = "pandaren", ext = "png", displayName = "Pandaren" },
 
     -- [ FACTION (no class) ] After class/race; used when no class texture matched.
-    { faction = "Alliance", name = "alliance", ext = "png", displayName = "Alliance",
+    { faction = "Alliance", name = "alliance", ext = "png", displayName = "Alliance", menuColor = "36579e",
         layout = {
             layers = {
                 { pointOffset = { 42, -2} },
@@ -187,7 +188,7 @@ D.textureConfig = {
             },
         },
     },
-    { faction = "Horde", name = "horde", ext = "png", displayName = "Horde",
+    { faction = "Horde", name = "horde", ext = "png", displayName = "Horde", menuColor = "b01b1b",
         layout = {
             layers = {
                 { pointOffset = { 65, -10 } },
