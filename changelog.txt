@@ -2,10 +2,11 @@
 EPF Custom Skins - Changelog
 ===============================
 
-v1.1.2
+v1.1.3
 ------
 - Textures:
   - Added paladin frame.
+  - Added base warlock frame.
 
 v1.1.2
 ------
