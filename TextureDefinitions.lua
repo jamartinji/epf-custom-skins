@@ -165,7 +165,7 @@ D.textureConfig = {
                 { pointOffset = { 62, -8 } },
                 { pointOffset = { 192, -8 } },
             },
-            restIconOffset = { 210, 0},
+            restIconOffset = { 210, 0 },
         },
     },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
@@ -206,6 +206,14 @@ D.textureConfig = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
+    { class = "WARLOCK", name = "warlock", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 38, -4 } },
+                { pointOffset = { 168, -4 } },
+            },
+        },
+    },
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
     { class = "WARLOCK", name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
     { class = "WARLOCK", name = "destro_succubus", ext = "png", displayName = "Inferno Succubus",
