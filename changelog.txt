@@ -5,6 +5,11 @@ EPF Custom Skins - Changelog
 v1.1.2
 ------
 - Textures:
+  - Added paladin frame.
+
+v1.1.2
+------
+- Textures:
   - Added Faction Alliance entry
   - Added some extra custom textures.
 

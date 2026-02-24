@@ -159,7 +159,15 @@ D.textureConfig = {
             },
         },
     },
-    -- { class = "PALADIN",     name = "paladin",     ext = "png" },
+    { class = "PALADIN", name = "paladin", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 62, -8 } },
+                { pointOffset = { 192, -8 } },
+            },
+            restIconOffset = { 210, 0},
+        },
+    },
     -- { class = "PRIEST",      name = "priest",      ext = "png" },
     { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman", ext = "png" },
