@@ -12,7 +12,7 @@
 ## Notes-ruRU: Пользовательские текстуры рамки для Elite Player Frame (Enhanced). Скины по специализации, расе и фракции; обновляется при смене специализации.
 ## Notes-zhCN: 为 Elite Player Frame (Enhanced) 自定义框架纹理。支持专精、种族和阵营皮肤；切换专精时自动更新。
 ## Notes-zhTW: 為 Elite Player Frame (Enhanced) 自訂框架紋理。支援專精、種族與陣營皮膚；切換專精時自動更新。
-## Version: 1.1.3
+## Version: 1.1.4
 ## Author: Drakeinhart
 ## Dependencies: ElitePlayerFrame_Enhanced
 ## Group: ElitePlayerFrame_Enhanced

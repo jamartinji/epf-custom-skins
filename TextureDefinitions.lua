@@ -107,7 +107,7 @@ D.textureConfig = {
     -- [ PRIEST ]
     -- { class = "PRIEST", spec = 256, name = "priest_disc", ext = "png" },        -- Discipline
     -- { class = "PRIEST", spec = 257, name = "priest_holy", ext = "png" },        -- Holy
-    -- { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png" },      -- Shadow
+    { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png" },      -- Shadow
 
     -- [ ROGUE ]
     { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png" }, -- Assassination
@@ -168,7 +168,7 @@ D.textureConfig = {
             restIconOffset = { 210, 0 },
         },
     },
-    -- { class = "PRIEST",      name = "priest",      ext = "png" },
+    { class = "PRIEST", name = "priest", ext = "png" },
     { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman", ext = "png" },
     -- { class = "WARLOCK",     name = "warlock",     ext = "png" },
@@ -206,6 +206,7 @@ D.textureConfig = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
+    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
     { class = "WARLOCK", name = "warlock", ext = "png",
         layout = {
             layers = {
