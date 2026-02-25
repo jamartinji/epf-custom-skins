@@ -2,6 +2,11 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.4
+------
+- Textures:
+  - Added priest frames.
+
 v1.1.3
 ------
 - Textures:
@@ -14,7 +19,6 @@ v1.1.2
   - Added Faction Alliance entry
   - Added some extra custom textures.
 
-
 v1.1.1
 ------
 - Fix: Updloaded missing file
@@ -25,15 +29,12 @@ v1.1.0
 - New: singleLayer option so a texture uses only one layer (Portrait) with its own layout; no need to define two layers for these entries.
 - TextureDefinitions: Faction (Horde) entry and optional singleLayer documented in header comments.
 - Extra atlas: added skins Serpent, Winged Moon, Dragon, Valkyr, Cataclysm Dragon, Winged Moon Wide, Valkyr Wide). Each uses singleLayer and custom size/pointOffset.
-
-
 v1.0.11
 ------
 - Fix: KR addon category text
 - Textures:
   - Optimized textures to reduce image size deleting unnecessary parts.
   - Added Assassination Rogue, Base Rogue and Base Druid textures
-
 
 v1.0.10
 ------
