@@ -83,8 +83,10 @@ local function AddCustomSkins()
             local className = data.class and (a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class) or (data.race or "?")
             local classColor = (data.class and a.safeIndex(a.CLASSES, data.class, "color")) or CreateColor(1, 1, 1)
 
-            local fullPath = folderPath .. data.name .. "." .. data.ext
+            --local fullPath = folderPath .. data.name .. "." .. data.ext
             local fullPath2x = folderPath .. data.name .. "-2x." .. data.ext
+            -- For now, using 2x path as the same for fullPath, since there are no low res textures.
+            local fullPath = fullPath2x
 
             local menuName
             if data.displayName then
