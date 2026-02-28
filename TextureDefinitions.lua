@@ -90,9 +90,48 @@ D.textureConfig = {
     -- { class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png" },    -- Survival
 
     -- [ MAGE ]
-    -- { class = "MAGE", spec = 62, name = "mage_arcane", ext = "png" },           -- Arcane
-    -- { class = "MAGE", spec = 63, name = "mage_fire", ext = "png" },             -- Fire
-    -- { class = "MAGE", spec = 64, name = "mage_frost", ext = "png" },            -- Frost
+    { class = "MAGE", spec = 62, name = "mage", ext = "png",
+        layout = {
+            layers = {
+                {
+                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
+                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
+                },
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },           -- Arcane
+    { class = "MAGE", spec = 63, name = "firefrost", ext = "png",
+        layout = {
+            layers = {
+                {
+                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
+                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
+                },
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },             -- Fire
+    { class = "MAGE", spec = 64, name = "firefrost", ext = "png",
+        layout = {
+            layers = {
+                {
+                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
+                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
+                },
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },            -- Frost
 
     -- [ MONK ]
     -- { class = "MONK", spec = 268, name = "monk_brewmaster", ext = "png" },      -- Brewmaster
@@ -150,7 +189,20 @@ D.textureConfig = {
     { class = "DRUID", name = "druid", ext = "png" },
     { class = "EVOKER", name = "evoker", ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
-    { class = "MAGE", name = "mage", ext = "png" },
+    { class = "MAGE", name = "mage", ext = "png",
+        layout = {
+            layers = {
+                {
+                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
+                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
+                },
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "MONK", name = "monk", ext = "png",
         layout = {
             layers = {
@@ -171,8 +223,15 @@ D.textureConfig = {
     { class = "PRIEST", name = "priest", ext = "png" },
     { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman", ext = "png" },
-    -- { class = "WARLOCK",     name = "warlock",     ext = "png" },
-    -- { class = "WARRIOR",     name = "warrior",     ext = "png" },
+    { class = "WARLOCK", name = "warlock", ext = "png",
+        layout = {
+            layers = {
+                { pointOffset = { 38, -4 } },
+                { pointOffset = { 168, -4 } },
+            },
+        },
+    },
+    { class = "WARRIOR", name = "warrior", ext = "png" },
 
     -- [ GENERIC RACE TEXTURES ] Used when no specialization above matches.
     -- Race-only (no class): any Undead character. Use displayName; class is omitted.
@@ -207,14 +266,6 @@ D.textureConfig = {
 
     -- [ ALTERNATIVE TEXTURES ]
     { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
-    { class = "WARLOCK", name = "warlock", ext = "png",
-        layout = {
-            layers = {
-                { pointOffset = { 38, -4 } },
-                { pointOffset = { 168, -4 } },
-            },
-        },
-    },
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
     { class = "WARLOCK", name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
     { class = "WARLOCK", name = "destro_succubus", ext = "png", displayName = "Inferno Succubus",

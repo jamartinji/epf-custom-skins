@@ -2,6 +2,12 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.6
+------
+- Textures:
+  - Added mage specs frames.
+  - Added warrior frame
+
 v1.1.5
 ------
 - Textures:
