@@ -2,6 +2,10 @@
 EPF Custom Skins - Changelog
 ===============================
 
+v1.1.7] - 2026-04-19
+------
+- Bump version for 12.0.5
+
 v1.1.6
 ------
 - Textures:
