@@ -1,13 +1,17 @@
 -- [ OPTIONS ] Configuration panel for EPF Custom Skins.
 -- Access: Esc → System → AddOns → EPF Custom Skins
 
--- Reserved for future addon-specific saved options (see TOC SavedVariables).
-EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
-
 local ADDON_NAME = "EPF Custom Skins"
 local ADDON_LOADED_NAME = "ElitePlayerFrame_Enhanced_CustomSkins"
 
 local L = EPF_CustomSkins_L or {}
+local INFO_LOGS = false
+
+local function Log(message)
+    if INFO_LOGS and DEFAULT_CHAT_FRAME then
+        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00EPF Custom Skins Options:|r " .. tostring(message))
+    end
+end
 
 -- SectionTextures label: read from locale table directly to avoid key lookup issues
 local function getSectionTexturesLabel()
@@ -31,8 +35,26 @@ title:SetPoint("TOPLEFT", 16, -16)
 title:SetText(ADDON_NAME)
 
 local function getBaseAddon()
-    -- Prefer reference set by CustomSkins; fallback to base addon so options work even if load order differs
-    return EPF_CustomSkins_BaseAddon or (ElitePlayerFrame_Enhanced and ElitePlayerFrame_Enhanced.Initialised and ElitePlayerFrame_Enhanced:Initialised() and ElitePlayerFrame_Enhanced or nil)
+    -- Prefer main addon API object (has SetSetting/Update/GetFrameModes on newer versions)
+    if not ElitePlayerFrame_Enhanced then
+        return EPF_CustomSkins_BaseAddon
+    end
+    if type(ElitePlayerFrame_Enhanced.IsInitialised) == "function" then
+        if ElitePlayerFrame_Enhanced:IsInitialised() then
+            return ElitePlayerFrame_Enhanced
+        end
+        return EPF_CustomSkins_BaseAddon
+    end
+    if type(ElitePlayerFrame_Enhanced.Initialised) == "function" then
+        if ElitePlayerFrame_Enhanced:Initialised() then
+            return ElitePlayerFrame_Enhanced
+        end
+        return EPF_CustomSkins_BaseAddon
+    end
+    if ElitePlayerFrame_Enhanced.FRAME_MODES or ElitePlayerFrame_Enhanced.settings then
+        return ElitePlayerFrame_Enhanced
+    end
+    return EPF_CustomSkins_BaseAddon
 end
 
 local BASE_SETTINGS_GLOBAL = "ElitePlayerFrame_Enhanced_Settings"
@@ -41,6 +63,55 @@ local function getBaseSettings()
     if sv then return sv end
     local addon = getBaseAddon()
     return (addon and addon.settings) and addon.settings or nil
+end
+
+local function getOutputLevels(addon)
+    if not addon then return nil end
+    if type(addon.GetOutputLevels) == "function" then
+        local ok, levels = pcall(function() return addon:GetOutputLevels() end)
+        if ok and type(levels) == "table" then return levels end
+    end
+    return addon.OUTPUT_LEVELS
+end
+
+local function getFrameModes(addon)
+    if not addon then return nil end
+    if type(addon.GetFrameModes) == "function" then
+        local ok, modes = pcall(function() return addon:GetFrameModes() end)
+        if ok and type(modes) == "table" then return modes end
+    end
+    return addon.FRAME_MODES
+end
+
+local function requestBaseUpdate(force)
+    local addon = getBaseAddon()
+    if not addon then return end
+    if type(addon.Update) == "function" then
+        pcall(function() addon:Update(force) end)
+    elseif ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.Update) == "function" then
+        pcall(function() ElitePlayerFrame_Enhanced:Update(force) end)
+    elseif type(PlayerFrame_Update) == "function" then
+        -- Fallback: EPF hooks PlayerFrame_Update and uses it to refresh textures.
+        pcall(PlayerFrame_Update, true)
+    end
+end
+
+local function setBaseSetting(setting, value)
+    local addon = getBaseAddon()
+    if addon and type(addon.SetSetting) == "function" then
+        local ok = pcall(function() addon:SetSetting(setting, value) end)
+        if ok then return true end
+    end
+    if ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.SetSetting) == "function" then
+        local ok = pcall(function() ElitePlayerFrame_Enhanced:SetSetting(setting, value) end)
+        if ok then return true end
+    end
+    local settings = getBaseSettings()
+    if settings then
+        settings[setting] = value
+        return true
+    end
+    return false
 end
 
 local PAD = 16
@@ -98,16 +169,20 @@ checkClassLabel:SetPoint("LEFT", checkClass, "RIGHT", 4, 0)
 checkClassLabel:SetText(L.ClassSelection or "Class selection")
 checkClass.tooltipText = L.ClassSelectionDesc or "In Auto mode, choose frame by class/spec."
 
+local checkSex = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
+checkSex:SetPoint("TOPLEFT", checkClass, "BOTTOMLEFT", 0, -ROW_SPACING)
+local checkSexLabel = checkSex:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+checkSexLabel:SetPoint("LEFT", checkSex, "RIGHT", 4, 0)
+checkSexLabel:SetText(L.SexSelection or "Sex selection")
+checkSex.tooltipText = L.SexSelectionDesc or "In Auto mode, choose frame by sex."
+
 local checkFaction = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
-checkFaction:SetPoint("TOPLEFT", checkClass, "BOTTOMLEFT", 0, -ROW_SPACING)
+checkFaction:SetPoint("TOPLEFT", checkSex, "BOTTOMLEFT", 0, -ROW_SPACING)
 local checkFactionLabel = checkFaction:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 checkFactionLabel:SetPoint("LEFT", checkFaction, "RIGHT", 4, 0)
 checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
 checkFaction.tooltipText = L.FactionSelectionDesc or "In Auto mode, choose frame by faction."
 
--- [ EPF Custom Skins option: hide in instance ]
-local opts = EPF_CustomSkins_Options
-if opts.hideInInstance == nil then opts.hideInInstance = false end
 local checkHideInInstance = CreateFrame("CheckButton", nil, group1, "InterfaceOptionsCheckButtonTemplate")
 checkHideInInstance:SetPoint("TOPLEFT", checkFaction, "BOTTOMLEFT", 0, -12)
 local checkHideInInstanceLabel = checkHideInInstance:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -126,8 +201,8 @@ outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critic
 if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
 outputDropdown.initialize = function()
     local addon = getBaseAddon()
-    if not addon or not addon.OUTPUT_LEVELS then return end
-    local list = addon.OUTPUT_LEVELS
+    local list = getOutputLevels(addon)
+    if not list then return end
     local maxIdx = 0
     for k in pairs(list) do
         if type(k) == "number" and k > maxIdx then maxIdx = k end
@@ -139,9 +214,9 @@ outputDropdown.initialize = function()
         option.text = nameStr
         option.value = i
         option.func = function(self)
-            if addon and addon.settings then
-                addon.settings.outputLevel = self.value
+            if setBaseSetting("outputLevel", self.value) then
                 UIDropDownMenu_SetSelectedValue(outputDropdown, self.value)
+                requestBaseUpdate(true)
             end
         end
         UIDropDownMenu_AddButton(option)
@@ -161,13 +236,15 @@ local function refreshMainAddonChecks()
     if settings then
         setCheckFromSetting(checkDisplay, settings.display)
         setCheckFromSetting(checkClass, settings.classSelection)
+        setCheckFromSetting(checkSex, settings.sexSelection)
         setCheckFromSetting(checkFaction, settings.factionSelection)
+        setCheckFromSetting(checkHideInInstance, settings.instances)
     end
-    setCheckFromSetting(checkHideInInstance, EPF_CustomSkins_Options.hideInInstance)
     local addon = getBaseAddon()
-    if addon and addon.settings and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+    local outputLevels = getOutputLevels(addon)
+    if settings and outputLevels and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
-        UIDropDownMenu_SetSelectedValue(outputDropdown, addon.settings.outputLevel)
+        UIDropDownMenu_SetSelectedValue(outputDropdown, settings.outputLevel)
         if UIDropDownMenu_Refresh then
             UIDropDownMenu_Refresh(outputDropdown)
         end
@@ -178,8 +255,9 @@ local function updateUIFromDefaults(def)
     if not def then return end
     setCheckFromSetting(checkDisplay, def.display)
     setCheckFromSetting(checkClass, def.classSelection)
+    setCheckFromSetting(checkSex, def.sexSelection)
     setCheckFromSetting(checkFaction, def.factionSelection)
-    setCheckFromSetting(checkHideInInstance, def.hideInInstance == nil and false or def.hideInInstance)
+    setCheckFromSetting(checkHideInInstance, def.instances)
     local addon = getBaseAddon()
     if addon and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
@@ -202,16 +280,18 @@ btnReset:SetScript("OnClick", function()
     addon.settings.display = def.display
     addon.settings.frameMode = def.frameMode
     addon.settings.classSelection = def.classSelection
+    addon.settings.sexSelection = def.sexSelection
     addon.settings.factionSelection = def.factionSelection
+    addon.settings.instances = def.instances
     addon.settings.outputLevel = def.outputLevel
-    EPF_CustomSkins_Options.hideInInstance = false
     if addon.Update then addon:Update(true) end
     local defCopy = {
         display = def.display,
         classSelection = def.classSelection,
+        sexSelection = def.sexSelection,
         factionSelection = def.factionSelection,
+        instances = def.instances,
         outputLevel = def.outputLevel,
-        hideInInstance = false,
     }
     if C_Timer and C_Timer.After then
         C_Timer.After(0, function()
@@ -223,30 +303,29 @@ btnReset:SetScript("OnClick", function()
 end)
 
 checkDisplay:SetScript("OnClick", function(self)
-    local addon = getBaseAddon()
-    if addon and addon.settings then
-        addon.settings.display = self:GetChecked()
-        if addon.Update then addon:Update(true) end
+    if setBaseSetting("display", self:GetChecked()) then
+        requestBaseUpdate(true)
     end
 end)
 checkClass:SetScript("OnClick", function(self)
-    local addon = getBaseAddon()
-    if addon and addon.settings then
-        addon.settings.classSelection = self:GetChecked()
-        if addon.Update then addon:Update(true) end
+    if setBaseSetting("classSelection", self:GetChecked()) then
+        requestBaseUpdate(true)
+    end
+end)
+checkSex:SetScript("OnClick", function(self)
+    if setBaseSetting("sexSelection", self:GetChecked()) then
+        requestBaseUpdate(true)
     end
 end)
 checkFaction:SetScript("OnClick", function(self)
-    local addon = getBaseAddon()
-    if addon and addon.settings then
-        addon.settings.factionSelection = self:GetChecked()
-        if addon.Update then addon:Update(true) end
+    if setBaseSetting("factionSelection", self:GetChecked()) then
+        requestBaseUpdate(true)
     end
 end)
 checkHideInInstance:SetScript("OnClick", function(self)
-    EPF_CustomSkins_Options.hideInInstance = self:GetChecked()
-    local addon = getBaseAddon()
-    if addon and addon.Update then addon:Update(true) end
+    if setBaseSetting("instances", self:GetChecked()) then
+        requestBaseUpdate(true)
+    end
 end)
 
 -- Textures column (left, 60%); position and width set in OnShow
@@ -359,18 +438,17 @@ if hasScrollBoxAPI then
     scrollBar:SetPoint("BOTTOMLEFT", listContainer, "BOTTOMRIGHT", 6, 0)
 
     local function applyFrameMode(index)
-        local addon = getBaseAddon()
-        if not addon or not addon.settings then return end
-        addon.settings.frameMode = index
-        if addon.Update then addon:Update(true) end
+        if not setBaseSetting("frameMode", index) then return end
+        requestBaseUpdate(true)
         if C_Timer and C_Timer.After then
             C_Timer.After(0, function()
-                if addon and addon.Update then pcall(function() addon:Update(true) end) end
+                requestBaseUpdate(true)
             end)
         end
         if scrollBox.GetDataProvider then
             scrollBox:ForEachFrame(function(button, elementData)
-                local isSelected = (addon.settings.frameMode == elementData.index)
+                local refreshedSettings = getBaseSettings()
+                local isSelected = (refreshedSettings and refreshedSettings.frameMode == elementData.index)
                 if button.SelectedTexture then
                     button.SelectedTexture:SetShown(isSelected)
                 end
@@ -433,7 +511,8 @@ if hasScrollBoxAPI then
         end)
 
         local addon = getBaseAddon()
-        local isSelected = (addon and addon.settings and addon.settings.frameMode == index)
+        local settings = getBaseSettings()
+        local isSelected = (settings and settings.frameMode == index)
         if button.SelectedTexture then
             button.SelectedTexture:SetShown(isSelected)
         end
@@ -441,10 +520,13 @@ if hasScrollBoxAPI then
 
     updateFrameModeList = function()
         local addon = getBaseAddon()
-        if not addon or not addon.FRAME_MODES then return end
+        local modes = getFrameModes(addon)
+        if not modes then
+            Log(L.FrameModesUnavailable or "Texture list is empty: base addon or FRAME_MODES not available.")
+            return
+        end
 
         local dataProvider = CreateDataProvider()
-        local modes = addon.FRAME_MODES
         local maxIndex = 0
         for k in pairs(modes) do
             if type(k) == "number" and k > maxIndex then maxIndex = k end
@@ -493,6 +575,7 @@ panel:SetScript("OnShow", function()
     sectionMain:SetText(L.SectionMainAddon or "Opciones")
     checkDisplayLabel:SetText(L.Display or "Display")
     checkClassLabel:SetText(L.ClassSelection or "Class selection")
+    checkSexLabel:SetText(L.SexSelection or "Sex selection")
     checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
     checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
     checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
@@ -501,6 +584,9 @@ panel:SetScript("OnShow", function()
     btnReset:SetText(L.Reset or "Reset")
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
     listLabel:SetText(getSectionTexturesLabel())
+    local addon = getBaseAddon()
+    local modes = getFrameModes(addon)
+    local settings = getBaseSettings()
     refreshMainAddonChecks()
     updateFrameModeList()
     if C_Timer and C_Timer.After then

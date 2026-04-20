@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.esES = {
     DisplayDesc = "Mostrar u ocultar las modificaciones del marco del jugador.",
     ClassSelection = "Selección por clase",
     ClassSelectionDesc = "En modo Auto, elegir marco por clase/especialización.",
+    SexSelection = "Selección por sexo",
+    SexSelectionDesc = "En modo Auto, elegir marco por sexo.",
     FactionSelection = "Selección por facción",
     FactionSelectionDesc = "En modo Auto, elegir marco por facción.",
     HideInInstance = "Ocultar en instancia",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.esES = {
     OutputLevelDesc = "Cantidad de mensajes (0 = crítico, mayor = más depuración).",
     SectionTextures = "Texturas disponibles",
     SearchFilter = "Filtrar...",
+    FrameModesUnavailable = "La lista de texturas está vacía: el addon base o FRAME_MODES no están disponibles.",
     Reset = "Restablecer",
     ResetDesc = "Restablecer opciones de Elite Player Frame (Enhanced) a valores por defecto.",
 }

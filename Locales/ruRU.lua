@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.ruRU = {
     DisplayDesc = "Показывать или скрывать изменения рамки игрока.",
     ClassSelection = "Выбор по классу",
     ClassSelectionDesc = "В режиме Авто выбирать рамку по классу/спеку.",
+    SexSelection = "Выбор по полу",
+    SexSelectionDesc = "В режиме Авто выбирать рамку по полу.",
     FactionSelection = "Выбор по фракции",
     FactionSelectionDesc = "В режиме Авто выбирать рамку по фракции.",
     HideInInstance = "Скрывать в подземелье",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.ruRU = {
     OutputLevelDesc = "Подробность сообщений (0 = критично, выше = больше отладки).",
     SectionTextures = "Доступные текстуры",
     SearchFilter = "Фильтр...",
+    FrameModesUnavailable = "Список текстур пуст: базовый аддон или FRAME_MODES недоступен.",
     Reset = "Сбросить",
     ResetDesc = "Сбросить настройки Elite Player Frame (Enhanced) по умолчанию.",
 }

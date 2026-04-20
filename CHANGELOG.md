@@ -1,0 +1,183 @@
+# Changelog
+
+All notable changes to **EPF Custom Skins** are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.0] - 2026-04-20
+
+### Changed
+
+- Updated compatibility for recent `ElitePlayerFrame_Enhanced` API changes.
+
+## [1.1.7] - 2026-04-19
+
+- Bump version for 12.0.5.
+
+## [1.1.6]
+
+### Added
+
+- Mage specialization frames.
+- Warrior frame.
+
+## [1.1.5]
+
+### Added
+
+- Mage frame.
+
+## [1.1.4]
+
+### Added
+
+- Priest frames.
+
+## [1.1.3]
+
+### Added
+
+- Paladin frame.
+- Base warlock frame.
+
+## [1.1.2]
+
+### Added
+
+- Alliance faction entry.
+- Additional extra custom textures.
+
+## [1.1.1]
+
+### Fixed
+
+- Uploaded missing file.
+
+## [1.1.0]
+
+### Added
+
+- Extra atlas support via `TextureDefinitionsExtra.lua` (`extra-2x.png`, 1024x1024 with 256x256 cells).
+- `singleLayer` option so a texture can use only one layer (`Portrait`) with its own layout.
+- Horde faction entry and `singleLayer` documentation in `TextureDefinitions.lua`.
+- Extra atlas skins: Serpent, Winged Moon, Dragon, Valkyr, Cataclysm Dragon, Winged Moon Wide, Valkyr Wide.
+
+## [1.0.11]
+
+### Fixed
+
+- Korean addon category text.
+
+### Changed
+
+- Optimized texture files to reduce image size.
+
+### Added
+
+- Assassination Rogue, base Rogue, and base Druid textures.
+
+## [1.0.10]
+
+### Fixed
+
+- Texture filename.
+
+## [1.0.9]
+
+### Changed
+
+- Options panel switched to a two-column layout and text simplified to fit.
+- Updated destruction warlock design (infernal added).
+- Added alternative destruction warlock design (succubus variant).
+
+## [1.0.8]
+
+### Added
+
+- New option: **Hide in instance**.
+- Pandaren and monk textures.
+
+### Fixed
+
+- Default texture class assignments.
+
+## [1.0.7]
+
+### Fixed
+
+- Affliction texture offset.
+
+### Added
+
+- Scourge frame.
+
+## [1.0.6]
+
+### Changed
+
+- Layout overrides now require only changed fields (for example `pointOffset`) instead of full layout declarations.
+- Removed `(Custom)` suffix from default class textures.
+
+### Added
+
+- Revamped warlock affliction and destruction textures.
+- Base shaman texture.
+
+## [1.0.5]
+
+### Added
+
+- New configuration panel with integrated EPF settings:
+  - Display
+  - Class selection
+  - Faction selection
+  - Output level dropdown
+  - Reset button
+- Base hunter texture.
+
+## [1.0.4]
+
+### Fixed
+
+- Interface version in `.toc`.
+
+## [1.0.3]
+
+### Changed
+
+- Addon folder and references renamed from `Enhacned` to `Enhanced` (correct spelling).
+- `.toc` renamed to `ElitePlayerFrame_Enhanced_CustomSkins.toc`.
+
+## [1.0.2]
+
+### Fixed
+
+- `Notes-esES` typo in `.toc`.
+- BlackDragon texture issue.
+
+### Added
+
+- `displayName` for generic warlock skin.
+- Updated warlock demonology and default textures.
+
+## [1.0.1]
+
+### Changed
+
+- Split addon into `TextureDefinitions.lua` (data) and `Core.lua` (logic).
+- Added configurable `defaultFrameLayout` and optional per-entry `layout`.
+- README updated with layout and contribution documentation.
+- GitHub Action to create version tags from `.toc`.
+
+### Fixed
+
+- Restoration druid texture.
+
+## [1.0.0]
+
+### Added
+
+- Initial release.
+- Custom frame textures for Elite Player Frame (Enhanced).
+- Selection by class, specialization, race, and faction.
+- Auto-update on specialization change.

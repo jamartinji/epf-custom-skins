@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.itIT = {
     DisplayDesc = "Mostra o nascondi le modifiche alla cornice del giocatore.",
     ClassSelection = "Selezione per classe",
     ClassSelectionDesc = "In modalità Auto, scegli la cornice per classe/spec.",
+    SexSelection = "Selezione per sesso",
+    SexSelectionDesc = "In modalità Auto, scegli la cornice per sesso.",
     FactionSelection = "Selezione per fazione",
     FactionSelectionDesc = "In modalità Auto, scegli la cornice per fazione.",
     HideInInstance = "Nascondi in istanza",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.itIT = {
     OutputLevelDesc = "Verbosità messaggi (0 = critico, più alto = più debug).",
     SectionTextures = "Texture disponibili",
     SearchFilter = "Filtra...",
+    FrameModesUnavailable = "L'elenco delle texture è vuoto: addon base o FRAME_MODES non disponibile.",
     Reset = "Reimposta",
     ResetDesc = "Reimposta le opzioni di Elite Player Frame (Enhanced) ai valori predefiniti.",
 }
