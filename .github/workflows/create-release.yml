@@ -1,23 +1,22 @@
-# Create a git tag from the version in the addon .toc and publish a GitHub Release.
-# Triggers: (1) on push to main when the .toc file changed (e.g. version bump on merge);
-#           (2) manually from Actions → Create version tag → Run workflow.
+# Create a git tag from the version in the addon .toc and publish a GitHub Release with a ZIP file.
+# Triggers: (1) on push to main; (2) manually from Actions → Run workflow.
 # If the tag for the current TOC version already exists, the workflow does nothing.
-# Publishing the release triggers "CurseForge Upload" automatically.
 
-name: Create version tag
+name: Create Release
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'ElitePlayerFrame_Enhanced_CustomSkins.toc'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  tag:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,7 +34,7 @@ jobs:
           fi
           VERSION=$(grep -E '^\s*##\s*Version\s*:' "$TOC" | sed 's/.*Version\s*:\s*//' | tr -d ' \r\n')
           if [ -z "$VERSION" ]; then
-            echo "::error::Could not parse version from $TOC (expected line like '## Version: 1.0.1')"
+            echo "::error::Could not parse version from $TOC (expected line like '## Version: 1.0.0')"
             exit 1
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -63,15 +62,33 @@ jobs:
           git push origin "$TAG"
           echo "Created and pushed tag $TAG"
 
+      - name: Create ZIP archive
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p release/ElitePlayerFrame_Enhanced_CustomSkins
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='release' \
+            --exclude='.idea' \
+            --exclude='.gitignore' \
+            --exclude='deploy.bat' \
+            --exclude='AGENTS.md' \
+            --exclude='.cursorrules' \
+            . release/ElitePlayerFrame_Enhanced_CustomSkins/
+          cd release
+          zip -r "../ElitePlayerFrame_Enhanced_CustomSkins-v${VERSION}.zip" ElitePlayerFrame_Enhanced_CustomSkins/
+          cd ..
+          echo "Created ElitePlayerFrame_Enhanced_CustomSkins-v${VERSION}.zip"
+
       - name: Create GitHub Release
         if: steps.check.outputs.skip != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
-          body: |
-            Release ${{ steps.version.outputs.tag }}.
-            See [changelog.txt](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/changelog.txt) for details.
+          name: Release ${{ steps.version.outputs.tag }}
+          files: ElitePlayerFrame_Enhanced_CustomSkins-v${{ steps.version.outputs.version }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
