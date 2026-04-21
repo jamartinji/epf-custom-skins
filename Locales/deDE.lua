@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.deDE = {
     DisplayDesc = "Rahmenänderungen am Spielerfenster ein- oder ausblenden.",
     ClassSelection = "Klassenauswahl",
     ClassSelectionDesc = "Im Auto-Modus Rahmen nach Klasse/Spezialisierung wählen.",
+    SexSelection = "Geschlechtsauswahl",
+    SexSelectionDesc = "Im Auto-Modus Rahmen nach Geschlecht wählen.",
     FactionSelection = "Fraktionsauswahl",
     FactionSelectionDesc = "Im Auto-Modus Rahmen nach Fraktion wählen.",
     HideInInstance = "In Instanz ausblenden",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.deDE = {
     OutputLevelDesc = "Nachrichtenmenge (0 = kritisch, höher = mehr Debug).",
     SectionTextures = "Verfügbare Texturen",
     SearchFilter = "Filtern...",
+    FrameModesUnavailable = "Texturliste ist leer: Basis-Addon oder FRAME_MODES ist nicht verfügbar.",
     Reset = "Zurücksetzen",
     ResetDesc = "Elite Player Frame (Enhanced) Einstellungen auf Standard zurücksetzen.",
 }

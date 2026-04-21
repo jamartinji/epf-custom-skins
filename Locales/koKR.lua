@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.koKR = {
     DisplayDesc = "플레이어 프레임 수정 사항 표시 또는 숨기기.",
     ClassSelection = "직업 선택",
     ClassSelectionDesc = "자동 모드에서 직업/특성별 프레임 선택.",
+    SexSelection = "성별 선택",
+    SexSelectionDesc = "자동 모드에서 성별별 프레임 선택.",
     FactionSelection = "진영 선택",
     FactionSelectionDesc = "자동 모드에서 진영별 프레임 선택.",
     HideInInstance = "인스턴스에서 숨기기",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.koKR = {
     OutputLevelDesc = "메시지 상세도 (0 = 중요, 높을수록 더 많은 디버그).",
     SectionTextures = "사용 가능한 텍스처",
     SearchFilter = "필터...",
+    FrameModesUnavailable = "텍스처 목록이 비어 있습니다: 기본 애드온 또는 FRAME_MODES를 사용할 수 없습니다.",
     Reset = "초기화",
     ResetDesc = "Elite Player Frame (Enhanced) 설정을 기본값으로 초기화.",
 }

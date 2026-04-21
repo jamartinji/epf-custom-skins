@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.enUS = {
     DisplayDesc = "Show or hide the player frame modifications.",
     ClassSelection = "Class selection",
     ClassSelectionDesc = "In Auto mode, choose frame by your class/spec.",
+    SexSelection = "Sex selection",
+    SexSelectionDesc = "In Auto mode, choose frame by sex.",
     FactionSelection = "Faction selection",
     FactionSelectionDesc = "In Auto mode, choose frame by faction.",
     HideInInstance = "Hide in instance",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.enUS = {
     OutputLevelDesc = "Message verbosity (0 = critical, higher = more debug).",
     SectionTextures = "Available textures",
     SearchFilter = "Filter...",
+    FrameModesUnavailable = "Texture list is empty: base addon or FRAME_MODES not available.",
     Reset = "Reset",
     ResetDesc = "Reset Elite Player Frame (Enhanced) settings to defaults.",
 }

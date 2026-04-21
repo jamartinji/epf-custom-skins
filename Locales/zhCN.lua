@@ -17,6 +17,8 @@ EPF_CustomSkins_Locales.zhCN = {
     DisplayDesc = "显示或隐藏玩家框架的修改。",
     ClassSelection = "按职业选择",
     ClassSelectionDesc = "自动模式下按职业/专精选择框架。",
+    SexSelection = "按性别选择",
+    SexSelectionDesc = "自动模式下按性别选择框架。",
     FactionSelection = "按阵营选择",
     FactionSelectionDesc = "自动模式下按阵营选择框架。",
     HideInInstance = "副本中隐藏",
@@ -25,6 +27,7 @@ EPF_CustomSkins_Locales.zhCN = {
     OutputLevelDesc = "消息详细程度（0 = 关键，越高 = 越多调试）。",
     SectionTextures = "可用材质",
     SearchFilter = "筛选...",
+    FrameModesUnavailable = "材质列表为空：基础插件或 FRAME_MODES 不可用。",
     Reset = "重置",
     ResetDesc = "将 Elite Player Frame (Enhanced) 设置重置为默认。",
 }

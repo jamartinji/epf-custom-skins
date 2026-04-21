@@ -1,22 +1,38 @@
 -- [ ADDON LOGIC ] Spec-change handling and registration with ElitePlayerFrame_Enhanced.
 -- Texture data is in TextureDefinitions.lua (EPF_CustomSkins_Definitions).
 
--- Own options (SavedVariables: EPF_CustomSkins_Options in TOC)
-EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
-if EPF_CustomSkins_Options.hideInInstance == nil then
-    EPF_CustomSkins_Options.hideInInstance = false
-end
-
 local baseAddon = nil
 local DELAY = 0.25
 local pendingUpdate = false
+local registerRetries = 0
+local MAX_REGISTER_RETRIES = 20
 
 local eventFrame = CreateFrame("Frame")
 local delayFrame = CreateFrame("Frame")
+local INFO_LOGS = false
+
+local function Log(message)
+    if INFO_LOGS and DEFAULT_CHAT_FRAME then
+        DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00EPF Custom Skins:|r " .. tostring(message))
+    end
+end
+
+local function LogError(context, err)
+    local details = tostring(err or "unknown error")
+    Log("|cffff3333" .. tostring(context) .. ": " .. details .. "|r")
+    if geterrorhandler then
+        geterrorhandler()("EPF Custom Skins - " .. tostring(context) .. ": " .. details)
+    end
+end
 
 local function runUpdate()
     if baseAddon and baseAddon.Update then
-        pcall(function() baseAddon:Update(true) end)
+        local ok, err = pcall(function() baseAddon:Update(true) end)
+        if not ok then
+            LogError("runUpdate", err)
+        end
+    elseif type(PlayerFrame_Update) == "function" then
+        pcall(PlayerFrame_Update, true)
     end
 end
 
@@ -46,7 +62,7 @@ eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 eventFrame:SetScript("OnEvent", function(_, event)
     if event == "ZONE_CHANGED_NEW_AREA" then
-        if baseAddon and baseAddon.Update and EPF_CustomSkins_Options.hideInInstance then
+        if baseAddon and baseAddon.Update then
             pcall(function() baseAddon:Update(true) end)
         end
         return
@@ -59,29 +75,68 @@ end)
 
 local function AddCustomSkins()
     if EPF_CustomSkins_Loaded then return end
-    EPF_CustomSkins_Loaded = true
 
     local D = EPF_CustomSkins_Definitions
     if not D or not D.textureConfig then
+        Log("Texture definitions not available yet.")
         return
     end
 
     local folderPath = D.folderPath
     if not folderPath then
-        print("|cff00ff00EPF Custom Skins|r |cffff0000folderPath not set in TextureDefinitions.|r")
+        LogError("Setup", "folderPath not set in TextureDefinitions")
         return
     end
     local defaultFrameLayout = D.defaultFrameLayout
+    Log("Registering custom frame modes...")
+    local registeredCount = 0
+    local failedCount = 0
 
-    for _, data in ipairs(D.textureConfig) do
-        ElitePlayerFrame_Enhanced:AddCustomFrameMode(function(a)
+    for idx, data in ipairs(D.textureConfig) do
+        local ok, result = pcall(function()
+            return ElitePlayerFrame_Enhanced:AddCustomFrameMode(function(a)
             if not baseAddon then
                 baseAddon = a
                 EPF_CustomSkins_BaseAddon = a
+                Log("Captured base addon reference.")
             end
 
-            local className = data.class and (a.safeIndex(a.CLASSES, data.class, "name", 2) or data.class) or (data.race or "?")
-            local classColor = (data.class and a.safeIndex(a.CLASSES, data.class, "color")) or CreateColor(1, 1, 1)
+            local safeIndex = a.SafeIndex or a.safeIndex
+            local createTexture = a.CreateTexture or a.SetTexture
+            local createPointOffset = a.CreatePointOffset or a.SetPointOffset
+            local createLayeredTextures = a.CreateLayeredTextures or a.SetLayeredTextures
+            if type(safeIndex) ~= "function"
+                or type(createTexture) ~= "function"
+                or type(createPointOffset) ~= "function"
+                or type(createLayeredTextures) ~= "function"
+            then
+                return
+            end
+
+            local classId
+            local className
+            local classColor
+            if data.class and type(a.GetClass) == "function" then
+                local ok, classData = pcall(function() return a:GetClass(data.class) end)
+                if ok and type(classData) == "table" then
+                    classId = classData.id
+                    if type(classData.name) == "table" then
+                        className = classData.name[2] or classData.name[1]
+                    else
+                        className = classData.name
+                    end
+                    classColor = classData.color
+                end
+            end
+            if not classId and data.class then
+                classId = (a.CLASSES_ENUM and a.CLASSES_ENUM[data.class]) or data.class
+            end
+            if not className then
+                className = data.class and tostring(data.class) or (data.race or "?")
+            end
+            if not classColor then
+                classColor = CreateColor(1, 1, 1)
+            end
 
             --local fullPath = folderPath .. data.name .. "." .. data.ext
             local fullPath2x = folderPath .. data.name .. "-2x." .. data.ext
@@ -136,64 +191,125 @@ local function AddCustomSkins()
                     ["bottomTexCoord"] = layer.bottomTexCoord,
                 }
                 local ox, oy = layer.pointOffset[1], layer.pointOffset[2]
-                textureLayers[j] = a.SetTexture(tex, a.SetPointOffset(ox, oy))
+                textureLayers[j] = createTexture(tex, createPointOffset(ox, oy))
             end
 
             local layered
-            if singleLayer then
-                layered = a.SetLayeredTextures(nil, textureLayers[1])
+            if a.CreateLayeredTextures then
+                if singleLayer then
+                    layered = createLayeredTextures(nil, textureLayers[1])
+                else
+                    layered = createLayeredTextures(textureLayers[1], textureLayers[2])
+                end
+            elseif singleLayer then
+                layered = createLayeredTextures(nil, textureLayers[1])
+            elseif #textureLayers == 2 then
+                layered = createLayeredTextures(textureLayers[1], textureLayers[2])
             else
-                layered = a.SetLayeredTextures(unpack(textureLayers))
+                layered = createLayeredTextures(unpack(textureLayers))
             end
 
             return {
                 menuName,
                 classColor,
                 layered,
-                a.SetPointOffset(restIconOffset[1], restIconOffset[2]),
+                createPointOffset(restIconOffset[1], restIconOffset[2]),
                 function(addon)
+                    addon = addon or baseAddon
+                    local settings = (addon and addon.settings) or _G["ElitePlayerFrame_Enhanced_Settings"] or {}
+                    local classSelectionEnabled = settings.classSelection ~= false
+                    local factionSelectionEnabled = settings.factionSelection ~= false
+                    local specSelectionEnabled = settings.specializationSelection ~= false
+
                     if data.class then
-                        if not addon.settings.classSelection then return false end
-                        if addon.info.character.class ~= data.class then return false end
+                        -- Manual-only entries should never be auto-selected.
+                        if data.class == "CUSTOM" then return false end
+                        if not classSelectionEnabled then return false end
+                        local _, playerClassToken = UnitClass("player")
+                        if type(data.class) == "string" then
+                            if playerClassToken ~= data.class then return false end
+                        elseif classId then
+                            local _, _, playerClassId = UnitClass("player")
+                            if playerClassId ~= classId then return false end
+                        end
                     end
                     if data.faction then
-                        if not addon.settings.factionSelection then return false end
-                        if addon.info.character.faction ~= data.faction then return false end
+                        if not factionSelectionEnabled then return false end
+                        if UnitFactionGroup("player") ~= data.faction then return false end
                     end
                     if data.race then
                         local _, playerRaceEn = UnitRace("player")
                         if playerRaceEn ~= data.race then return false end
                     end
                     if data.spec then
-                        local currentSpecIndex = GetSpecialization()
-                        if currentSpecIndex then
-                            local currentSpecID = GetSpecializationInfo(currentSpecIndex)
-                            return currentSpecID == data.spec
+                        if not specSelectionEnabled then return true end
+                        local currentSpecID
+                        if PlayerUtil and type(PlayerUtil.GetCurrentSpecID) == "function" then
+                            currentSpecID = PlayerUtil.GetCurrentSpecID()
+                        elseif GetSpecialization and GetSpecializationInfo then
+                            local currentSpecIndex = GetSpecialization()
+                            if currentSpecIndex then
+                                currentSpecID = GetSpecializationInfo(currentSpecIndex)
+                            end
                         end
-                        return false
+                        if currentSpecID ~= data.spec then return false end
                     end
                     return true
                 end
             }
+            end)
         end)
-    end
 
-    -- [ Hide in instance ] Hook base addon GetTexture so in instances we use default frame when option is on.
-    if baseAddon and baseAddon.GetTexture and baseAddon.TEXTURES then
-        local origGetTexture = baseAddon.GetTexture
-        function baseAddon.GetTexture()
-            if EPF_CustomSkins_Options.hideInInstance and IsInInstance() then
-                return baseAddon.TEXTURES[1]
-            end
-            return origGetTexture()
+        if not ok then
+            LogError("AddCustomFrameMode", result)
+            failedCount = failedCount + 1
+        elseif result then
+            registeredCount = registeredCount + 1
+        else
+            failedCount = failedCount + 1
         end
     end
 
-    print("|cff00ff00EPF Custom Skins:|r Textures loaded (with specialization support).")
+    if registeredCount > 0 then
+        EPF_CustomSkins_Loaded = true
+        Log("Textures loaded (with specialization support). Registered modes: " .. tostring(registeredCount) .. ", failed/skipped: " .. tostring(failedCount))
+        -- EPF may have already resolved Auto mode before custom entries existed.
+        -- Force a refresh pass now and once more shortly after to catch load-order timing.
+        runUpdate()
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0.2, runUpdate)
+        end
+    else
+        Log("No custom frame modes registered yet. Failed/skipped: " .. tostring(failedCount))
+    end
 end
 
-if ElitePlayerFrame_Enhanced and ElitePlayerFrame_Enhanced:Initialised() then
+local function TryAddCustomSkins()
+    if EPF_CustomSkins_Loaded then
+        return
+    end
+
+    if not ElitePlayerFrame_Enhanced or type(ElitePlayerFrame_Enhanced.AddCustomFrameMode) ~= "function" then
+        registerRetries = registerRetries + 1
+        if registerRetries <= MAX_REGISTER_RETRIES and C_Timer and C_Timer.After then
+            Log("Base addon API not ready. Retry " .. tostring(registerRetries) .. "/" .. tostring(MAX_REGISTER_RETRIES))
+            C_Timer.After(0.5, TryAddCustomSkins)
+        else
+            LogError("Startup", "ElitePlayerFrame_Enhanced API not available for custom registration")
+        end
+        return
+    end
+
     AddCustomSkins()
-else
-    hooksecurefunc(ElitePlayerFrame_Enhanced, "Initialised", AddCustomSkins)
+    if not EPF_CustomSkins_Loaded then
+        registerRetries = registerRetries + 1
+        if registerRetries <= MAX_REGISTER_RETRIES and C_Timer and C_Timer.After then
+            Log("Custom modes still pending. Retry " .. tostring(registerRetries) .. "/" .. tostring(MAX_REGISTER_RETRIES))
+            C_Timer.After(0.5, TryAddCustomSkins)
+        else
+            LogError("Startup", "Could not register custom modes after retries")
+        end
+    end
 end
+
+TryAddCustomSkins()

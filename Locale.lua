@@ -10,6 +10,7 @@ local defaultStrings = {
     OutputLevel = "Message output level",
     SectionTextures = "Available textures",
     SearchFilter = "Filter...",
+    FrameModesUnavailable = "Texture list is empty: base addon or FRAME_MODES not available.",
 }
 EPF_CustomSkins_L = setmetatable(EPF_CustomSkins_Locales[loc] or {}, {
     __index = function(_, k) return fallback[k] or defaultStrings[k] or k end
