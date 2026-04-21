@@ -78,9 +78,9 @@ jobs:
             --exclude='.cursorrules' \
             . release/ElitePlayerFrame_Enhanced_CustomSkins/
           cd release
-          zip -r "../ElitePlayerFrame_Enhanced_CustomSkins-v${VERSION}.zip" ElitePlayerFrame_Enhanced_CustomSkins/
+          zip -r "../EPFECS-${VERSION}.zip" ElitePlayerFrame_Enhanced_CustomSkins/
           cd ..
-          echo "Created ElitePlayerFrame_Enhanced_CustomSkins-v${VERSION}.zip"
+          echo "Created EPFECS-${VERSION}.zip"
 
       - name: Create GitHub Release
         if: steps.check.outputs.skip != 'true'
@@ -88,7 +88,7 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.tag }}
-          files: ElitePlayerFrame_Enhanced_CustomSkins-v${{ steps.version.outputs.version }}.zip
+          files: EPFECS-${{ steps.version.outputs.version }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
