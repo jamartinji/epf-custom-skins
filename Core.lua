@@ -132,6 +132,8 @@ local function AddCustomSkins()
     Log("Registering custom frame modes...")
     local registeredCount = 0
     local failedCount = 0
+    local registeredModeIds = {}
+    local priorityModeIds = {}
 
     for idx, data in ipairs(D.textureConfig) do
         local ok, result = pcall(function()
@@ -305,6 +307,15 @@ local function AddCustomSkins()
             LogError("AddCustomFrameMode", result)
             failedCount = failedCount + 1
         elseif result then
+            local modeId = result
+            if type(modeId) == "number" then
+                registeredModeIds[#registeredModeIds + 1] = modeId
+                -- Only prioritize class/spec driven modes in Auto ordering.
+                -- Keep race/faction-only entries in lower priority.
+                if data.class and data.class ~= "CUSTOM" then
+                    priorityModeIds[#priorityModeIds + 1] = modeId
+                end
+            end
             registeredCount = registeredCount + 1
         else
             failedCount = failedCount + 1
@@ -312,6 +323,36 @@ local function AddCustomSkins()
     end
 
     if registeredCount > 0 then
+        -- Give this addon's custom modes priority in Auto mode over base addon custom modes.
+        if baseAddon and type(baseAddon.GetCustomFrameModesOrder) == "function" and type(baseAddon.ReorderCustomFrameModes) == "function" and #priorityModeIds > 0 then
+            local okOrder, currentOrder = pcall(function() return baseAddon:GetCustomFrameModesOrder() end)
+            if okOrder and type(currentOrder) == "table" and #currentOrder > 0 then
+                local isPriority = {}
+                for _, modeId in ipairs(priorityModeIds) do
+                    isPriority[modeId] = true
+                end
+
+                local newOrder = {}
+                for _, modeId in ipairs(currentOrder) do
+                    if isPriority[modeId] then
+                        newOrder[#newOrder + 1] = modeId
+                    end
+                end
+                for _, modeId in ipairs(currentOrder) do
+                    if not isPriority[modeId] then
+                        newOrder[#newOrder + 1] = modeId
+                    end
+                end
+
+                local okReorder, reorderResult = pcall(function()
+                    return baseAddon:ReorderCustomFrameModes(newOrder)
+                end)
+                if not okReorder then
+                    LogError("ReorderCustomFrameModes", reorderResult)
+                end
+            end
+        end
+
         EPF_CustomSkins_Loaded = true
         Log("Textures loaded (with specialization support). Registered modes: " .. tostring(registeredCount) .. ", failed/skipped: " .. tostring(failedCount))
         -- EPF may have already resolved Auto mode before custom entries existed.

@@ -4,6 +4,24 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-04-25
+
+### Added
+
+- Added Demon Hunter Devourer skin support using `spec = 1480`  the `void`.
+- Added a `Void Shadow` alternative custom entry.
+
+### Fixed
+
+- Fixed Auto mode priority so `ElitePlayerFrame_Enhanced` base Demon Hunter skin won't override the Devourer-specific custom skin.
+- Refined custom frame mode reordering to prioritize class/spec custom entries only, preventing faction-only entries from being selected prematurely.
+
+## [1.2.1] - 2026-04-25
+
+### Added
+
+- Void Themed Frames
+
 ## [1.2.1] - 2026-04-25
 
 ### Added

@@ -71,7 +71,18 @@ D.textureConfig = {
     -- [ DEMON HUNTER ]
     -- { class = "DEMONHUNTER", spec = 577, name = "dh_havoc", ext = "png" },      -- Havoc
     -- { class = "DEMONHUNTER", spec = 581, name = "dh_vengeance", ext = "png" },  -- Vengeance
-    -- { class = "DEMONHUNTER", spec = ????, name = "dh_devourer", ext = "png" },  -- Devourer
+    { class = "DEMONHUNTER", spec = 1480, name = "void", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512,
+                    bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
+                },
+            },
+        },
+    },  -- Devourer (default: top variant)
 
     -- [ DRUID ]
     -- { class = "DRUID", spec = 102, name = "druid_balance", ext = "png" },       -- Balance
@@ -273,6 +284,18 @@ D.textureConfig = {
             layers = {
                 { pointOffset = { 42, 6 } },
                 { pointOffset = { 172, 6 } },
+            },
+        },
+    },
+    { class = "CUSTOM", name = "void", ext = "png", displayName = "Void Shadow",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 170, 0 },
+                },
             },
         },
     },
