@@ -78,7 +78,7 @@ D.textureConfig = {
                 {
                     topTexCoord = 0/512,
                     bottomTexCoord = 256/512,
-                    pointOffset = { 42, 0 },
+                    pointOffset = { 170, 0 },
                 },
             },
         },
@@ -287,14 +287,14 @@ D.textureConfig = {
             },
         },
     },
-    { class = "DEMONHUNTER", name = "void", ext = "png", displayName = "Void (Alt)",
+    { class = "CUSTOM", name = "void", ext = "png", displayName = "Void Shadow",
         singleLayer = true,
         layout = {
             layers = {
                 {
                     topTexCoord = 256/512,
                     bottomTexCoord = 512/512,
-                    pointOffset = { 42, 0 },
+                    pointOffset = { 170, 0 },
                 },
             },
         },
