@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Void Themed Frames
+
+## [1.2.1] - 2026-04-25
+
+### Added
+
 - Added explicit minimum dependency requirement: `ElitePlayerFrame_Enhanced` **v1.10.1 or newer**.
 
 ### Fixed
