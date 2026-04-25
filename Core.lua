@@ -41,10 +41,29 @@ end
 local function IsVersionAtLeast(currentVersion, minimumVersion)
     local c1, c2, c3 = ParseVersion(currentVersion)
     local m1, m2, m3 = ParseVersion(minimumVersion)
-    if not (c1 and m1) then return false end
+    if not (c1 and m1) then return nil end
     if c1 ~= m1 then return c1 > m1 end
     if c2 ~= m2 then return c2 > m2 end
     return c3 >= m3
+end
+
+local function GetEPFVersionString(addon)
+    local version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata("ElitePlayerFrame_Enhanced", "Version")
+    if type(version) == "string" and version ~= "" then
+        return version
+    end
+    if addon then
+        if type(addon.VERSION_AND_REVISION) == "string" and addon.VERSION_AND_REVISION ~= "" then
+            return addon.VERSION_AND_REVISION
+        end
+        if addon.VERSION and addon.REVISION then
+            return tostring(addon.VERSION) .. "." .. tostring(addon.REVISION)
+        end
+        if addon.VERSION then
+            return tostring(addon.VERSION)
+        end
+    end
+    return nil
 end
 
 local function runUpdate()
@@ -330,8 +349,10 @@ local function TryAddCustomSkins()
         end)
     end
 
-    local epfVersion = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata("ElitePlayerFrame_Enhanced", "Version")
-    if not IsVersionAtLeast(epfVersion, REQUIRED_EPF_VERSION) then
+    local epfVersion = GetEPFVersionString(addon)
+    local versionCheck = IsVersionAtLeast(epfVersion, REQUIRED_EPF_VERSION)
+    -- Fail-open when version metadata is unavailable; only block when we can confirm it is too old.
+    if versionCheck == false then
         LogError("Startup", ("ElitePlayerFrame_Enhanced v%s or newer is required (found: %s)"):format(REQUIRED_EPF_VERSION, tostring(epfVersion or "unknown")))
         return
     end
