@@ -187,8 +187,8 @@ local checkHideInInstance = CreateFrame("CheckButton", nil, group1, "InterfaceOp
 checkHideInInstance:SetPoint("TOPLEFT", checkFaction, "BOTTOMLEFT", 0, -12)
 local checkHideInInstanceLabel = checkHideInInstance:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 checkHideInInstanceLabel:SetPoint("LEFT", checkHideInInstance, "RIGHT", 4, 0)
-checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
-checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
+checkHideInInstanceLabel:SetText(L.HideInInstance or "Display in instances")
+checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use custom frame in instances, raids, battlegrounds and arenas."
 
 local outputLabel = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 outputLabel:SetPoint("TOPLEFT", checkHideInInstance, "BOTTOMLEFT", 0, -14)
@@ -577,8 +577,8 @@ panel:SetScript("OnShow", function()
     checkClassLabel:SetText(L.ClassSelection or "Class selection")
     checkSexLabel:SetText(L.SexSelection or "Sex selection")
     checkFactionLabel:SetText(L.FactionSelection or "Faction selection")
-    checkHideInInstanceLabel:SetText(L.HideInInstance or "Hide in instance")
-    checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use default frame in instances, raids, battlegrounds and arenas."
+    checkHideInInstanceLabel:SetText(L.HideInInstance or "Display in instances")
+    checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use custom frame in instances, raids, battlegrounds and arenas."
     outputLabel:SetText(L.OutputLevel or "Message output level")
     outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
     btnReset:SetText(L.Reset or "Reset")
