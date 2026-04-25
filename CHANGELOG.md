@@ -4,11 +4,25 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-04-25
+
+### Added
+
+- Added explicit minimum dependency requirement: `ElitePlayerFrame_Enhanced` **v1.10.1 or newer**.
+
+### Fixed
+
+- Improved startup registration resilience for custom frame modes on slower clients/load orders.
+
 ## [1.2.0] - 2026-04-20
 
 ### Changed
 
 - Updated compatibility for recent `ElitePlayerFrame_Enhanced` API changes.
+- Delegated **Hide in instance** behavior fully to EPF base (`instances` setting), keeping this addon as UI-only for that option.
+
+### Added
+- Added **Sex selection** toggle to the options panel (delegated to EPF base setting).
 
 ## [1.1.7] - 2026-04-19
 

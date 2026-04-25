@@ -5,7 +5,9 @@ local baseAddon = nil
 local DELAY = 0.25
 local pendingUpdate = false
 local registerRetries = 0
-local MAX_REGISTER_RETRIES = 20
+local MAX_REGISTER_RETRIES = 60
+local initialisationHookRegistered = false
+local REQUIRED_EPF_VERSION = "1.10.1"
 
 local eventFrame = CreateFrame("Frame")
 local delayFrame = CreateFrame("Frame")
@@ -23,6 +25,45 @@ local function LogError(context, err)
     if geterrorhandler then
         geterrorhandler()("EPF Custom Skins - " .. tostring(context) .. ": " .. details)
     end
+end
+
+local function ParseVersion(versionString)
+    if type(versionString) ~= "string" then return nil end
+    local major, minor, patch = versionString:match("(%d+)%.(%d+)%.(%d+)")
+    if not major then
+        major, minor = versionString:match("(%d+)%.(%d+)")
+        patch = "0"
+    end
+    if not major then return nil end
+    return tonumber(major) or 0, tonumber(minor) or 0, tonumber(patch) or 0
+end
+
+local function IsVersionAtLeast(currentVersion, minimumVersion)
+    local c1, c2, c3 = ParseVersion(currentVersion)
+    local m1, m2, m3 = ParseVersion(minimumVersion)
+    if not (c1 and m1) then return nil end
+    if c1 ~= m1 then return c1 > m1 end
+    if c2 ~= m2 then return c2 > m2 end
+    return c3 >= m3
+end
+
+local function GetEPFVersionString(addon)
+    local version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata("ElitePlayerFrame_Enhanced", "Version")
+    if type(version) == "string" and version ~= "" then
+        return version
+    end
+    if addon then
+        if type(addon.VERSION_AND_REVISION) == "string" and addon.VERSION_AND_REVISION ~= "" then
+            return addon.VERSION_AND_REVISION
+        end
+        if addon.VERSION and addon.REVISION then
+            return tostring(addon.VERSION) .. "." .. tostring(addon.REVISION)
+        end
+        if addon.VERSION then
+            return tostring(addon.VERSION)
+        end
+    end
+    return nil
 end
 
 local function runUpdate()
@@ -289,13 +330,40 @@ local function TryAddCustomSkins()
         return
     end
 
-    if not ElitePlayerFrame_Enhanced or type(ElitePlayerFrame_Enhanced.AddCustomFrameMode) ~= "function" then
+    local addon = ElitePlayerFrame_Enhanced
+    if not addon then
         registerRetries = registerRetries + 1
         if registerRetries <= MAX_REGISTER_RETRIES and C_Timer and C_Timer.After then
             Log("Base addon API not ready. Retry " .. tostring(registerRetries) .. "/" .. tostring(MAX_REGISTER_RETRIES))
             C_Timer.After(0.5, TryAddCustomSkins)
         else
-            LogError("Startup", "ElitePlayerFrame_Enhanced API not available for custom registration")
+            LogError("Startup", "ElitePlayerFrame_Enhanced global not available for custom registration")
+        end
+        return
+    end
+
+    if type(addon.WhenInitialised) == "function" and not initialisationHookRegistered then
+        initialisationHookRegistered = true
+        addon:WhenInitialised(function()
+            TryAddCustomSkins()
+        end)
+    end
+
+    local epfVersion = GetEPFVersionString(addon)
+    local versionCheck = IsVersionAtLeast(epfVersion, REQUIRED_EPF_VERSION)
+    -- Fail-open when version metadata is unavailable; only block when we can confirm it is too old.
+    if versionCheck == false then
+        LogError("Startup", ("ElitePlayerFrame_Enhanced v%s or newer is required (found: %s)"):format(REQUIRED_EPF_VERSION, tostring(epfVersion or "unknown")))
+        return
+    end
+
+    if type(addon.AddCustomFrameMode) ~= "function" then
+        registerRetries = registerRetries + 1
+        if registerRetries <= MAX_REGISTER_RETRIES and C_Timer and C_Timer.After then
+            Log("Base addon registration API not ready. Retry " .. tostring(registerRetries) .. "/" .. tostring(MAX_REGISTER_RETRIES))
+            C_Timer.After(0.5, TryAddCustomSkins)
+        else
+            LogError("Startup", "ElitePlayerFrame_Enhanced AddCustomFrameMode API unavailable after retries")
         end
         return
     end
