@@ -4,6 +4,17 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 2026-04-25
+
+### Changed
+
+- Simplified `Core.lua` to target `ElitePlayerFrame_Enhanced` `>= 1.10.1` only, removing legacy compatibility paths, delayed retries, and multi-stage registration flow.
+- Registration now uses `ElitePlayerFrame_Enhanced:WhenInitialised()` as the single entrypoint and uses EPF selection helpers directly for auto-condition checks.
+
+### Fixed
+
+- Kept class/spec custom mode prioritization so the Devourer (`spec = 1480`) skin resolves before base EPF Demon Hunter class mode.
+
 ## [1.2.3] - 2026-04-25
 
 ### Fixed
