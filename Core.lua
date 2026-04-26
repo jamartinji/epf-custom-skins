@@ -23,7 +23,15 @@ local function BuildMenuName(addon, data)
         return data.displayName
     end
 
-    local class_name = data.class and tostring(data.class) or (data.race or "?")
+    local class_name = "?"
+    if data.class then
+        class_name = tostring(data.class)
+    elseif data.race then
+        class_name = data.race
+    elseif data.faction then
+        class_name = data.faction
+    end
+
     if data.class and type(addon.GetClass) == "function" then
         local class_info = addon:GetClass(data.class)
         if type(class_info) == "table" then
@@ -34,14 +42,44 @@ local function BuildMenuName(addon, data)
             end
         end
     end
+    if data.race and type(addon.GetRace) == "function" then
+        local race_info = addon:GetRace(data.race)
+        if type(race_info) == "table" and race_info.name then
+            class_name = race_info.name
+        end
+    end
+    if data.faction and not data.class and not data.race and type(addon.GetFaction) == "function" then
+        local faction_info = addon:GetFaction(data.faction)
+        if type(faction_info) == "table" and faction_info.name then
+            class_name = faction_info.name
+        end
+    end
 
     local menu_name = class_name
     if data.spec then
         local _, spec_name = GetSpecializationInfoByID(data.spec)
         menu_name = menu_name .. " (" .. (spec_name or ("Spec " .. data.spec)) .. ")"
     end
-    if data.race then menu_name = menu_name .. " - " .. data.race end
-    if data.faction then menu_name = menu_name .. " - " .. data.faction end
+    if data.race and data.class then
+        local race_label = data.race
+        if type(addon.GetRace) == "function" then
+            local race_info = addon:GetRace(data.race)
+            if type(race_info) == "table" and race_info.name then
+                race_label = race_info.name
+            end
+        end
+        menu_name = menu_name .. " - " .. race_label
+    end
+    if data.faction and (data.class or data.race) then
+        local faction_label = data.faction
+        if type(addon.GetFaction) == "function" then
+            local faction_info = addon:GetFaction(data.faction)
+            if type(faction_info) == "table" and faction_info.name then
+                faction_label = faction_info.name
+            end
+        end
+        menu_name = menu_name .. " - " .. faction_label
+    end
 
     if data.menuColor then
         local color_code = data.menuColor
@@ -49,6 +87,12 @@ local function BuildMenuName(addon, data)
             color_code = "|cff" .. color_code
         end
         menu_name = color_code .. menu_name .. "|r"
+    elseif data.faction and type(addon.GetFaction) == "function" then
+        local faction_info = addon:GetFaction(data.faction)
+        if type(faction_info) == "table" and faction_info.color and faction_info.color.GetRGB then
+            local r, g, b = faction_info.color:GetRGB()
+            menu_name = format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, menu_name)
+        end
     end
 
     return menu_name
@@ -100,7 +144,7 @@ local function RegisterCustomSkins(addon)
     if EPF_CustomSkins_Loaded then return end
 
     local D = EPF_CustomSkins_Definitions
-    if not D or not D.textureConfig then
+    if not D or (not D.textureConfigSpec and not D.textureConfig and not D.textureConfigFallback) then
         Log("Texture definitions not available yet.")
         return
     end
@@ -113,9 +157,21 @@ local function RegisterCustomSkins(addon)
 
     local registered_count = 0
     local failed_count = 0
-    local priority_mode_ids = {}
+    local own_spec_mode_ids = {}
+    local own_class_default_mode_ids = {}
+    local own_classless_mode_ids = {}
+    local own_all_mode_ids = {}
 
-    for _, data in ipairs(D.textureConfig) do
+    local merged_config = {}
+    local spec_list = D.textureConfigSpec or D.textureConfig or {}
+    for _, entry in ipairs(spec_list) do
+        merged_config[#merged_config + 1] = entry
+    end
+    for _, entry in ipairs(D.textureConfigFallback or {}) do
+        merged_config[#merged_config + 1] = entry
+    end
+
+    for _, data in ipairs(merged_config) do
         local ok, mode_id = pcall(function()
             return addon:AddCustomFrameMode(function(a)
                 local menu_name = BuildMenuName(a, data)
@@ -146,8 +202,13 @@ local function RegisterCustomSkins(addon)
 
         if ok and type(mode_id) == "number" then
             registered_count = registered_count + 1
-            if data.class and data.class ~= "CUSTOM" then
-                priority_mode_ids[#priority_mode_ids + 1] = mode_id
+            own_all_mode_ids[#own_all_mode_ids + 1] = mode_id
+            if data.spec and data.class and data.class ~= "CUSTOM" then
+                own_spec_mode_ids[#own_spec_mode_ids + 1] = mode_id
+            elseif data.class and data.class ~= "CUSTOM" then
+                own_class_default_mode_ids[#own_class_default_mode_ids + 1] = mode_id
+            else
+                own_classless_mode_ids[#own_classless_mode_ids + 1] = mode_id
             end
         else
             failed_count = failed_count + 1
@@ -157,26 +218,56 @@ local function RegisterCustomSkins(addon)
         end
     end
 
-    if #priority_mode_ids > 0 then
+    local function ReorderCustomModes()
         local order = addon:GetCustomFrameModesOrder()
-        if type(order) == "table" and #order > 0 then
-            local is_priority = {}
-            for _, mode_id in ipairs(priority_mode_ids) do
-                is_priority[mode_id] = true
-            end
+        if type(order) ~= "table" or #order == 0 then return end
 
-            local new_order = {}
-            for _, mode_id in ipairs(order) do
-                if is_priority[mode_id] then
-                    new_order[#new_order + 1] = mode_id
-                end
+        local is_own = {}
+        local is_spec = {}
+        local is_class_default = {}
+        local is_classless = {}
+
+        for _, mode_id in ipairs(own_all_mode_ids) do is_own[mode_id] = true end
+        for _, mode_id in ipairs(own_spec_mode_ids) do is_spec[mode_id] = true end
+        for _, mode_id in ipairs(own_class_default_mode_ids) do is_class_default[mode_id] = true end
+        for _, mode_id in ipairs(own_classless_mode_ids) do is_classless[mode_id] = true end
+
+        local base_mode_ids = {}
+        for _, mode_id in ipairs(order) do
+            if not is_own[mode_id] then
+                base_mode_ids[#base_mode_ids + 1] = mode_id
             end
-            for _, mode_id in ipairs(order) do
-                if not is_priority[mode_id] then
-                    new_order[#new_order + 1] = mode_id
-                end
+        end
+
+        local new_order = {}
+        for _, mode_id in ipairs(order) do
+            if is_spec[mode_id] then
+                new_order[#new_order + 1] = mode_id
             end
-            addon:ReorderCustomFrameModes(new_order)
+        end
+        for _, mode_id in ipairs(base_mode_ids) do
+            new_order[#new_order + 1] = mode_id
+        end
+        for _, mode_id in ipairs(order) do
+            if is_class_default[mode_id] then
+                new_order[#new_order + 1] = mode_id
+            end
+        end
+        for _, mode_id in ipairs(order) do
+            if is_classless[mode_id] then
+                new_order[#new_order + 1] = mode_id
+            end
+        end
+        addon:ReorderCustomFrameModes(new_order)
+    end
+
+    if #own_all_mode_ids > 0 then
+        -- Run immediately and again shortly after: EPF may append base custom modes
+        -- later in the same init tick depending on callback registration order.
+        ReorderCustomModes()
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0, ReorderCustomModes)
+            C_Timer.After(0.2, ReorderCustomModes)
         end
     end
 
@@ -188,10 +279,6 @@ if ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.WhenInitialised)
     ElitePlayerFrame_Enhanced:WhenInitialised(function(addon)
         local ok, err = pcall(function()
             RegisterCustomSkins(addon)
-            addon:RegisterCallback("SETTINGS_RESET", function()
-                EPF_CustomSkins_Loaded = false
-                RegisterCustomSkins(addon)
-            end, "EPF_CustomSkins_SettingsReset_ReRegister")
         end)
         if not ok then
             LogError("RegisterCustomSkins", err)
