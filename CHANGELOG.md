@@ -4,6 +4,21 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2026-04-26
+
+### Changed
+
+- Split main texture definitions into specialization-first (`TextureDefinitions.lua`) and fallback (`TextureDefinitionsFallback.lua`) groups to keep ordering maintainable.
+- Updated extra atlas injections (`TextureDefinitionsExtra.lua`) to append into fallback definitions after the split.
+- Updated options integration to use `ElitePlayerFrame_Enhanced:Reset()` and EPF callbacks for settings synchronization on modern EPF versions.
+
+### Fixed
+
+- Corrected custom mode ordering so base EPF class defaults (notably Death Knight and Demon Hunter) are evaluated before classless race/faction fallbacks.
+- Added delayed reorder passes to handle EPF callback timing where base custom modes may be appended after initial registration.
+- Restored localized race/faction menu labels and dynamic faction color styling in the texture list.
+- Removed unnecessary custom-mode re-registration on `SETTINGS_RESET` (fixed upstream in EPF 1.10.3).
+
 ## [1.2.4] - 2026-04-25
 
 ### Changed

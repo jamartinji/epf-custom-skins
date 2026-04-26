@@ -35,34 +35,18 @@ title:SetPoint("TOPLEFT", 16, -16)
 title:SetText(ADDON_NAME)
 
 local function getBaseAddon()
-    -- Prefer main addon API object (has SetSetting/Update/GetFrameModes on newer versions)
-    if not ElitePlayerFrame_Enhanced then
-        return EPF_CustomSkins_BaseAddon
-    end
-    if type(ElitePlayerFrame_Enhanced.IsInitialised) == "function" then
-        if ElitePlayerFrame_Enhanced:IsInitialised() then
-            return ElitePlayerFrame_Enhanced
-        end
-        return EPF_CustomSkins_BaseAddon
-    end
-    if type(ElitePlayerFrame_Enhanced.Initialised) == "function" then
-        if ElitePlayerFrame_Enhanced:Initialised() then
-            return ElitePlayerFrame_Enhanced
-        end
-        return EPF_CustomSkins_BaseAddon
-    end
-    if ElitePlayerFrame_Enhanced.FRAME_MODES or ElitePlayerFrame_Enhanced.settings then
-        return ElitePlayerFrame_Enhanced
-    end
-    return EPF_CustomSkins_BaseAddon
+    return ElitePlayerFrame_Enhanced
 end
 
 local BASE_SETTINGS_GLOBAL = "ElitePlayerFrame_Enhanced_Settings"
 local function getBaseSettings()
+    local addon = getBaseAddon()
+    if addon and addon.settings then
+        return addon.settings
+    end
     local sv = _G[BASE_SETTINGS_GLOBAL]
     if sv then return sv end
-    local addon = getBaseAddon()
-    return (addon and addon.settings) and addon.settings or nil
+    return nil
 end
 
 local function getOutputLevels(addon)
@@ -85,14 +69,8 @@ end
 
 local function requestBaseUpdate(force)
     local addon = getBaseAddon()
-    if not addon then return end
-    if type(addon.Update) == "function" then
+    if addon and type(addon.Update) == "function" then
         pcall(function() addon:Update(force) end)
-    elseif ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.Update) == "function" then
-        pcall(function() ElitePlayerFrame_Enhanced:Update(force) end)
-    elseif type(PlayerFrame_Update) == "function" then
-        -- Fallback: EPF hooks PlayerFrame_Update and uses it to refresh textures.
-        pcall(PlayerFrame_Update, true)
     end
 end
 
@@ -100,10 +78,6 @@ local function setBaseSetting(setting, value)
     local addon = getBaseAddon()
     if addon and type(addon.SetSetting) == "function" then
         local ok = pcall(function() addon:SetSetting(setting, value) end)
-        if ok then return true end
-    end
-    if ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.SetSetting) == "function" then
-        local ok = pcall(function() ElitePlayerFrame_Enhanced:SetSetting(setting, value) end)
         if ok then return true end
     end
     local settings = getBaseSettings()
@@ -275,55 +249,43 @@ btnReset:SetText(L.Reset or "Reset")
 btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
 btnReset:SetScript("OnClick", function()
     local addon = getBaseAddon()
-    if not addon or not addon.settings or not addon.SV_SETTINGS_DEFAULTS then return end
-    local def = addon.SV_SETTINGS_DEFAULTS
-    addon.settings.display = def.display
-    addon.settings.frameMode = def.frameMode
-    addon.settings.classSelection = def.classSelection
-    addon.settings.sexSelection = def.sexSelection
-    addon.settings.factionSelection = def.factionSelection
-    addon.settings.instances = def.instances
-    addon.settings.outputLevel = def.outputLevel
-    if addon.Update then addon:Update(true) end
-    local defCopy = {
-        display = def.display,
-        classSelection = def.classSelection,
-        sexSelection = def.sexSelection,
-        factionSelection = def.factionSelection,
-        instances = def.instances,
-        outputLevel = def.outputLevel,
-    }
-    if C_Timer and C_Timer.After then
-        C_Timer.After(0, function()
-            updateUIFromDefaults(defCopy)
-        end)
-    else
-        updateUIFromDefaults(defCopy)
+    if addon and type(addon.Reset) == "function" then
+        addon:Reset()
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0, function()
+                refreshMainAddonChecks()
+                updateFrameModeList()
+            end)
+            C_Timer.After(0.1, function()
+                refreshMainAddonChecks()
+                updateFrameModeList()
+            end)
+        end
     end
 end)
 
 checkDisplay:SetScript("OnClick", function(self)
-    if setBaseSetting("display", self:GetChecked()) then
+    if setBaseSetting("display", self:GetChecked() and true or false) then
         requestBaseUpdate(true)
     end
 end)
 checkClass:SetScript("OnClick", function(self)
-    if setBaseSetting("classSelection", self:GetChecked()) then
+    if setBaseSetting("classSelection", self:GetChecked() and true or false) then
         requestBaseUpdate(true)
     end
 end)
 checkSex:SetScript("OnClick", function(self)
-    if setBaseSetting("sexSelection", self:GetChecked()) then
+    if setBaseSetting("sexSelection", self:GetChecked() and true or false) then
         requestBaseUpdate(true)
     end
 end)
 checkFaction:SetScript("OnClick", function(self)
-    if setBaseSetting("factionSelection", self:GetChecked()) then
+    if setBaseSetting("factionSelection", self:GetChecked() and true or false) then
         requestBaseUpdate(true)
     end
 end)
 checkHideInInstance:SetScript("OnClick", function(self)
-    if setBaseSetting("instances", self:GetChecked()) then
+    if setBaseSetting("instances", self:GetChecked() and true or false) then
         requestBaseUpdate(true)
     end
 end)
@@ -601,6 +563,23 @@ local function registerOptions()
     if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterAddOnCategory then
         local category = Settings.RegisterCanvasLayoutCategory(panel, ADDON_NAME)
         Settings.RegisterAddOnCategory(category)
+    end
+    local addon = getBaseAddon()
+    if addon and type(addon.WhenInitialised) == "function" then
+        addon:WhenInitialised(function(a)
+            if type(a.RegisterCallback) == "function" then
+                a:RegisterCallback("SETTING_CHANGED", function()
+                    refreshMainAddonChecks()
+                    updateFrameModeList()
+                end, "EPF_CustomSkins_Options_SettingChanged")
+                a:RegisterCallback("SETTINGS_RESET", function()
+                    refreshMainAddonChecks()
+                    updateFrameModeList()
+                end, "EPF_CustomSkins_Options_SettingsReset")
+            end
+            refreshMainAddonChecks()
+            updateFrameModeList()
+        end)
     end
 end
 

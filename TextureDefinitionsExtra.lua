@@ -2,7 +2,8 @@
 -- singleLayer = true: only one layer per entry (the one with the correct offset for the top layer).
 
 local D = EPF_CustomSkins_Definitions
-if not D or not D.textureConfig then return end
+if not D then return end
+D.textureConfigFallback = D.textureConfigFallback or D.textureConfig or {}
 
 local extraEntries = {
     -- Cell (1,1) (1)
@@ -121,5 +122,5 @@ local extraEntries = {
 }
 
 for _, entry in ipairs(extraEntries) do
-    D.textureConfig[#D.textureConfig + 1] = entry
+    D.textureConfigFallback[#D.textureConfigFallback + 1] = entry
 end
