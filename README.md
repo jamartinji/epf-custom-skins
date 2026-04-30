@@ -11,20 +11,21 @@ Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com
 
 ## ✨ What This Add-on Adds (vs. Original)
 
-| Feature | Original EPF Enhanced   | This add-on                                                          |
-|--------|-------------------------|----------------------------------------------------------------------|
-| Custom frame textures | Built-in modes only     | Custom textures from `assets/`, configured in Lua                    |
-| Selection by class | Yes                     | Yes (same)                                                           |
-| Selection by **specialization** | Yes (base setting available) | Yes — adds practical per-spec custom skins (e.g. Affliction vs Demonology) |
-| Selection by **race** | No                      | Yes — optional race-specific or race+spec textures                   |
-| Selection by **faction** | Yes, for built-in modes only | Yes — optional `"Alliance"` / `"Horde"` in your config; respects `/epf faction` |
-| **Auto-update on spec change** | Limited to built-in/custom modes already present | Yes — forces refresh after custom mode registration and on spec change |
+| Feature | Original EPF Enhanced | This add-on |
+| --- | --- | --- |
+| Auto selectors (class/spec/race/sex/faction) | Yes | Uses the same EPF selectors; adds more custom skins that can participate in Auto |
+| Texture framework / custom mode API | Yes | Uses EPF API and ships a curated set of custom textures and rules |
+| Included per-spec skins | Limited to what EPF ships | Expanded predefined set (for example multiple Warlock specs, Devourer) |
+| Included fallback rules (class/race/faction) | Limited to what EPF ships | Expanded predefined fallback entries and alternatives |
+| Options UX for EPF settings | Slash commands + addon compartment controls | Dedicated options panel that controls EPF settings in one place |
+| Manual texture picking | Yes (`/epf frame`) | Yes (same EPF mode list, with custom entries registered by this addon) |
 
 ---
 
 ## 📌 Requirements
 
 - **ElitePlayerFrame_Enhanced** must be installed and enabled.
+- Recommended EPF version: **1.10.4+**.
 
 ## 📥 Installation
 
@@ -38,12 +39,14 @@ Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com
 
 The addon adds a configuration panel under **Esc → System → AddOns → EPF Custom Skins** (or **Interface → AddOns** depending on client). From there you can:
 
-- **Display** — Show or hide the player frame modifications (same as base addon).
-- **Class selection** — In Auto mode, choose frame by class/spec/race (default: on).
-- **Faction selection** — In Auto mode, choose frame by faction when textures have `faction` set (default: on).
+- **Display** — Show or hide the player frame modifications (EPF `display` setting).
+- **Class selection** — Toggle EPF class-based selection in Auto mode.
+- **Sex selection** — Toggle EPF sex-based selection in Auto mode.
+- **Faction selection** — Toggle EPF faction-based selection in Auto mode.
+- **Display in instances** — Toggle EPF `instances` behavior.
 - **Message output level** — Verbosity of addon messages (0 = critical only, higher = more debug).
-- **Reset** — Reset Elite Player Frame (Enhanced) settings to defaults.
-- **Available textures** — Scrollable list of all frame modes (default, automatic, and each custom texture). Use the **Filter** box to search by name; **click a row** to select that texture (same as `/epf frame N`).
+- **Reset** — Calls EPF reset and refreshes synced settings.
+- **Available textures** — Scrollable list of all EPF frame modes (built-in + registered custom textures). Use **Filter** to search and click a row to select (`/epf frame N` equivalent).
 
 ---
 
@@ -51,7 +54,12 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
 
 1. Put texture files (e.g. PNG) in the add-on’s **`assets/`** folder.
 2. Add **`-2x`** versions (e.g. `warlock-2x.png`) for high-DPI.
-3. Edit **`TextureDefinitions.lua`** and add or edit entries in the **`textureConfig`** table. Each entry has:
+3. Edit texture definition tables:
+   - **`TextureDefinitions.lua`** → specialization-first entries in `textureConfigSpec`.
+   - **`TextureDefinitionsFallback.lua`** → class defaults, race/faction fallbacks, and manual alternatives in `textureConfigFallback`.
+   - **`TextureDefinitionsExtra.lua`** → appends extra manual entries into fallback definitions.
+
+Each entry has:
    - **class** (required): e.g. `"WARLOCK"`, `"DRUID"`.
    - **name** and **ext**: file name and extension (e.g. `"warlock"`, `"png"`).
    - **spec** (optional): specialization ID for spec-only skins.
@@ -62,7 +70,7 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
 
 ### Frame layout
 
-In **`TextureDefinitions.lua`**, **`defaultFrameLayout`** defines sizes, texture coordinates (UV), and positions for each texture layer and for the rest icon. All entries in `textureConfig` use it unless they set their own **`layout`**.
+In **`TextureDefinitions.lua`**, **`defaultFrameLayout`** defines sizes, texture coordinates (UV), and positions for each texture layer and for the rest icon. All entries in `textureConfigSpec` and `textureConfigFallback` use it unless they set their own **`layout`**.
 
 - **`defaultFrameLayout`** has:
   - **`layers`**: array of layer tables. Each layer has **`width`**, **`height`**, **`leftTexCoord`**, **`rightTexCoord`**, **`topTexCoord`**, **`bottomTexCoord`**, and **`pointOffset`** = `{ x, y }`.
@@ -72,10 +80,12 @@ To use different dimensions or positions for a specific texture, add a **`layout
 
 ### Load order and priority
 
-Textures are checked **in the order they appear** in `textureConfig`. The **first** entry whose conditions match (class, then optional faction/race/spec) is used. So:
+Auto selection uses an ordered priority flow:
 
-- Put **more specific** entries **first** (e.g. race+spec+faction → spec only → class only).
-- Example order: Warlock Affliction Undead → Warlock Affliction Horde → Warlock Affliction → Warlock.
+- Specialization-specific custom entries (`textureConfigSpec`) are evaluated first.
+- Base EPF class defaults are evaluated next.
+- Fallback custom entries (`textureConfigFallback`) are evaluated after base class defaults.
+- Classless fallback entries (race/faction) are last, so they do not override class defaults.
 
 ---
 
@@ -83,12 +93,15 @@ Textures are checked **in the order they appear** in `textureConfig`. The **firs
 
 The base addon provides several slash commands. Use **`/epf help`** to list them.
 
-### Class and faction selection (automatic mode)
+### Auto selection toggles
 
 - **`/epf class`** — toggles **class-based** frame selection in automatic mode. **Enabled by default.** When on, the addon (and this add-on’s textures) picks the skin by your class (and, with this add-on, by spec/race). When off, automatic mode ignores class.
+- **`/epf spec`** — toggles specialization-based selection in automatic mode.
+- **`/epf race`** — toggles race-based selection in automatic mode.
+- **`/epf sex`** — toggles sex-based selection in automatic mode.
 - **`/epf faction`** — toggles **faction-based** frame selection in automatic mode. **Enabled by default.** When on, entries in `textureConfig` that have **faction** set (e.g. `faction = "Horde"`) will only match that faction.
 
-For automatic class/spec/race/faction behaviour, use **`/epf frame 1`** (see below) and leave **class** (and **faction**, if you use faction-specific textures) enabled (default).
+For automatic behavior, use **`/epf frame 1`** and leave the selector toggles you want enabled.
 
 ### Frame mode (picking a texture)
 
