@@ -16,6 +16,6 @@ desktop.ini
 *.bak
 
 # ignore source art
-# *.psd
+*.psd
 # *.ai
 # *.xcf

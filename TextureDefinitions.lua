@@ -58,7 +58,30 @@ D.defaultFrameLayout = {
 D.textureConfigSpec = {
 
     -- [ DEATH KNIGHT ]
-    -- { class = "DEATHKNIGHT", spec = 250, name = "dk_blood", ext = "png" },      -- Blood
+    { class = "DEATHKNIGHT", spec = 250, name = "dk_blood-benjiro_blue", ext = "png",
+        layout = {
+            layers = {
+                {
+                    width = 0,
+                    height = 0,
+                    leftTexCoord = 0/512,
+                    rightTexCoord = 512/512,
+                    topTexCoord = 0/512,
+                    bottomTexCoord = 0/512,
+                    pointOffset = { 42, 0 },
+                },
+                {
+                    width = 280,
+                    height = 150,
+                    leftTexCoord = 0/512,
+                    rightTexCoord = 512/512,
+                    topTexCoord = 216/512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 192, -8 },
+                },
+            },
+        },
+    },      -- Blood
     -- { class = "DEATHKNIGHT", spec = 251, name = "dk_frost", ext = "png" },      -- Frost
     -- { class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", ext = "png" },     -- Unholy
 
