@@ -12,14 +12,12 @@ D.textureConfigFallback = {
     { class = "EVOKER", name = "evoker", ext = "png" },
     { class = "HUNTER", name = "hunter", ext = "png" },
     { class = "MAGE", name = "mage", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
                 {
-                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
-                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
-                },
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    topTexCoord = 256 / 512,
+                    bottomTexCoord = 512/512,
                     pointOffset = { 172, 0 },
                 },
             },
@@ -109,6 +107,23 @@ D.textureConfigFallback = {
             },
         },
     },
+
+    { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    width = 280,
+                    height = 163,
+                    leftTexCoord = 0/512,
+                    rightTexCoord = 512/512,
+                    topTexCoord = 216/512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 190, -12 },
+                },
+            },
+        },
+    }, -- Blood
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },

@@ -4,12 +4,17 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.8] - 2026-05-27
+
+### Added
+
+- Added new DK frost and unholy skins.
+
 ## [1.2.7] - 2026-05-25
 
 ### Fixed
 
 - Adjusted, new DK Blood skin position and size.
-
 
 ## [1.2.6] - 2026-05-25
 
