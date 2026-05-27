@@ -58,7 +58,8 @@ D.defaultFrameLayout = {
 D.textureConfigSpec = {
 
     -- [ DEATH KNIGHT ]
-    { class = "DEATHKNIGHT", spec = 250, name = "dk_blood-by-benjiro_blue", ext = "png", singleLayer = true,
+    { class = "DEATHKNIGHT", spec = 250, name = "dk_blood-by-benjiro_blue", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
                 {
@@ -73,8 +74,30 @@ D.textureConfigSpec = {
             },
         },
     },      -- Blood
-    -- { class = "DEATHKNIGHT", spec = 251, name = "dk_frost", ext = "png" },      -- Frost
-    -- { class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", ext = "png" },     -- Unholy
+    { class = "DEATHKNIGHT", spec = 251, name = "unholyfrost", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256 / 512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Frost
+    { class = "DEATHKNIGHT", spec = 252, name = "unholyfrost", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0 / 512,
+                    bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },     -- Unholy
 
     -- [ DEMON HUNTER ]
     -- { class = "DEMONHUNTER", spec = 577, name = "dh_havoc", ext = "png" },      -- Havoc
@@ -110,12 +133,9 @@ D.textureConfigSpec = {
 
     -- [ MAGE ]
     { class = "MAGE", spec = 62, name = "mage", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
-                {
-                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
-                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
-                },
                 {
                     topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 172, 0 },
@@ -124,12 +144,9 @@ D.textureConfigSpec = {
         },
     },           -- Arcane
     { class = "MAGE", spec = 63, name = "firefrost", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
-                {
-                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
-                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
-                },
                 {
                     topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 172, 0 },
@@ -138,12 +155,9 @@ D.textureConfigSpec = {
         },
     },             -- Fire
     { class = "MAGE", spec = 64, name = "firefrost", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
-                {
-                    width = 1, height = 1, pointOffset = { 0, 0 },  -- Hide first layer
-                    leftTexCoord = 0, rightTexCoord = 0, topTexCoord = 0, bottomTexCoord = 0,
-                },
                 {
                     topTexCoord = 256/512, bottomTexCoord = 512/512,
                     pointOffset = { 172, 0 },
