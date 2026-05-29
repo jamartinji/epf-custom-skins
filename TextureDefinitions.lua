@@ -74,7 +74,7 @@ D.textureConfigSpec = {
             },
         },
     },      -- Blood
-    { class = "DEATHKNIGHT", spec = 251, name = "unholyfrost", ext = "png",
+    { class = "DEATHKNIGHT", spec = 251, name = "dk_unholyfrost", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
@@ -86,7 +86,7 @@ D.textureConfigSpec = {
             },
         },
     },      -- Frost
-    { class = "DEATHKNIGHT", spec = 252, name = "unholyfrost", ext = "png",
+    { class = "DEATHKNIGHT", spec = 252, name = "dk_unholyfrost", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
