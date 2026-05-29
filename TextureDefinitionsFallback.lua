@@ -84,7 +84,35 @@ D.textureConfigFallback = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
-    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
+    { class = "PRIEST",  name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
+    { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    width = 280,
+                    height = 163,
+                    leftTexCoord = 0/512,
+                    rightTexCoord = 512/512,
+                    topTexCoord = 216/512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 190, -12 },
+                },
+            },
+        },
+    },
+    { class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png", displayName = "Devourer Horns",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512,
+                    bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
+                },
+            },
+        },
+    },
     { class = "WARLOCK", name = "warlock_red", ext = "png", displayName = "Warlock (Old Red)" },
     { class = "WARLOCK", name = "fel_corruption", ext = "png", displayName = "Fel corruption" },
     { class = "WARLOCK", name = "destro_succubus", ext = "png", displayName = "Inferno Succubus",
@@ -107,24 +135,18 @@ D.textureConfigFallback = {
             },
         },
     },
-
-    { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
+    { class = "CUSTOM", name = "void", ext = "png", displayName = "Void Matter",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    width = 280,
-                    height = 163,
-                    leftTexCoord = 0/512,
-                    rightTexCoord = 512/512,
-                    topTexCoord = 216/512,
-                    bottomTexCoord = 512/512,
-                    pointOffset = { 190, -12 },
+                    topTexCoord = 0/512,
+                    bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
                 },
             },
         },
-    }, -- Blood
-
+    },
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected.
     { class = "CUSTOM", name = "blackdragon", ext = "png", displayName = "Black Dragon" },
 }
