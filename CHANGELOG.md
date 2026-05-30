@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Previous devourer skin moved to custom -> Void Matter
+- Updated DK unholy skin
 
 ## [1.2.8] - 2026-05-27
 

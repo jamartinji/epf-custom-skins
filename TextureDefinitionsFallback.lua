@@ -84,7 +84,7 @@ D.textureConfigFallback = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
-    { class = "PRIEST",  name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
+    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
     { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
         singleLayer = true,
         layout = {
