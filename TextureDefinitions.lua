@@ -74,7 +74,7 @@ D.textureConfigSpec = {
             },
         },
     },      -- Blood
-    { class = "DEATHKNIGHT", spec = 251, name = "unholyfrost", ext = "png",
+    { class = "DEATHKNIGHT", spec = 251, name = "dk_unholyfrost", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
@@ -86,7 +86,7 @@ D.textureConfigSpec = {
             },
         },
     },      -- Frost
-    { class = "DEATHKNIGHT", spec = 252, name = "unholyfrost", ext = "png",
+    { class = "DEATHKNIGHT", spec = 252, name = "dk_unholyfrost", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
@@ -102,18 +102,18 @@ D.textureConfigSpec = {
     -- [ DEMON HUNTER ]
     -- { class = "DEMONHUNTER", spec = 577, name = "dh_havoc", ext = "png" },      -- Havoc
     -- { class = "DEMONHUNTER", spec = 581, name = "dh_vengeance", ext = "png" },  -- Vengeance
-    { class = "DEMONHUNTER", spec = 1480, name = "void", ext = "png",
+    { class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512,
-                    bottomTexCoord = 256/512,
+                    topTexCoord = 256/512,
+                    bottomTexCoord = 512/512,
                     pointOffset = { 170, 0 },
                 },
             },
         },
-    },  -- Devourer (default: top variant)
+    },  -- Devourer
 
     -- [ DRUID ]
     -- { class = "DRUID", spec = 102, name = "druid_balance", ext = "png" },       -- Balance
