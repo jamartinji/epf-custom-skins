@@ -6,6 +6,9 @@ local ADDON_LOADED_NAME = "ElitePlayerFrame_Enhanced_CustomSkins"
 
 local L = EPF_CustomSkins_L or {}
 local INFO_LOGS = false
+local PAD = 16
+local GROUP_SPACING = 20
+local SECTION_PADDING = 10
 
 local function Log(message)
     if INFO_LOGS and DEFAULT_CHAT_FRAME then
@@ -30,9 +33,69 @@ local panel = CreateFrame("Frame", "EPFCustomSkinsOptionsPanel", UIParent)
 panel.name = ADDON_NAME
 panel:Hide()
 
+local TAB_BAR_HEIGHT = 28
+local CONTENT_TOP_OFFSET = -(16 + TAB_BAR_HEIGHT + 8)
+
+local settingsPanel = CreateFrame("Frame", nil, panel)
+settingsPanel:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, CONTENT_TOP_OFFSET)
+settingsPanel:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", 0, 0)
+
+local overridesPanel = EPF_CustomSkins_OptionsOverrides and EPF_CustomSkins_OptionsOverrides.Build(panel, CONTENT_TOP_OFFSET)
+
+local activeTab = 1
+local tabButtons = {}
+
+local function selectOptionsTab(tabIndex)
+    activeTab = tabIndex
+    settingsPanel:SetShown(tabIndex == 1)
+    if overridesPanel then
+        overridesPanel:SetShown(tabIndex == 2)
+        if tabIndex == 2 and overridesPanel.Refresh then
+            overridesPanel:Refresh()
+        end
+    end
+    for index, button in ipairs(tabButtons) do
+        if index == tabIndex then
+            button:SetEnabled(false)
+            if button.Text then
+                button.Text:SetFontObject("GameFontHighlight")
+            end
+        else
+            button:SetEnabled(true)
+            if button.Text then
+                button.Text:SetFontObject("GameFontNormal")
+            end
+        end
+    end
+end
+
 local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 16, -16)
 title:SetText(ADDON_NAME)
+
+local tabBar = CreateFrame("Frame", nil, panel)
+tabBar:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+tabBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, -40)
+tabBar:SetHeight(TAB_BAR_HEIGHT)
+
+local function createTabButton(index, label)
+    local button = CreateFrame("Button", nil, tabBar)
+    button:SetSize(130, TAB_BAR_HEIGHT)
+    button.Text = button:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    button.Text:SetPoint("CENTER")
+    button.Text:SetText(label)
+    button:SetScript("OnClick", function()
+        selectOptionsTab(index)
+    end)
+    tabButtons[index] = button
+    return button
+end
+
+local tabSettings = createTabButton(1, L.TabSettings or "Settings")
+tabSettings:SetPoint("LEFT", tabBar, "LEFT", 0, 0)
+local tabOverrides = createTabButton(2, L.TabOverrides or "Overrides")
+tabOverrides:SetPoint("LEFT", tabSettings, "RIGHT", 4, 0)
+selectOptionsTab(1)
 
 local function getBaseAddon()
     return ElitePlayerFrame_Enhanced
@@ -88,10 +151,6 @@ local function setBaseSetting(setting, value)
     return false
 end
 
-local PAD = 16
-local GROUP_SPACING = 20
-local SECTION_PADDING = 10
-
 -- Section/list backdrop: ChatFrame background + Tooltip border, insets 3
 local CONTAINER_BACKDROP = {
     bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
@@ -119,9 +178,9 @@ end
 local BackdropTemplate = "BackdropTemplate"
 
 -- Options column (right, 40%); position set in OnShow to the right of group3
-local group1 = CreateFrame("Frame", nil, panel, BackdropTemplate)
-group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
-group1:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
+local group1 = CreateFrame("Frame", nil, settingsPanel, BackdropTemplate)
+group1:SetPoint("TOPRIGHT", settingsPanel, "TOPRIGHT", -PAD, 0)
+group1:SetPoint("BOTTOMRIGHT", settingsPanel, "BOTTOMRIGHT", -PAD, 24)
 setSectionBackdrop(group1)
 
 local sectionMain = group1:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -242,9 +301,9 @@ local function updateUIFromDefaults(def)
     end
 end
 
-local btnReset = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+local btnReset = CreateFrame("Button", nil, settingsPanel, "UIPanelButtonTemplate")
 btnReset:SetSize(100, 22)
-btnReset:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -24, -16)
+btnReset:SetPoint("TOPRIGHT", settingsPanel, "TOPRIGHT", -24, -16)
 btnReset:SetText(L.Reset or "Reset")
 btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
 btnReset:SetScript("OnClick", function()
@@ -291,9 +350,9 @@ checkHideInInstance:SetScript("OnClick", function(self)
 end)
 
 -- Textures column (left, 60%); position and width set in OnShow
-local group3 = CreateFrame("Frame", nil, panel, BackdropTemplate)
-group3:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
-group3:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, 24)
+local group3 = CreateFrame("Frame", nil, settingsPanel, BackdropTemplate)
+group3:SetPoint("TOPLEFT", settingsPanel, "TOPLEFT", PAD, -8)
+group3:SetPoint("BOTTOMLEFT", settingsPanel, "BOTTOMLEFT", PAD, 24)
 setSectionBackdrop(group3)
 
 local listLabel = group3:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -496,8 +555,10 @@ if hasScrollBoxAPI then
 
         local L = EPF_CustomSkins_L or {}
         local filter = currentSearchFilter
+        local overrides_module = EPF_CustomSkins_Overrides
         for i = 0, maxIndex do
-            if filter == "" or (getModeDisplayNamePlain(modes, i, L):find(filter, 1, true)) then
+            local is_override_mode = overrides_module and overrides_module.IsOverrideModeId(i)
+            if not is_override_mode and (filter == "" or (getModeDisplayNamePlain(modes, i, L):find(filter, 1, true))) then
                 dataProvider:Insert({index = i, allModes = modes})
             end
         end
@@ -520,18 +581,21 @@ end
 panel:SetScript("OnShow", function()
     local L = EPF_CustomSkins_L or {}
     panel.name = ADDON_NAME
+    tabSettings.Text:SetText(L.TabSettings or "Settings")
+    tabOverrides.Text:SetText(L.TabOverrides or "Overrides")
+    selectOptionsTab(activeTab)
     -- Layout 60% / 40%: left textures, right options
-    local panelW = panel:GetWidth()
+    local panelW = settingsPanel:GetWidth()
     if panelW and panelW > 0 then
         group3:SetWidth(panelW * 0.6)
         group1:SetWidth(panelW * 0.4)
         group3:ClearAllPoints()
-        group3:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -12)
-        group3:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, 24)
+        group3:SetPoint("TOPLEFT", settingsPanel, "TOPLEFT", PAD, -8)
+        group3:SetPoint("BOTTOMLEFT", settingsPanel, "BOTTOMLEFT", PAD, 24)
         group1:ClearAllPoints()
         group1:SetPoint("TOPLEFT", group3, "TOPRIGHT", GROUP_SPACING, 0)
-        group1:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, 0)
-        group1:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, 24)
+        group1:SetPoint("TOPRIGHT", settingsPanel, "TOPRIGHT", -PAD, 0)
+        group1:SetPoint("BOTTOMRIGHT", settingsPanel, "BOTTOMRIGHT", -PAD, 24)
     end
     title:SetText(ADDON_NAME)
     sectionMain:SetText(L.SectionMainAddon or "Opciones")
