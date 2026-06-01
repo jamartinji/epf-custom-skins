@@ -4,12 +4,24 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0] - 2026-05-25
+## [1.3.1] - 2026-06-01
+
+### Added
+
+- **Copy from target** for fast setups in overrides.
+
+
+## [1.3.0] - 2026-05-30
 
 ### Added
 
 - Auto-mode texture overrides with profiles: assign a skin for a class/spec/race/faction combination.
 - Options panel tabs: **Settings** (existing options) and **Overrides** (new editor).
+- **Copy from target** button in the override editor (enabled when you have a target).
+
+### Fixed
+
+- `MatchesUnitInfo` API for Elite Target Frame: overrides on the target frame match the **target** unit, not the player (unless EPF sync is enabled).
 
 ## [1.2.9] - 2026-05-29
 
