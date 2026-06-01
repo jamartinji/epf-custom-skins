@@ -1,4 +1,4 @@
--- [ OVERRIDES ] Per-character Auto mode texture overrides.
+-- [ OVERRIDES ] Account-wide override profiles; active profile per character.
 
 EPF_CustomSkins_Overrides = EPF_CustomSkins_Overrides or {}
 
@@ -6,7 +6,12 @@ local O = EPF_CustomSkins_Overrides
 local SB = EPF_CustomSkins_SkinBuilder
 
 O.MAX_OVERRIDES = 16
+O.MAX_PROFILES = 32
+O.MAX_PROFILE_NAME_LEN = 32
+O.DEFAULT_PROFILE_NAME = "Default"
+O.STORAGE_VERSION = 2
 O.override_mode_ids = O.override_mode_ids or {}
+O._mode_pool = O._mode_pool or {}
 O.mode_to_override = O.mode_to_override or {}
 O.catalog = O.catalog or {}
 O._addon = nil
@@ -145,20 +150,351 @@ function O.GetCharacterKey()
     return "default"
 end
 
+local function copy_override(override)
+    if type(override) ~= "table" then return nil end
+    local copy = {}
+    for key, value in pairs(override) do
+        if key ~= "modeId" then
+            copy[key] = value
+        end
+    end
+    return copy
+end
+
+function O.CopyOverride(override)
+    return copy_override(override)
+end
+
+function O.IsValidProfileSlot(slot)
+    return type(slot) == "table" and type(slot.overrides) == "table"
+end
+
+function O.NormalizeProfileName(name)
+    if type(name) ~= "string" then return nil end
+    if SB and SB.StripColorCodes then
+        name = SB.StripColorCodes(name)
+    end
+    if strtrim then
+        name = strtrim(name)
+    else
+        name = name:match("^%s*(.-)%s*$")
+    end
+    if not name or name == "" then return nil end
+    if name:find("|", 1, true) or name:find("\n", 1, true) or name:find("\r", 1, true) then
+        return nil
+    end
+    if #name > O.MAX_PROFILE_NAME_LEN then
+        name = name:sub(1, O.MAX_PROFILE_NAME_LEN)
+    end
+    return name
+end
+
+function O.IsReservedProfileName(name)
+    return name and name:lower() == O.DEFAULT_PROFILE_NAME:lower()
+end
+
+--[[
+ * Remove legacy/corrupt keys (e.g. profiles.overrides as a rule list) and keep only valid profile slots.
+--]]
+function O.RepairProfilesStorage()
+    EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
+    local profiles = EPF_CustomSkins_Options.profiles
+    if type(profiles) ~= "table" then
+        EPF_CustomSkins_Options.profiles = {}
+        profiles = EPF_CustomSkins_Options.profiles
+    end
+
+    local root_overrides = profiles.overrides
+    local root_is_override_list = type(root_overrides) == "table"
+        and (root_overrides[1] ~= nil or root_overrides.class ~= nil or root_overrides.catalogId ~= nil)
+
+    if root_is_override_list and not O.IsValidProfileSlot(profiles) then
+        if not O.IsValidProfileSlot(profiles[O.DEFAULT_PROFILE_NAME]) then
+            profiles[O.DEFAULT_PROFILE_NAME] = { overrides = {} }
+        end
+        local dest = profiles[O.DEFAULT_PROFILE_NAME].overrides
+        if #dest == 0 then
+            for index, override in ipairs(root_overrides) do
+                dest[index] = copy_override(override)
+            end
+        end
+        profiles.overrides = nil
+    end
+
+    local to_remove = {}
+    for key, slot in pairs(profiles) do
+        if key == "overrides" and not O.IsValidProfileSlot(slot) then
+            to_remove[#to_remove + 1] = key
+        elseif not O.IsValidProfileSlot(slot) then
+            if type(key) == "number" and type(slot) == "table" and (slot.class or slot.catalogId) then
+                if not O.IsValidProfileSlot(profiles[O.DEFAULT_PROFILE_NAME]) then
+                    profiles[O.DEFAULT_PROFILE_NAME] = { overrides = {} }
+                end
+                local dest = profiles[O.DEFAULT_PROFILE_NAME].overrides
+                dest[#dest + 1] = copy_override(slot)
+            end
+            to_remove[#to_remove + 1] = key
+        end
+    end
+    for _, key in ipairs(to_remove) do
+        profiles[key] = nil
+    end
+
+    if not O.IsValidProfileSlot(profiles[O.DEFAULT_PROFILE_NAME]) then
+        profiles[O.DEFAULT_PROFILE_NAME] = { overrides = {} }
+    end
+end
+
+function O.FindProfileKey(name)
+    if not name or type(name) ~= "string" then return nil end
+    local profiles = O.GetProfilesTable()
+    local name_lower = name:lower()
+    for key, slot in pairs(profiles) do
+        if type(key) == "string" and key:lower() == name_lower and O.IsValidProfileSlot(slot) then
+            return key
+        end
+    end
+    return nil
+end
+
+function O.ProfileExists(name)
+    return O.FindProfileKey(name) ~= nil
+end
+
+function O.RemoveInvalidProfileKeysForName(name)
+    if not name then return end
+    local profiles = O.GetProfilesTable()
+    local name_lower = name:lower()
+    for key, slot in pairs(profiles) do
+        if type(key) == "string" and key:lower() == name_lower and not O.IsValidProfileSlot(slot) then
+            profiles[key] = nil
+        end
+    end
+end
+
+function O.MigrateStorageToProfiles()
+    EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
+    if (EPF_CustomSkins_Options.version or 0) >= O.STORAGE_VERSION
+        and type(EPF_CustomSkins_Options.profiles) == "table" then
+        return
+    end
+
+    local default_overrides = {}
+    local seen = {}
+
+    local function append_override(override)
+        if type(override) ~= "table" then return end
+        local copy = copy_override(override)
+        if not copy or not O.HasMatchCriteria(copy) then return end
+        O.NormalizeOverride(copy)
+        local signature = table.concat({
+            tostring(copy.class or ""),
+            tostring(copy.spec or ""),
+            tostring(copy.race or ""),
+            tostring(copy.faction or ""),
+            tostring(copy.sex or ""),
+            tostring(copy.catalogId or ""),
+        }, "\31")
+        if seen[signature] then return end
+        seen[signature] = true
+        default_overrides[#default_overrides + 1] = copy
+    end
+
+    EPF_CustomSkins_Options.characters = EPF_CustomSkins_Options.characters or {}
+    for _, char_data in pairs(EPF_CustomSkins_Options.characters) do
+        if type(char_data) == "table" and type(char_data.overrides) == "table" then
+            for _, override in ipairs(char_data.overrides) do
+                append_override(override)
+            end
+            char_data.overrides = nil
+        end
+        if not char_data.activeProfile then
+            char_data.activeProfile = O.DEFAULT_PROFILE_NAME
+        end
+    end
+
+    EPF_CustomSkins_Options.profiles = EPF_CustomSkins_Options.profiles or {}
+    local default_profile = EPF_CustomSkins_Options.profiles[O.DEFAULT_PROFILE_NAME]
+    if not default_profile then
+        EPF_CustomSkins_Options.profiles[O.DEFAULT_PROFILE_NAME] = { overrides = default_overrides }
+    elseif type(default_profile.overrides) ~= "table" or #default_profile.overrides == 0 then
+        default_profile.overrides = default_overrides
+    end
+
+    EPF_CustomSkins_Options.version = O.STORAGE_VERSION
+end
+
 function O.EnsureSavedVariables()
     EPF_CustomSkins_Options = EPF_CustomSkins_Options or {}
-    if not EPF_CustomSkins_Options.version then
-        EPF_CustomSkins_Options.version = 1
-    end
+    O.MigrateStorageToProfiles()
+    EPF_CustomSkins_Options.profiles = EPF_CustomSkins_Options.profiles or {}
+    O.RepairProfilesStorage()
     EPF_CustomSkins_Options.characters = EPF_CustomSkins_Options.characters or {}
+    return EPF_CustomSkins_Options
+end
+
+function O.EnsureCharacterRecord()
+    O.EnsureSavedVariables()
     local key = O.GetCharacterKey()
     EPF_CustomSkins_Options.characters[key] = EPF_CustomSkins_Options.characters[key] or {}
-    EPF_CustomSkins_Options.characters[key].overrides = EPF_CustomSkins_Options.characters[key].overrides or {}
-    return EPF_CustomSkins_Options.characters[key].overrides
+    local record = EPF_CustomSkins_Options.characters[key]
+    if not record.activeProfile or not O.ProfileExists(record.activeProfile) then
+        record.activeProfile = O.DEFAULT_PROFILE_NAME
+    end
+    return record
+end
+
+function O.GetProfilesTable()
+    O.EnsureSavedVariables()
+    return EPF_CustomSkins_Options.profiles
+end
+
+function O.GetActiveProfileName()
+    return O.EnsureCharacterRecord().activeProfile
+end
+
+function O.GetProfileList()
+    local names = {}
+    for name, slot in pairs(O.GetProfilesTable()) do
+        if type(name) == "string" and O.IsValidProfileSlot(slot) then
+            names[#names + 1] = name
+        end
+    end
+    table.sort(names, function(a, b)
+        if a == O.DEFAULT_PROFILE_NAME then return true end
+        if b == O.DEFAULT_PROFILE_NAME then return false end
+        return a:lower() < b:lower()
+    end)
+    return names
+end
+
+function O.CountProfiles()
+    local count = 0
+    for _, slot in pairs(O.GetProfilesTable()) do
+        if O.IsValidProfileSlot(slot) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+function O.GetProfileOverrides(profile_name)
+    local profiles = O.GetProfilesTable()
+    local key = O.FindProfileKey(profile_name or "") or profile_name
+    local profile = key and profiles[key]
+    if not profile then return nil end
+    profile.overrides = profile.overrides or {}
+    return profile.overrides
 end
 
 function O.GetOverrides()
-    return O.EnsureSavedVariables()
+    return O.GetProfileOverrides(O.GetActiveProfileName()) or {}
+end
+
+function O.CreateProfile(name, copy_current)
+    name = O.NormalizeProfileName(name)
+    if not name then return false, "invalid" end
+    if O.IsReservedProfileName(name) then return false, "reserved" end
+
+    O.RepairProfilesStorage()
+    O.RemoveInvalidProfileKeysForName(name)
+
+    local existing_key = O.FindProfileKey(name)
+    if existing_key then
+        return false, "exists", existing_key
+    end
+
+    if O.CountProfiles() >= O.MAX_PROFILES then return false, "max" end
+
+    local overrides = {}
+    if copy_current then
+        for _, override in ipairs(O.GetOverrides()) do
+            overrides[#overrides + 1] = copy_override(override)
+        end
+    end
+    O.GetProfilesTable()[name] = { overrides = overrides }
+    return true, nil, name
+end
+
+function O.DeleteProfile(name)
+    name = O.FindProfileKey(name or "") or name
+    if not name or O.IsReservedProfileName(name) then return false, "default" end
+    local profiles = O.GetProfilesTable()
+    if not O.IsValidProfileSlot(profiles[name]) then return false, "missing" end
+
+    local active_key = O.FindProfileKey(O.GetActiveProfileName() or "")
+    local was_active = (active_key == name)
+
+    for _, record in pairs(EPF_CustomSkins_Options.characters or {}) do
+        local record_key = O.FindProfileKey(record.activeProfile or "")
+        if record_key == name then
+            record.activeProfile = O.DEFAULT_PROFILE_NAME
+        end
+    end
+
+    profiles[name] = nil
+
+    if was_active then
+        O.EnsureCharacterRecord().activeProfile = O.DEFAULT_PROFILE_NAME
+        O.ReloadActiveProfileOverrides()
+    end
+    return true
+end
+
+function O.SetActiveProfile(name)
+    name = O.FindProfileKey(name or "") or name
+    if not name or not O.ProfileExists(name) then return false end
+    O.EnsureCharacterRecord().activeProfile = name
+    O.ReloadActiveProfileOverrides()
+    return true
+end
+
+function O.DisablePooledOverrideMode(mode_id)
+    local core = O.GetEpfCore()
+    if not core or not core.TEXTURES or not core.TEXTURES[mode_id] then return end
+    core.TEXTURES[mode_id].autoCondition = function()
+        return false
+    end
+    O.override_mode_ids[mode_id] = nil
+    O.mode_to_override[mode_id] = nil
+end
+
+function O.ReloadActiveProfileOverrides()
+    local addon = O._addon or EPF_CustomSkins_BaseAddon
+    if not addon then return end
+
+    O.PrepareOverridesForSession()
+    local overrides = O.GetOverrides()
+    O.override_mode_ids = {}
+    O.mode_to_override = {}
+
+    for index, override in ipairs(overrides) do
+        local mode_id = O._mode_pool[index]
+        local core = O.GetEpfCore()
+        if mode_id and core and core.TEXTURES and core.TEXTURES[mode_id] then
+            override.modeId = mode_id
+            O.override_mode_ids[mode_id] = true
+            O.mode_to_override[mode_id] = override
+            O.SetOverrideAutoCondition(mode_id)
+            O.RefreshOverrideTexture(mode_id, override)
+            O.UpdateOverrideModeLabels(mode_id, override)
+        else
+            mode_id = O.RegisterSingleOverrideMode(addon, override)
+            O._mode_pool[index] = mode_id
+        end
+    end
+
+    for index = #overrides + 1, #O._mode_pool do
+        local mode_id = O._mode_pool[index]
+        if mode_id then
+            O.DisablePooledOverrideMode(mode_id)
+        end
+    end
+
+    if O._reorder_hook then
+        O._reorder_hook()
+    end
+    O.ScheduleOverrideDisplayRefresh()
 end
 
 function O.NormalizeCatalogId(value)
@@ -622,14 +958,8 @@ function O.RegisterOverrideModes(addon, reorder_callback)
     O.GetEpfCore()
     O._reorder_hook = reorder_callback
     O.BuildCatalog(addon, EPF_CustomSkins_Definitions)
-    O.PrepareOverridesForSession()
-
-    for _, override in ipairs(O.GetOverrides()) do
-        O.RegisterSingleOverrideMode(addon, override)
-    end
-
-    if O._reorder_hook then O._reorder_hook() end
-    O.RefreshAllOverrideTextures()
+    O._mode_pool = {}
+    O.ReloadActiveProfileOverrides()
     return O.override_mode_ids
 end
 

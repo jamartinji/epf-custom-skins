@@ -116,6 +116,158 @@ local function hideCatalogTooltip()
     end
 end
 
+local function getProfilePopupEditBox(dialog)
+    if dialog and dialog.GetEditBox then
+        return dialog:GetEditBox()
+    end
+    return nil
+end
+
+local function getProfilePopupButton1(dialog)
+    if dialog and dialog.GetButton1 then
+        return dialog:GetButton1()
+    end
+    return dialog and dialog.button1
+end
+
+--[[
+ * Retail GameDialog requires dialogInfo.text; StaticPopup_Show passes the caption as text_arg1.
+ * OnAccept return value (legacy StaticPopup path): true = keep open, false/nil = close.
+--]]
+local function registerProfilePopups()
+    if not StaticPopupDialogs then
+        return
+    end
+
+    StaticPopupDialogs["EPF_CS_NEW_OVERRIDE_PROFILE"] = {
+        text = "%s",
+        button1 = _G.ACCEPT,
+        button2 = _G.CANCEL,
+        hasEditBox = 1,
+        maxLetters = 32,
+        editBoxWidth = 220,
+        timeout = 0,
+        whileDead = 1,
+        hideOnEscape = 1,
+        preferredIndex = 3,
+        OnShow = function(dialog)
+            local accept_btn = getProfilePopupButton1(dialog)
+            if accept_btn then
+                accept_btn:Disable()
+            end
+            local edit_box = getProfilePopupEditBox(dialog)
+            if edit_box then
+                edit_box:SetText("")
+                edit_box:SetFocus()
+            end
+        end,
+        OnHide = function(dialog)
+            local edit_box = getProfilePopupEditBox(dialog)
+            if edit_box then
+                edit_box:SetText("")
+            end
+        end,
+        EditBoxOnTextChanged = StaticPopup_StandardNonEmptyTextHandler or function(edit_box)
+            local dialog = edit_box:GetParent()
+            local accept_btn = dialog and getProfilePopupButton1(dialog)
+            if accept_btn then
+                local text = edit_box:GetText() or ""
+                accept_btn:SetEnabled(text:match("%S") ~= nil)
+            end
+        end,
+        OnAccept = function(dialog, data)
+            local payload = data or dialog.data
+            local edit_box = getProfilePopupEditBox(dialog)
+            local raw_text = edit_box and edit_box.GetText and edit_box:GetText() or ""
+            local name = O.NormalizeProfileName(raw_text)
+            if not name then
+                if UIErrorsFrame then
+                    UIErrorsFrame:AddMessage(L("OverrideProfileInvalidName", "Invalid profile name."), 1, 0.1, 0.1, 1)
+                end
+                return true
+            end
+            local ok, reason, profile_key = O.CreateProfile(name, true)
+            profile_key = profile_key or name
+            if not ok then
+                if reason == "reserved" and UIErrorsFrame then
+                    UIErrorsFrame:AddMessage(
+                        L("OverrideProfileReservedName", "That name is reserved. Choose another profile name."),
+                        1, 0.1, 0.1, 1
+                    )
+                    return true
+                end
+                if reason == "exists" then
+                    local existing_key = profile_key or O.FindProfileKey(name)
+                    if existing_key then
+                        O.SetActiveProfile(existing_key)
+                        if payload and payload.onChanged then
+                            pcall(payload.onChanged, existing_key)
+                        end
+                        return nil
+                    end
+                    if UIErrorsFrame then
+                        UIErrorsFrame:AddMessage(L("OverrideProfileExists", "That profile name already exists."), 1, 0.1, 0.1, 1)
+                    end
+                    return true
+                end
+                if reason == "max" and UIErrorsFrame then
+                    UIErrorsFrame:AddMessage(L("OverrideProfileMax", "Maximum number of profiles reached."), 1, 0.1, 0.1, 1)
+                end
+                return true
+            end
+            O.SetActiveProfile(profile_key)
+            if payload and payload.onChanged then
+                pcall(payload.onChanged, profile_key)
+            end
+            return nil
+        end,
+        EditBoxOnEnterPressed = StaticPopup_StandardEditBoxOnEnterPressed or function(edit_box)
+            local dialog = edit_box:GetParent()
+            local accept_btn = dialog and getProfilePopupButton1(dialog)
+            if accept_btn and accept_btn:IsEnabled() then
+                StaticPopup_OnClick(dialog, 1)
+            end
+        end,
+        EditBoxOnEscapePressed = StaticPopup_StandardEditBoxOnEscapePressed or function(edit_box)
+            edit_box:ClearFocus()
+            local dialog = edit_box:GetParent()
+            if dialog then
+                dialog:Hide()
+            end
+        end,
+    }
+
+    StaticPopupDialogs["EPF_CS_DELETE_OVERRIDE_PROFILE"] = {
+        text = "%s",
+        button1 = _G.ACCEPT,
+        button2 = _G.CANCEL,
+        timeout = 0,
+        whileDead = 1,
+        hideOnEscape = 1,
+        preferredIndex = 3,
+        OnAccept = function(dialog, data)
+            local profile_name = (data and data.profileName) or (dialog.data and dialog.data.profileName)
+            if not profile_name then
+                return nil
+            end
+            local ok, reason = O.DeleteProfile(profile_name)
+            if not ok then
+                if reason == "default" and UIErrorsFrame then
+                    UIErrorsFrame:AddMessage(L("OverrideProfileCantDeleteDefault", "The Default profile cannot be deleted."), 1, 0.1, 0.1, 1)
+                elseif reason == "missing" and UIErrorsFrame then
+                    UIErrorsFrame:AddMessage(L("OverrideProfileDeleteFailed", "Could not delete that profile."), 1, 0.1, 0.1, 1)
+                end
+                return true
+            end
+            local callback_data = data or dialog.data
+            if callback_data and type(callback_data.onChanged) == "function" then
+                pcall(callback_data.onChanged)
+            end
+            return nil
+        end,
+    }
+end
+
 local function setDropdownDisplayText(dropdown, text)
     if UIDropDownMenu_SetText then
         UIDropDownMenu_SetText(dropdown, text or "")
@@ -808,17 +960,42 @@ local function createOverrideListButton(parent)
 end
 
 function OO.Build(content_panel)
+    registerProfilePopups()
+
     local panel = CreateFrame("Frame", "EPFCustomSkinsOverridesPanel", content_panel)
     panel:SetAllPoints(content_panel)
 
+    local profileBar = CreateFrame("Frame", nil, panel)
+    profileBar:SetPoint("TOPLEFT", panel, "TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
+    profileBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -SECTION_PADDING, -SECTION_PADDING)
+    profileBar:SetHeight(28)
+
+    local profileLabel = profileBar:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    profileLabel:SetPoint("LEFT", profileBar, "LEFT", 0, 0)
+    profileLabel:SetText(L("OverrideProfile", "Profile"))
+
+    local profileDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideProfileDropdown", profileBar, "UIDropDownMenuTemplate")
+    profileDropdown:SetPoint("LEFT", profileLabel, "RIGHT", -12, -2)
+    setupDropdown(profileDropdown, 140)
+
+    local btnProfileNew = CreateFrame("Button", nil, profileBar, "UIPanelButtonTemplate")
+    btnProfileNew:SetSize(44, 22)
+    btnProfileNew:SetPoint("LEFT", profileDropdown, "RIGHT", -4, 0)
+    btnProfileNew:SetText(L("OverrideProfileNew", "New"))
+
+    local btnProfileDelete = CreateFrame("Button", nil, profileBar, "UIPanelButtonTemplate")
+    btnProfileDelete:SetSize(52, 22)
+    btnProfileDelete:SetPoint("LEFT", btnProfileNew, "RIGHT", 4, 0)
+    btnProfileDelete:SetText(L("OverrideProfileDelete", "Delete"))
+
     local intro = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    intro:SetPoint("TOPLEFT", panel, "TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
-    intro:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -SECTION_PADDING, -SECTION_PADDING)
+    intro:SetPoint("TOPLEFT", profileBar, "BOTTOMLEFT", 0, -8)
+    intro:SetPoint("TOPRIGHT", profileBar, "BOTTOMRIGHT", 0, -8)
     intro:SetJustifyH("LEFT")
     intro:SetText(L("OverrideIntro", "Assign a texture for a class/spec/race/faction/sex combination. Overrides take priority in Automatic mode."))
 
     local listGroup = CreateFrame("Frame", nil, panel)
-    listGroup:SetPoint("TOPLEFT", intro, "BOTTOMLEFT", 0, -12)
+    listGroup:SetPoint("TOPLEFT", intro, "BOTTOMLEFT", 0, -10)
     listGroup:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", SECTION_PADDING, SECTION_PADDING)
     listGroup:SetWidth(LIST_PANEL_WIDTH)
     setSectionBackdrop(listGroup)
@@ -1014,6 +1191,7 @@ function OO.Build(content_panel)
         local can_commit = formHasMatchCriteria() and form.catalogId ~= nil
         btnAdd:SetEnabled(can_commit)
         btnSave:SetEnabled(can_commit and selected_index ~= nil)
+        btnDelete:SetEnabled(selected_index ~= nil and true or false)
     end
 
     local function refreshOverridePlayerFrame()
@@ -1161,9 +1339,47 @@ function OO.Build(content_panel)
             form.catalogId = O.NormalizeCatalogId(override.catalogId)
         end
         refreshFormDropdowns()
+        updateEditorActionsState()
     end
 
-    local function refreshList()
+    -- Forward declarations (onProfileChanged calls these before their definitions).
+    local refreshProfileDropdown
+    local refreshList
+    local onProfileChanged
+
+    refreshProfileDropdown = function()
+        local profiles = O.GetProfileList()
+        local active = O.GetActiveProfileName()
+        profileDropdown.epfItems = {}
+        for _, name in ipairs(profiles) do
+            profileDropdown.epfItems[#profileDropdown.epfItems + 1] = {
+                text = name,
+                value = name,
+            }
+        end
+        profileDropdown.epfSelectedValue = active
+        setDropdownDisplayText(profileDropdown, active or O.DEFAULT_PROFILE_NAME)
+        UIDropDownMenu_Initialize(profileDropdown, function(_, level)
+            for _, item in ipairs(profileDropdown.epfItems or {}) do
+                local info = UIDropDownMenu_CreateInfo()
+                info.text = item.text
+                info.func = function()
+                    if item.value ~= O.GetActiveProfileName() then
+                        O.SetActiveProfile(item.value)
+                        onProfileChanged()
+                    else
+                        setDropdownDisplayText(profileDropdown, item.text)
+                    end
+                end
+                info.checked = (item.value == active)
+                UIDropDownMenu_AddButton(info, level)
+            end
+        end)
+        local can_delete = active and active ~= O.DEFAULT_PROFILE_NAME
+        btnProfileDelete:SetEnabled(can_delete and true or false)
+    end
+
+    refreshList = function()
         for _, btn in ipairs(listButtons) do btn:Hide() end
         local overrides = O.GetOverrides()
         local y = 0
@@ -1181,12 +1397,57 @@ function OO.Build(content_panel)
                 selected_index = self.index
                 loadFormFromOverride(O.GetOverrides()[self.index])
                 highlightListSelection()
+                updateEditorActionsState()
             end)
             y = y + (ROW_HEIGHT + 2)
         end
         listContent:SetSize(listScroll:GetWidth() > 0 and listScroll:GetWidth() or 200, math.max(y, 1))
         highlightListSelection()
     end
+
+    onProfileChanged = function()
+        selected_index = nil
+        loadFormFromOverride(nil)
+        refreshProfileDropdown()
+        refreshList()
+        refreshOverridePlayerFrame()
+        updateEditorActionsState()
+    end
+
+    profileDropdown:SetScript("OnShow", function()
+        refreshProfileDropdown()
+    end)
+
+    btnProfileNew:SetScript("OnClick", function()
+        StaticPopup_Show(
+            "EPF_CS_NEW_OVERRIDE_PROFILE",
+            L("OverrideProfileNewTitle", "New override profile"),
+            nil,
+            { onChanged = onProfileChanged }
+        )
+    end)
+
+    btnProfileDelete:SetScript("OnClick", function()
+        local active = O.GetActiveProfileName()
+        if not active or active == O.DEFAULT_PROFILE_NAME then
+            if UIErrorsFrame then
+                UIErrorsFrame:AddMessage(L("OverrideProfileCantDeleteDefault", "The Default profile cannot be deleted."), 1, 0.1, 0.1, 1)
+            end
+            return
+        end
+        StaticPopup_Show(
+            "EPF_CS_DELETE_OVERRIDE_PROFILE",
+            string.format(
+                L("OverrideProfileDeleteConfirm", "Delete profile \"%s\"? All overrides in it will be lost."),
+                active
+            ),
+            nil,
+            {
+                profileName = active,
+                onChanged = onProfileChanged,
+            }
+        )
+    end)
 
     btnAdd:SetScript("OnClick", function()
         if not formHasMatchCriteria() then return end
@@ -1196,6 +1457,7 @@ function OO.Build(content_panel)
             selected_index = #O.GetOverrides()
             refreshList()
             refreshOverridePlayerFrame()
+            updateEditorActionsState()
         end
     end)
 
@@ -1216,6 +1478,7 @@ function OO.Build(content_panel)
             loadFormFromOverride(nil)
             refreshList()
             refreshOverridePlayerFrame()
+            updateEditorActionsState()
         end
     end)
 
@@ -1224,6 +1487,7 @@ function OO.Build(content_panel)
         loadFormFromOverride(nil)
         refreshList()
         refreshOverridePlayerFrame()
+        updateEditorActionsState()
     end)
 
     function panel:Refresh()
@@ -1232,7 +1496,11 @@ function OO.Build(content_panel)
         if addon and EPF_CustomSkins_Definitions then
             O.BuildCatalog(addon, EPF_CustomSkins_Definitions)
         end
-        intro:SetText(L("OverrideIntro", "Assign a texture for a class/spec/race/faction/sex combination. Overrides take priority in Automatic mode."))
+        intro:SetText(L("OverrideIntro", "Assign a texture for a class/spec/race/faction/sex combination. Overrides take priority in Automatic mode. Profiles are account-wide; each character remembers its active profile."))
+        profileLabel:SetText(L("OverrideProfile", "Profile"))
+        btnProfileNew:SetText(L("OverrideProfileNew", "New"))
+        btnProfileDelete:SetText(L("OverrideProfileDelete", "Delete"))
+        refreshProfileDropdown()
         listTitle:SetText(L("OverrideListTitle", "Saved overrides"))
         editorTitle:SetText(L("OverrideEditorTitle", "Edit override"))
         classLabel:SetText(L("OverrideClass", "Class"))
@@ -1247,6 +1515,7 @@ function OO.Build(content_panel)
         btnClear:SetText(L("OverrideClear", "Clear"))
         loadFormFromOverride(selected_index and O.GetOverrides()[selected_index] or nil)
         refreshList()
+        updateEditorActionsState()
         end)
         if not ok and geterrorhandler then
             geterrorhandler()("EPF Custom Skins Overrides Refresh: " .. tostring(err))
@@ -1263,6 +1532,7 @@ function OO.Build(content_panel)
     end)
 
     pcall(function()
+        refreshProfileDropdown()
         loadFormFromOverride(nil)
         refreshList()
         updateEditorActionsState()
