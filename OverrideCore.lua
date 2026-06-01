@@ -15,10 +15,13 @@ O._reorder_hook = nil
 
 local ANY_VALUE = ""
 
--- Saved overrides may use shorthand; API clientFileString is canonical.
+-- Saved overrides may use shorthand; values must match Blizzard clientFileString.
 local RACE_FILE_ALIASES = {
     Earthen = "EarthenDwarf",
+    Haranir = "Harronir", -- Retail typo: raceName Haranir, clientFile Harronir (id 86+).
 }
+
+local RACE_SCAN_MAX_ID = 250
 
 --[[
  * EPF stores TEXTURES on the addon core table (select(2,...)), not on the XML frame global.
@@ -62,7 +65,7 @@ end
 
 local function resolve_race_id(addon, race_value)
     if not race_value or race_value == ANY_VALUE then return nil end
-    race_value = RACE_FILE_ALIASES[race_value] or race_value
+    race_value = O.NormalizeRaceClientFile(race_value)
     local race_id = tonumber(race_value)
     if race_id then return race_id end
     if addon and type(addon.GetRace) == "function" then
@@ -73,7 +76,7 @@ local function resolve_race_id(addon, race_value)
     end
     if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
         local key = O.NormalizeRaceKey(race_value)
-        for id = 1, 150 do
+        for id = 1, RACE_SCAN_MAX_ID do
             local info = C_CreatureInfo.GetRaceInfo(id)
             if info and O.NormalizeRaceKey(info.clientFileString) == key then
                 return id
@@ -81,6 +84,35 @@ local function resolve_race_id(addon, race_value)
         end
     end
     return nil
+end
+
+function O.GetRaceClientFileString(race_id)
+    if not race_id or not C_CreatureInfo or not C_CreatureInfo.GetRaceInfo then
+        return nil
+    end
+    local ok, info = pcall(C_CreatureInfo.GetRaceInfo, race_id)
+    if ok and type(info) == "table" then
+        return info.clientFileString
+    end
+    return nil
+end
+
+--[[
+ * Some races share clientFileString across faction-specific IDs (e.g. Haranir 86/91).
+ * Compare by file string, not only the first ID from resolve_race_id.
+--]]
+function O.RaceCriteriaMatches(override_race, char_race_id)
+    if not override_race or override_race == ANY_VALUE then
+        return true
+    end
+    if not char_race_id then
+        return false
+    end
+    local numeric = tonumber(override_race)
+    if numeric then
+        return char_race_id == numeric
+    end
+    return O.RaceClientFilesEquivalent(override_race, O.GetRaceClientFileString(char_race_id))
 end
 
 local function resolve_sex_id(addon, sex_value)
@@ -139,6 +171,25 @@ function O.NormalizeRaceKey(race)
     return race:upper():gsub(" ", "")
 end
 
+function O.NormalizeRaceClientFile(race_value)
+    if not race_value or race_value == ANY_VALUE then
+        return race_value
+    end
+    return RACE_FILE_ALIASES[race_value] or race_value
+end
+
+function O.RaceClientFilesEquivalent(stored_race, client_file)
+    if not stored_race or stored_race == ANY_VALUE then
+        return true
+    end
+    if not client_file then
+        return false
+    end
+    local a = O.NormalizeRaceKey(O.NormalizeRaceClientFile(stored_race))
+    local b = O.NormalizeRaceKey(O.NormalizeRaceClientFile(client_file))
+    return a == b
+end
+
 local function get_epf_character(addon)
     local frame = addon or O._addon or EPF_CustomSkins_BaseAddon
     if frame and type(frame.GetCharacterInfo) == "function" then
@@ -181,8 +232,7 @@ function O.MatchesCharacter(addon, override)
     end
 
     if override.race and override.race ~= ANY_VALUE then
-        local race_id = resolve_race_id(frame, override.race)
-        if not race_id or char.race ~= race_id then
+        if not O.RaceCriteriaMatches(override.race, char.race) then
             return false
         end
     end
@@ -481,6 +531,9 @@ function O.NormalizeOverride(override)
     override.race = override.race or ANY_VALUE
     override.faction = override.faction or ANY_VALUE
     override.sex = override.sex or ANY_VALUE
+    if override.race and override.race ~= ANY_VALUE then
+        override.race = O.NormalizeRaceClientFile(override.race)
+    end
     override.catalogId = O.NormalizeCatalogId(override.catalogId)
     if override.spec ~= ANY_VALUE then
         override.spec = tonumber(override.spec) or override.spec

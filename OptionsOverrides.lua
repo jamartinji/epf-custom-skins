@@ -329,37 +329,16 @@ local function buildRaceItems()
         VoidElf = true, LightforgedDraenei = true, DarkIronDwarf = true, KulTiran = true, Mechagnome = true,
         Orc = true, Scourge = true, Tauren = true, Troll = true, BloodElf = true, Goblin = true,
         Pandaren = true, Nightborne = true, HighmountainTauren = true, MagharOrc = true, ZandalariTroll = true,
-        Vulpera = true, Dracthyr = true, EarthenDwarf = true, Haranir = true,
+        Vulpera = true, Dracthyr = true, EarthenDwarf = true, Harronir = true,
     }
     if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
-        for race_id = 1, 200 do
+        for race_id = 1, 250 do
             local info = C_CreatureInfo.GetRaceInfo(race_id)
             if info and PLAYABLE_RACE_FILES[info.clientFileString] and not seen[info.clientFileString] then
                 addRace(info.clientFileString, info.raceName)
             end
         end
     end
-
-    -- War Within / Midnight races when not yet returned by the creation API.
-    local function addManualRace(client_file, locale_key, fallback_name)
-        if seen[client_file] then return end
-        local race_name = fallback_name
-        if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
-            for race_id = 1, 200 do
-                local info = C_CreatureInfo.GetRaceInfo(race_id)
-                if info and info.clientFileString == client_file and info.raceName then
-                    race_name = info.raceName
-                    break
-                end
-            end
-        end
-        if (not race_name or race_name == fallback_name) and locale_key then
-            race_name = L(locale_key, fallback_name)
-        end
-        addRace(client_file, race_name)
-    end
-    addManualRace("EarthenDwarf", "OverrideRaceEarthen", "Earthen")
-    addManualRace("Haranir", "OverrideRaceHaranir", "Haranir")
 
     table.sort(items, function(a, b)
         if a.value == ANY_VALUE then return true end
@@ -519,6 +498,7 @@ local RACE_ATLAS_SLUG = {
     EarthenDwarf = "earthen",
     Dracthyr = "dracthyr",
     Haranir = "haranir",
+    Harronir = "haranir",
 }
 
 local function getRaceAtlasSlug(race_file)
@@ -573,6 +553,9 @@ end
  * Extra atlas slug tokens beyond the primary slug (retail uses raceicon128-* as the sharp source).
 --]]
 local function getRaceAtlasSlugVariants(race_file)
+    if O and O.NormalizeRaceClientFile then
+        race_file = O.NormalizeRaceClientFile(race_file)
+    end
     local primary = getRaceAtlasSlug(race_file)
     local variants = { primary }
     local seen = { [primary] = true }
@@ -600,6 +583,9 @@ end
 local function getOverrideRaceAtlasCandidates(race_file, sex)
     if isAnyValue(race_file) then
         return nil
+    end
+    if O and O.NormalizeRaceClientFile then
+        race_file = O.NormalizeRaceClientFile(race_file)
     end
 
     local candidates = {}
