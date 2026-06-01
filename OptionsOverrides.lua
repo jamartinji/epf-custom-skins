@@ -10,6 +10,8 @@ local ANY_VALUE = ""
 local SECTION_PADDING = 8
 local ROW_SPACING = 8
 local LIST_PANEL_WIDTH = 196
+local OVERRIDE_DROPDOWN_WIDTH = 170
+local COPY_CHIP_SIZE = 22
 local TEXTURE_PICKER_WIDTH = 280
 local TEXTURE_PICKER_HEIGHT = 220
 local TEXTURE_PICKER_ROW_HEIGHT = 20
@@ -283,8 +285,35 @@ end
 
 local function setupDropdown(dropdown, width)
     if UIDropDownMenu_SetWidth then
-        UIDropDownMenu_SetWidth(dropdown, width or 170)
+        UIDropDownMenu_SetWidth(dropdown, width or OVERRIDE_DROPDOWN_WIDTH)
     end
+end
+
+local function bindCopyButtonTooltip(btn)
+    btn:SetScript("OnEnter", function(self)
+        if GameTooltip and self.tooltipText then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(self.tooltipText, nil, nil, nil, nil, true)
+            GameTooltip:Show()
+        end
+    end)
+    btn:SetScript("OnLeave", function()
+        if GameTooltip then
+            GameTooltip:Hide()
+        end
+    end)
+end
+
+--[[
+ * Compact button anchored to the right of a criteria dropdown (copy one field from target).
+--]]
+local function createCriteriaCopyChip(parent, dropdown)
+    local btn = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    btn:SetSize(COPY_CHIP_SIZE, COPY_CHIP_SIZE)
+    btn:SetPoint("LEFT", dropdown, "RIGHT", 2, 0)
+    btn:SetText(L("OverrideCopyFieldButton", ">"))
+    bindCopyButtonTooltip(btn)
+    return btn
 end
 
 local function initDropdown(dropdown, items, selected, onSelect)
@@ -1011,9 +1040,31 @@ function OO.Build(content_panel)
 
     local editorTitle = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
     editorTitle:SetPoint("TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
+    editorTitle:SetJustifyH("LEFT")
     editorTitle:SetText(L("OverrideEditorTitle", "Edit override"))
 
+    local btnCopyTarget = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
+    btnCopyTarget:SetHeight(22)
+    btnCopyTarget:SetPoint("TOPRIGHT", editorGroup, "TOPRIGHT", -SECTION_PADDING, -SECTION_PADDING)
+    btnCopyTarget:SetText(L("OverrideCopyTarget", "Copy from target"))
+    btnCopyTarget.tooltipText = L("OverrideCopyTargetTooltip", "Fill criteria from your current target (class, spec, race, faction, sex).")
+    bindCopyButtonTooltip(btnCopyTarget)
+
+    local function fitHeaderCopyTargetButtonWidth()
+        local font_string = btnCopyTarget:GetFontString()
+        if font_string then
+            local text_width = font_string:GetStringWidth() or 0
+            btnCopyTarget:SetWidth(math.min(math.max(text_width + 28, 96), 185))
+        else
+            btnCopyTarget:SetWidth(130)
+        end
+    end
+    fitHeaderCopyTargetButtonWidth()
+
+    editorTitle:SetPoint("RIGHT", btnCopyTarget, "LEFT", -8, 0)
+
     local selected_index = nil
+    local field_copy_buttons = {}
     local form = {
         class = ANY_VALUE,
         spec = ANY_VALUE,
@@ -1029,7 +1080,8 @@ function OO.Build(content_panel)
 
     local classDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideClassDropdown", editorGroup, "UIDropDownMenuTemplate")
     classDropdown:SetPoint("TOPLEFT", classLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(classDropdown, 170)
+    setupDropdown(classDropdown, OVERRIDE_DROPDOWN_WIDTH)
+    local btnCopyClass = createCriteriaCopyChip(editorGroup, classDropdown)
 
     local specLabel = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     specLabel:SetPoint("TOPLEFT", classDropdown, "BOTTOMLEFT", 16, -8)
@@ -1037,7 +1089,8 @@ function OO.Build(content_panel)
 
     local specDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideSpecDropdown", editorGroup, "UIDropDownMenuTemplate")
     specDropdown:SetPoint("TOPLEFT", specLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(specDropdown, 170)
+    setupDropdown(specDropdown, OVERRIDE_DROPDOWN_WIDTH)
+    local btnCopySpec = createCriteriaCopyChip(editorGroup, specDropdown)
 
     local raceLabel = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     raceLabel:SetPoint("TOPLEFT", specDropdown, "BOTTOMLEFT", 16, -8)
@@ -1045,7 +1098,8 @@ function OO.Build(content_panel)
 
     local raceDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideRaceDropdown", editorGroup, "UIDropDownMenuTemplate")
     raceDropdown:SetPoint("TOPLEFT", raceLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(raceDropdown, 170)
+    setupDropdown(raceDropdown, OVERRIDE_DROPDOWN_WIDTH)
+    local btnCopyRace = createCriteriaCopyChip(editorGroup, raceDropdown)
 
     local factionLabel = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     factionLabel:SetPoint("TOPLEFT", raceDropdown, "BOTTOMLEFT", 16, -8)
@@ -1053,7 +1107,8 @@ function OO.Build(content_panel)
 
     local factionDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideFactionDropdown", editorGroup, "UIDropDownMenuTemplate")
     factionDropdown:SetPoint("TOPLEFT", factionLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(factionDropdown, 170)
+    setupDropdown(factionDropdown, OVERRIDE_DROPDOWN_WIDTH)
+    local btnCopyFaction = createCriteriaCopyChip(editorGroup, factionDropdown)
 
     local sexLabel = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     sexLabel:SetPoint("TOPLEFT", factionDropdown, "BOTTOMLEFT", 16, -8)
@@ -1061,10 +1116,17 @@ function OO.Build(content_panel)
 
     local sexDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideSexDropdown", editorGroup, "UIDropDownMenuTemplate")
     sexDropdown:SetPoint("TOPLEFT", sexLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(sexDropdown, 170)
+    setupDropdown(sexDropdown, OVERRIDE_DROPDOWN_WIDTH)
+    local btnCopySex = createCriteriaCopyChip(editorGroup, sexDropdown)
+
+    field_copy_buttons[1] = btnCopyClass
+    field_copy_buttons[2] = btnCopySpec
+    field_copy_buttons[3] = btnCopyRace
+    field_copy_buttons[4] = btnCopyFaction
+    field_copy_buttons[5] = btnCopySex
 
     local textureLabel = editorGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    textureLabel:SetPoint("TOPLEFT", sexDropdown, "BOTTOMLEFT", 16, -8)
+    textureLabel:SetPoint("TOPLEFT", sexDropdown, "BOTTOMLEFT", 16, -10)
     textureLabel:SetText(L("OverrideTexture", "Texture"))
 
     local textureSelectBtn = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
@@ -1187,11 +1249,70 @@ function OO.Build(content_panel)
         return O.HasMatchCriteria(form)
     end
 
+    local function getTargetCriteriaForForm()
+        if not UnitExists or not UnitExists("target") then
+            return nil
+        end
+
+        local criteria = {
+            class = ANY_VALUE,
+            spec = ANY_VALUE,
+            race = ANY_VALUE,
+            faction = ANY_VALUE,
+            sex = ANY_VALUE,
+        }
+
+        local _, class_file = UnitClass("target")
+        if class_file then
+            criteria.class = normalizeClassFile(class_file)
+        end
+
+        if UnitIsPlayer and UnitIsPlayer("target") then
+            if UnitIsUnit and UnitIsUnit("target", "player") and PlayerUtil and PlayerUtil.GetCurrentSpecID then
+                criteria.spec = PlayerUtil.GetCurrentSpecID()
+            elseif GetInspectSpecialization then
+                local spec_id = GetInspectSpecialization("target")
+                if spec_id and spec_id > 0 then
+                    criteria.spec = spec_id
+                end
+            end
+        end
+
+        local _, _, race_id = UnitRace("target")
+        if race_id and C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
+            local ok, race_info = pcall(C_CreatureInfo.GetRaceInfo, race_id)
+            if ok and race_info and race_info.clientFileString then
+                criteria.race = O.NormalizeRaceClientFile(race_info.clientFileString) or race_info.clientFileString
+            end
+        end
+
+        local faction = UnitFactionGroup and UnitFactionGroup("target")
+        if faction then
+            criteria.faction = faction
+        end
+
+        local sex = UnitSex and UnitSex("target")
+        if sex == 2 then
+            criteria.sex = "MALE"
+        elseif sex == 3 then
+            criteria.sex = "FEMALE"
+        end
+
+        return criteria
+    end
+
     local function updateEditorActionsState()
         local can_commit = formHasMatchCriteria() and form.catalogId ~= nil
+        local has_target = UnitExists and UnitExists("target")
         btnAdd:SetEnabled(can_commit)
         btnSave:SetEnabled(can_commit and selected_index ~= nil)
         btnDelete:SetEnabled(selected_index ~= nil and true or false)
+        btnCopyTarget:SetEnabled(has_target and true or false)
+        for _, copy_btn in ipairs(field_copy_buttons) do
+            if copy_btn then
+                copy_btn:SetEnabled(has_target and true or false)
+            end
+        end
     end
 
     local function refreshOverridePlayerFrame()
@@ -1319,6 +1440,48 @@ function OO.Build(content_panel)
         updateTextureButtonLabel()
         updateEditorActionsState()
     end
+
+    local function applyTargetFieldToForm(field)
+        local criteria = getTargetCriteriaForForm()
+        if not criteria or not field or criteria[field] == nil then
+            return false
+        end
+        form[field] = criteria[field]
+        refreshFormDropdowns()
+        return true
+    end
+
+    local function applyTargetCriteriaToForm()
+        local criteria = getTargetCriteriaForForm()
+        if not criteria then
+            return false
+        end
+        form.class = criteria.class
+        form.spec = criteria.spec
+        form.race = criteria.race
+        form.faction = criteria.faction
+        form.sex = criteria.sex
+        refreshFormDropdowns()
+        return true
+    end
+
+    local function bindFieldCopyButton(btn, label_key, field)
+        btn.tooltipText = string.format(
+            L("OverrideCopyFieldTooltip", "Copy %s from current target"),
+            L(label_key, label_key)
+        )
+        btn:SetScript("OnClick", function()
+            if applyTargetFieldToForm(field) then
+                updateEditorActionsState()
+            end
+        end)
+    end
+
+    bindFieldCopyButton(btnCopyClass, "OverrideClass", "class")
+    bindFieldCopyButton(btnCopySpec, "OverrideSpec", "spec")
+    bindFieldCopyButton(btnCopyRace, "OverrideRace", "race")
+    bindFieldCopyButton(btnCopyFaction, "OverrideFaction", "faction")
+    bindFieldCopyButton(btnCopySex, "OverrideSex", "sex")
 
     local function loadFormFromOverride(override)
         if not override then
@@ -1490,6 +1653,12 @@ function OO.Build(content_panel)
         updateEditorActionsState()
     end)
 
+    btnCopyTarget:SetScript("OnClick", function()
+        if applyTargetCriteriaToForm() then
+            updateEditorActionsState()
+        end
+    end)
+
     function panel:Refresh()
         local ok, err = pcall(function()
         local addon = getBaseAddon()
@@ -1513,6 +1682,19 @@ function OO.Build(content_panel)
         btnSave:SetText(L("OverrideSave", "Save"))
         btnDelete:SetText(L("OverrideDelete", "Delete"))
         btnClear:SetText(L("OverrideClear", "Clear"))
+        btnCopyTarget:SetText(L("OverrideCopyTarget", "Copy from target"))
+        btnCopyTarget.tooltipText = L("OverrideCopyTargetTooltip", "Fill criteria from your current target (class, spec, race, faction, sex).")
+        fitHeaderCopyTargetButtonWidth()
+        btnCopyClass:SetText(L("OverrideCopyFieldButton", ">"))
+        btnCopySpec:SetText(L("OverrideCopyFieldButton", ">"))
+        btnCopyRace:SetText(L("OverrideCopyFieldButton", ">"))
+        btnCopyFaction:SetText(L("OverrideCopyFieldButton", ">"))
+        btnCopySex:SetText(L("OverrideCopyFieldButton", ">"))
+        bindFieldCopyButton(btnCopyClass, "OverrideClass", "class")
+        bindFieldCopyButton(btnCopySpec, "OverrideSpec", "spec")
+        bindFieldCopyButton(btnCopyRace, "OverrideRace", "race")
+        bindFieldCopyButton(btnCopyFaction, "OverrideFaction", "faction")
+        bindFieldCopyButton(btnCopySex, "OverrideSex", "sex")
         loadFormFromOverride(selected_index and O.GetOverrides()[selected_index] or nil)
         refreshList()
         updateEditorActionsState()
@@ -1522,7 +1704,16 @@ function OO.Build(content_panel)
         end
     end
 
+    local target_watcher = CreateFrame("Frame", nil, panel)
+    target_watcher:RegisterEvent("PLAYER_TARGET_CHANGED")
+    target_watcher:SetScript("OnEvent", function()
+        if panel:IsShown() then
+            updateEditorActionsState()
+        end
+    end)
+
     panel:SetScript("OnShow", function()
+        updateEditorActionsState()
         pcall(function() panel:Refresh() end)
     end)
 

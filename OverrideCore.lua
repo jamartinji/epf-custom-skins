@@ -542,51 +542,65 @@ local function get_epf_character(addon)
 end
 
 --[[
- * Override criteria must match the player even when EPF class/spec/race/sex selection toggles are off.
- * CharacterIsClass() returns false when classSelection is disabled in EPF settings.
+ * Match override criteria against a unit table (class, specialization, race, faction, sex).
+ * Used by Elite Target Frame so overrides follow the target unit, not the player.
 --]]
-function O.MatchesCharacter(addon, override)
+function O.MatchesUnitInfo(addon, override, unit_info)
     if not override or override.enabled == false then return false end
-    if not override.catalogId then return false end
+    if not override.catalogId or type(unit_info) ~= "table" then return false end
 
     local frame = addon or O._addon or EPF_CustomSkins_BaseAddon
-    local char = get_epf_character(frame)
-    if not char then return false end
 
     if override.class and override.class ~= ANY_VALUE then
         local class_id = resolve_class_id(frame, override.class)
-        if not class_id or char.class ~= class_id then
+        if not class_id or unit_info.class ~= class_id then
             return false
         end
     end
 
     if override.spec and override.spec ~= ANY_VALUE then
         local spec_id = tonumber(override.spec) or override.spec
-        if char.specialization ~= spec_id then
+        if unit_info.specialization ~= spec_id then
             return false
         end
     end
 
     if override.race and override.race ~= ANY_VALUE then
-        if not O.RaceCriteriaMatches(override.race, char.race) then
+        if not O.RaceCriteriaMatches(override.race, unit_info.race) then
             return false
         end
     end
 
     if override.faction and override.faction ~= ANY_VALUE then
-        if char.faction ~= override.faction then
+        if unit_info.faction ~= override.faction then
             return false
         end
     end
 
     if override.sex and override.sex ~= ANY_VALUE then
         local sex_id = resolve_sex_id(frame, override.sex)
-        if not sex_id or char.sex ~= sex_id then
+        if not sex_id or unit_info.sex ~= sex_id then
             return false
         end
     end
 
     return true
+end
+
+function O.GetOverrideForModeId(mode_id)
+    if not mode_id then return nil end
+    return O.mode_to_override and O.mode_to_override[mode_id] or nil
+end
+
+--[[
+ * Override criteria must match the player even when EPF class/spec/race/sex selection toggles are off.
+ * CharacterIsClass() returns false when classSelection is disabled in EPF settings.
+--]]
+function O.MatchesCharacter(addon, override)
+    local frame = addon or O._addon or EPF_CustomSkins_BaseAddon
+    local char = get_epf_character(frame)
+    if not char then return false end
+    return O.MatchesUnitInfo(frame, override, char)
 end
 
 function O.BuildCatalog(addon, definitions)
