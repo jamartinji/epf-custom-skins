@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- `MatchesUnitInfo` API for Elite Target Frame: overrides on the target frame match the **target** unit, not the player (unless EPF sync is enabled).
+- Override criteria can be evaluated against any unit via `MatchesUnitInfo` (player frame).
 
 ## [1.2.9] - 2026-05-29
 
