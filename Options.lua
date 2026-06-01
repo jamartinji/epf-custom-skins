@@ -33,17 +33,51 @@ local panel = CreateFrame("Frame", "EPFCustomSkinsOptionsPanel", UIParent)
 panel.name = ADDON_NAME
 panel:Hide()
 
-local TAB_BAR_HEIGHT = 28
-local CONTENT_TOP_OFFSET = -(16 + TAB_BAR_HEIGHT + 8)
+local TAB_BAR_HEIGHT = 26
+local TAB_GAP = 10
 
-local settingsPanel = CreateFrame("Frame", nil, panel)
-settingsPanel:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, CONTENT_TOP_OFFSET)
-settingsPanel:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", 0, 0)
+local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+title:SetPoint("TOPLEFT", 16, -16)
+title:SetText(ADDON_NAME)
 
-local overridesPanel = EPF_CustomSkins_OptionsOverrides and EPF_CustomSkins_OptionsOverrides.Build(panel, CONTENT_TOP_OFFSET)
+local tabBar = CreateFrame("Frame", nil, panel)
+tabBar:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+tabBar:SetHeight(TAB_BAR_HEIGHT)
+tabBar:SetPoint("RIGHT", panel, "RIGHT", -PAD, 0)
+
+local contentPanel = CreateFrame("Frame", nil, panel)
+-- Align tab content with the panel left edge (tab bar stays indented with the title).
+contentPanel:SetPoint("TOPLEFT", tabBar, "BOTTOMLEFT", -PAD, -8)
+contentPanel:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", 0, 0)
 
 local activeTab = 1
 local tabButtons = {}
+
+local settingsPanel = CreateFrame("Frame", nil, contentPanel)
+settingsPanel:SetAllPoints(contentPanel)
+
+local overridesPanel
+local overridesBuildError
+if EPF_CustomSkins_OptionsOverrides and EPF_CustomSkins_OptionsOverrides.Build then
+    local ok, built = pcall(EPF_CustomSkins_OptionsOverrides.Build, contentPanel)
+    if ok and built then
+        overridesPanel = built
+        overridesPanel:SetAllPoints(contentPanel)
+        overridesPanel:Hide()
+    else
+        overridesBuildError = built
+    end
+end
+
+local function updateTabVisuals(tabIndex)
+    for index, tab in ipairs(tabButtons) do
+        local selected = (index == tabIndex)
+        if tab.Text then
+            tab.Text:SetFontObject(selected and "GameFontHighlight" or "GameFontNormal")
+        end
+        tab:SetEnabled(not selected)
+    end
+end
 
 local function selectOptionsTab(tabIndex)
     activeTab = tabIndex
@@ -51,50 +85,42 @@ local function selectOptionsTab(tabIndex)
     if overridesPanel then
         overridesPanel:SetShown(tabIndex == 2)
         if tabIndex == 2 and overridesPanel.Refresh then
-            overridesPanel:Refresh()
+            pcall(function() overridesPanel:Refresh() end)
         end
     end
-    for index, button in ipairs(tabButtons) do
-        if index == tabIndex then
-            button:SetEnabled(false)
-            if button.Text then
-                button.Text:SetFontObject("GameFontHighlight")
-            end
-        else
-            button:SetEnabled(true)
-            if button.Text then
-                button.Text:SetFontObject("GameFontNormal")
-            end
-        end
-    end
+    updateTabVisuals(tabIndex)
 end
 
-local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-title:SetPoint("TOPLEFT", 16, -16)
-title:SetText(ADDON_NAME)
-
-local tabBar = CreateFrame("Frame", nil, panel)
-tabBar:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-tabBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, -40)
-tabBar:SetHeight(TAB_BAR_HEIGHT)
-
-local function createTabButton(index, label)
-    local button = CreateFrame("Button", nil, tabBar)
-    button:SetSize(130, TAB_BAR_HEIGHT)
-    button.Text = button:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    button.Text:SetPoint("CENTER")
-    button.Text:SetText(label)
-    button:SetScript("OnClick", function()
+local function createOptionsTab(index, label, anchorTo)
+    local tab = CreateFrame("Button", "EPFCustomSkinsOptionsTab" .. index, tabBar)
+    tab:SetSize(120, TAB_BAR_HEIGHT)
+    tab.Text = tab:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    tab.Text:SetPoint("CENTER")
+    tab.Text:SetText(label)
+    if index == 1 then
+        tab:SetPoint("LEFT", tabBar, "LEFT", 0, 0)
+    else
+        tab:SetPoint("LEFT", anchorTo, "RIGHT", TAB_GAP, 0)
+    end
+    tab:SetID(index)
+    tab:SetScript("OnClick", function()
         selectOptionsTab(index)
     end)
-    tabButtons[index] = button
-    return button
+    tabButtons[index] = tab
+    return tab
 end
 
-local tabSettings = createTabButton(1, L.TabSettings or "Settings")
-tabSettings:SetPoint("LEFT", tabBar, "LEFT", 0, 0)
-local tabOverrides = createTabButton(2, L.TabOverrides or "Overrides")
-tabOverrides:SetPoint("LEFT", tabSettings, "RIGHT", 4, 0)
+local tabSettings = createOptionsTab(1, L.TabSettings or "Settings")
+local tabOverrides = createOptionsTab(2, L.TabOverrides or "Overrides", tabSettings)
+
+if overridesBuildError and not overridesPanel then
+    local errLabel = contentPanel:CreateFontString(nil, "ARTWORK", "GameFontRed")
+    errLabel:SetPoint("TOPLEFT", contentPanel, "TOPLEFT", PAD, -PAD)
+    errLabel:SetPoint("TOPRIGHT", contentPanel, "TOPRIGHT", -PAD, -PAD)
+    errLabel:SetJustifyH("LEFT")
+    errLabel:SetText(L.OverridePanelLoadError or "Overrides panel failed to load. Enable script errors and reload.")
+end
+
 selectOptionsTab(1)
 
 local function getBaseAddon()
@@ -581,8 +607,12 @@ end
 panel:SetScript("OnShow", function()
     local L = EPF_CustomSkins_L or {}
     panel.name = ADDON_NAME
-    tabSettings.Text:SetText(L.TabSettings or "Settings")
-    tabOverrides.Text:SetText(L.TabOverrides or "Overrides")
+    if tabSettings.Text then
+        tabSettings.Text:SetText(L.TabSettings or "Settings")
+    end
+    if tabOverrides.Text then
+        tabOverrides.Text:SetText(L.TabOverrides or "Overrides")
+    end
     selectOptionsTab(activeTab)
     -- Layout 60% / 40%: left textures, right options
     local panelW = settingsPanel:GetWidth()

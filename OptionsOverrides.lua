@@ -4,11 +4,15 @@ EPF_CustomSkins_OptionsOverrides = EPF_CustomSkins_OptionsOverrides or {}
 
 local OO = EPF_CustomSkins_OptionsOverrides
 local O = EPF_CustomSkins_Overrides
+local SB = EPF_CustomSkins_SkinBuilder
 local ANY_VALUE = ""
 
-local PAD = 16
-local SECTION_PADDING = 10
+local SECTION_PADDING = 8
 local ROW_SPACING = 8
+local LIST_PANEL_WIDTH = 196
+local TEXTURE_PICKER_WIDTH = 280
+local TEXTURE_PICKER_HEIGHT = 220
+local TEXTURE_PICKER_ROW_HEIGHT = 20
 local BackdropTemplate = "BackdropTemplate"
 
 local CONTAINER_BACKDROP = {
@@ -25,27 +29,35 @@ local function L(key, fallback)
     return loc[key] or fallback
 end
 
-local function setSectionBackdrop(frame)
+local function setSectionBackdrop(frame, bg_alpha)
     if not frame.SetBackdrop and BackdropTemplateMixin then
         Mixin(frame, BackdropTemplateMixin)
     end
     if frame.SetBackdrop then
         frame:SetBackdrop(CONTAINER_BACKDROP)
-        frame:SetBackdropColor(0.2, 0.2, 0.2, 0.5)
+        frame:SetBackdropColor(0.08, 0.08, 0.08, bg_alpha or 0.5)
         if frame.SetBackdropBorderColor then
             frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
         end
     end
 end
 
+local function setTexturePickerBackdrop(frame)
+    setSectionBackdrop(frame, 1)
+end
+
 local function getBaseAddon()
     return ElitePlayerFrame_Enhanced
 end
 
-local function requestBaseUpdate(force)
+local function requestBaseUpdate(force_reset)
+    if O and type(O.RequestDisplayRefresh) == "function" then
+        O.RequestDisplayRefresh(force_reset)
+        return
+    end
     local addon = getBaseAddon()
     if addon and type(addon.Update) == "function" then
-        pcall(function() addon:Update(force) end)
+        pcall(function() addon:Update(true) end)
     end
 end
 
@@ -54,6 +66,10 @@ local function valuesEqual(a, b)
     local na, nb = tonumber(a), tonumber(b)
     if na and nb then return na == nb end
     return false
+end
+
+local function isAnyValue(value)
+    return not value or value == ANY_VALUE
 end
 
 local function findItemText(items, value)
@@ -65,9 +81,44 @@ local function findItemText(items, value)
     return L("OverrideAny", "Any")
 end
 
-local function forceDropdownLabel(dropdown, text)
+local function stripColorCodes(text)
+    if SB and SB.StripColorCodes then
+        return SB.StripColorCodes(text)
+    end
+    if not text then return "" end
+    text = text:gsub("|cff%x%x%x%x%x%x", "")
+    text = text:gsub("|c%x%x%x%x%x%x%x%x", "")
+    return text:gsub("|r", "")
+end
+
+--[[
+ * Set dropdown caption without UIDropDownMenu_Refresh (Refresh with a closed menu forces "Personalizado").
+--]]
+local function showCatalogTooltip(owner, header_lines)
+    if not GameTooltip then return end
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:ClearLines()
+    if header_lines then
+        for _, line in ipairs(header_lines) do
+            if line == " " then
+                GameTooltip:AddLine(" ")
+            else
+                GameTooltip:AddLine(line, 1, 1, 1, true)
+            end
+        end
+    end
+    GameTooltip:Show()
+end
+
+local function hideCatalogTooltip()
+    if GameTooltip then
+        GameTooltip:Hide()
+    end
+end
+
+local function setDropdownDisplayText(dropdown, text)
     if UIDropDownMenu_SetText then
-        UIDropDownMenu_SetText(dropdown, text)
+        UIDropDownMenu_SetText(dropdown, text or "")
     end
     local name = dropdown:GetName()
     if name then
@@ -75,9 +126,6 @@ local function forceDropdownLabel(dropdown, text)
         if label then
             label:SetText(text or "")
         end
-    end
-    if UIDropDownMenu_Refresh then
-        UIDropDownMenu_Refresh(dropdown)
     end
 end
 
@@ -89,58 +137,123 @@ end
 
 local function initDropdown(dropdown, items, selected, onSelect)
     if not UIDropDownMenu_Initialize then return end
+    dropdown.epfSelectedValue = selected
     local selected_text = findItemText(items, selected)
     UIDropDownMenu_Initialize(dropdown, function()
+        local current = dropdown.epfSelectedValue
         for _, item in ipairs(items) do
             local captured = item
             local info = UIDropDownMenu_CreateInfo()
             info.text = captured.text
             info.value = captured.value
-            info.checked = valuesEqual(captured.value, selected)
+            info.checked = valuesEqual(captured.value, current)
             info.func = function()
+                dropdown.epfSelectedValue = captured.value
                 onSelect(captured.value)
-                UIDropDownMenu_SetSelectedValue(dropdown, captured.value)
-                forceDropdownLabel(dropdown, captured.text)
+                setDropdownDisplayText(dropdown, captured.text)
             end
             UIDropDownMenu_AddButton(info)
         end
     end)
-    UIDropDownMenu_SetSelectedValue(dropdown, selected)
-    forceDropdownLabel(dropdown, selected_text)
+    setDropdownDisplayText(dropdown, selected_text)
+end
+
+--[[
+ * Returns className, classFile, classID from GetClassInfo(classIndex).
+ * Retail API order: (className, classFile, classID).
+--]]
+local function getClassInfoByIndex(class_index)
+    if not GetClassInfo then return nil end
+    local class_name, class_file, class_id = GetClassInfo(class_index)
+    if class_name and class_file and class_id then
+        return class_name, class_file, class_id
+    end
+    return nil
 end
 
 local function getClassIdFromFile(class_file)
     if not class_file or class_file == ANY_VALUE then
         return nil
     end
+    local numeric = tonumber(class_file)
+    if numeric and C_CreatureInfo and C_CreatureInfo.GetClassInfo then
+        local info = C_CreatureInfo.GetClassInfo(numeric)
+        if info and info.classFile then
+            return numeric
+        end
+    end
     if GetNumClasses and GetClassInfo then
         for i = 1, GetNumClasses() do
-            local class_name, file, class_id = GetClassInfo(i)
+            local _, file, id = getClassInfoByIndex(i)
             if file == class_file then
-                return class_id or i
+                return id
             end
         end
     end
     if C_CreatureInfo and C_CreatureInfo.GetClassInfo then
-        local class_id = 1
-        while true do
+        for class_id = 1, 50 do
             local info = C_CreatureInfo.GetClassInfo(class_id)
-            if not info then break end
-            if info.classFile == class_file then
+            if info and info.classFile == class_file then
                 return class_id
             end
-            class_id = class_id + 1
         end
     end
     return nil
+end
+
+local function normalizeClassFile(class_value)
+    if not class_value or class_value == ANY_VALUE then
+        return ANY_VALUE
+    end
+    if class_value == "CUSTOM" then
+        return ANY_VALUE
+    end
+    local numeric = tonumber(class_value)
+    if numeric and C_CreatureInfo and C_CreatureInfo.GetClassInfo then
+        local info = C_CreatureInfo.GetClassInfo(numeric)
+        if info and info.classFile then
+            return info.classFile
+        end
+    end
+    if type(class_value) == "string" then
+        return class_value:upper()
+    end
+    return class_value
+end
+
+local function getClassDisplayName(class_value)
+    if isAnyValue(class_value) then
+        return L("OverrideAny", "Any")
+    end
+    local class_file = normalizeClassFile(class_value)
+    local class_id = getClassIdFromFile(class_file)
+    if class_id and C_CreatureInfo and C_CreatureInfo.GetClassInfo then
+        local ok, info = pcall(C_CreatureInfo.GetClassInfo, class_id)
+        if ok and info and info.className then
+            return info.className
+        end
+    end
+    return findItemText(buildClassItems(), class_file)
+end
+
+local function getSpecDisplayName(spec_value, class_file)
+    if isAnyValue(spec_value) then
+        return L("OverrideAny", "Any")
+    end
+    local spec_id = tonumber(spec_value) or spec_value
+    local _, spec_name = GetSpecializationInfoByID(spec_id)
+    if spec_name then
+        return spec_name
+    end
+    return findItemText(buildSpecItems(class_file), spec_value)
 end
 
 local function buildClassItems()
     local items = { { text = L("OverrideAny", "Any"), value = ANY_VALUE } }
     if GetNumClasses and GetClassInfo then
         for i = 1, GetNumClasses() do
-            local class_name, class_file = GetClassInfo(i)
-            if class_file and class_name then
+            local class_name, class_file, _ = getClassInfoByIndex(i)
+            if class_file and class_name and class_file ~= "ADVENTURER" then
                 items[#items + 1] = { text = class_name, value = class_file }
             end
         end
@@ -155,11 +268,19 @@ end
 
 local function buildSpecItems(class_file)
     local items = { { text = L("OverrideAny", "Any"), value = ANY_VALUE } }
-    local class_id = getClassIdFromFile(class_file)
-    if not class_id or not C_SpecializationInfo or not C_SpecializationInfo.GetNumSpecializationsForClassID then
+    class_file = normalizeClassFile(class_file)
+    if isAnyValue(class_file) then
         return items
     end
-    local num_specs = C_SpecializationInfo.GetNumSpecializationsForClassID(class_id)
+    local class_id = getClassIdFromFile(class_file)
+    class_id = tonumber(class_id)
+    if not class_id or class_id < 1 or not C_SpecializationInfo or not C_SpecializationInfo.GetNumSpecializationsForClassID then
+        return items
+    end
+    local ok, num_specs = pcall(C_SpecializationInfo.GetNumSpecializationsForClassID, class_id)
+    if not ok or not num_specs or num_specs < 1 then
+        return items
+    end
     for spec_index = 1, num_specs do
         local spec_id = GetSpecializationInfoForClassID(class_id, spec_index)
         if spec_id then
@@ -208,16 +329,37 @@ local function buildRaceItems()
         VoidElf = true, LightforgedDraenei = true, DarkIronDwarf = true, KulTiran = true, Mechagnome = true,
         Orc = true, Scourge = true, Tauren = true, Troll = true, BloodElf = true, Goblin = true,
         Pandaren = true, Nightborne = true, HighmountainTauren = true, MagharOrc = true, ZandalariTroll = true,
-        Vulpera = true, Dracthyr = true, Earthen = true, Haranir = true,
+        Vulpera = true, Dracthyr = true, EarthenDwarf = true, Haranir = true,
     }
     if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
-        for race_id = 1, 150 do
+        for race_id = 1, 200 do
             local info = C_CreatureInfo.GetRaceInfo(race_id)
             if info and PLAYABLE_RACE_FILES[info.clientFileString] and not seen[info.clientFileString] then
                 addRace(info.clientFileString, info.raceName)
             end
         end
     end
+
+    -- War Within / Midnight races when not yet returned by the creation API.
+    local function addManualRace(client_file, locale_key, fallback_name)
+        if seen[client_file] then return end
+        local race_name = fallback_name
+        if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
+            for race_id = 1, 200 do
+                local info = C_CreatureInfo.GetRaceInfo(race_id)
+                if info and info.clientFileString == client_file and info.raceName then
+                    race_name = info.raceName
+                    break
+                end
+            end
+        end
+        if (not race_name or race_name == fallback_name) and locale_key then
+            race_name = L(locale_key, fallback_name)
+        end
+        addRace(client_file, race_name)
+    end
+    addManualRace("EarthenDwarf", "OverrideRaceEarthen", "Earthen")
+    addManualRace("Haranir", "OverrideRaceHaranir", "Haranir")
 
     table.sort(items, function(a, b)
         if a.value == ANY_VALUE then return true end
@@ -239,24 +381,35 @@ local function buildTextureItems()
     local items = {}
     local catalog = O.catalog or {}
     for id, entry in ipairs(catalog) do
-        local plain = (entry.label or tostring(id)):gsub("|c%x%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+        local plain = entry.plainLabel or stripColorCodes(entry.label or tostring(id))
         items[#items + 1] = { text = plain, value = id }
     end
     table.sort(items, function(a, b) return a.text < b.text end)
     return items
 end
 
-local FACTION_ICONS = {
+local FACTION_ATLAS = {
+    Alliance = "pvpqueue-sidebar-honorbar-badge-alliance",
+    Horde = "pvpqueue-sidebar-honorbar-badge-horde",
+}
+
+-- Legacy texture fallbacks if PvP badge atlases are unavailable.
+local FACTION_ICON_TEXTURES = {
     Alliance = "Interface\\Icons\\Inv_BannerPVP_02",
     Horde = "Interface\\Icons\\Inv_BannerPVP_01",
 }
 
-local ICON_SIZE = 16
-local ROW_HEIGHT = 22
-local ICON_STEP = 18
+local ICON_SIZE = 32
+local ROW_HEIGHT = 38
+local ICON_STEP = 34
 
-local function isAnyValue(value)
-    return not value or value == ANY_VALUE
+local function atlasExists(atlas)
+    if not atlas or atlas == "" then return false end
+    if C_Texture and C_Texture.GetAtlasInfo then
+        local ok, info = pcall(C_Texture.GetAtlasInfo, atlas)
+        return ok and info ~= nil
+    end
+    return true
 end
 
 local function setRowIcon(texture, icon)
@@ -273,28 +426,72 @@ local function setRowIcon(texture, icon)
     end
 end
 
-local function setRowAtlasIcon(texture, atlas)
-    if not texture then return end
-    if atlas and texture.SetAtlas then
-        local ok = pcall(function() texture:SetAtlas(atlas) end)
-        if ok and texture.GetAtlas and texture:GetAtlas() then
-            texture:Show()
-            return
+local function setRowAtlasIcon(texture, atlas_or_list)
+    if not texture or not texture.SetAtlas then return end
+    if not atlas_or_list then
+        texture:Hide()
+        return
+    end
+    local candidates = atlas_or_list
+    if type(atlas_or_list) == "string" then
+        candidates = { atlas_or_list }
+    end
+    for _, atlas in ipairs(candidates) do
+        if atlasExists(atlas) then
+            local ok = pcall(function() texture:SetAtlas(atlas) end)
+            if ok and texture.GetAtlas and texture:GetAtlas() then
+                texture:Show()
+                return
+            end
         end
     end
     texture:Hide()
 end
 
-local function getOverrideClassIcon(class_file)
-    if not class_file or class_file == ANY_VALUE then return nil end
+--[[
+ * Retail class portraits use classicon-{class} atlases (128px, same family as character create).
+--]]
+local function getOverrideClassAtlasCandidates(class_file)
+    class_file = normalizeClassFile(class_file)
+    if isAnyValue(class_file) then return nil end
+    local slug = string.lower(class_file)
+    local candidates = {}
+    local atlas = ("classicon-%s"):format(slug)
+    if atlasExists(atlas) then
+        candidates[#candidates + 1] = atlas
+    end
+    return #candidates > 0 and candidates or nil
+end
+
+local function getOverrideClassIconTextureFallback(class_file)
+    class_file = normalizeClassFile(class_file)
+    if isAnyValue(class_file) then return nil end
     return ("Interface\\Icons\\ClassIcon_%s"):format(class_file)
 end
 
+--[[
+ * Spec column uses the specialization spell/icon from GetSpecializationInfoByID (Blizzard spec icon).
+--]]
 local function getOverrideSpecIcon(spec_id)
     if not spec_id or spec_id == ANY_VALUE then return nil end
     spec_id = tonumber(spec_id) or spec_id
     local _, _, _, icon = GetSpecializationInfoByID(spec_id)
     return icon
+end
+
+local function getOverrideFactionAtlasCandidates(faction)
+    if isAnyValue(faction) then return nil end
+    local candidates = {}
+    local atlas = FACTION_ATLAS[faction]
+    if atlas and atlasExists(atlas) then
+        candidates[#candidates + 1] = atlas
+    end
+    return #candidates > 0 and candidates or nil
+end
+
+local function getOverrideFactionIconTextureFallback(faction)
+    if isAnyValue(faction) then return nil end
+    return FACTION_ICON_TEXTURES[faction]
 end
 
 local function getRaceSexSuffix(sex)
@@ -307,16 +504,144 @@ local function getRaceSexSuffix(sex)
     return "male"
 end
 
-local function getOverrideRaceAtlas(race_file, sex)
+-- Atlas slug overrides (clientFileString is not always the atlas token).
+local RACE_ATLAS_SLUG = {
+    Scourge = "undead",
+    LightforgedDraenei = "lightforged",
+    VoidElf = "voidelf",
+    Nightborne = "nightborne",
+    HighmountainTauren = "highmountain",
+    MagharOrc = "magharorc",
+    ZandalariTroll = "zandalari",
+    DarkIronDwarf = "darkiron",
+    KulTiran = "kultiran",
+    Mechagnome = "mechagnome",
+    EarthenDwarf = "earthen",
+    Dracthyr = "dracthyr",
+    Haranir = "haranir",
+}
+
+local function getRaceAtlasSlug(race_file)
+    return RACE_ATLAS_SLUG[race_file] or string.lower(race_file)
+end
+
+local function appendAtlasCandidate(list, atlas)
+    if not atlas then return end
+    for _, existing in ipairs(list) do
+        if existing == atlas then return end
+    end
+    list[#list + 1] = atlas
+end
+
+local function prependAtlasCandidate(list, atlas)
+    if not atlas then return end
+    for _, existing in ipairs(list) do
+        if existing == atlas then return end
+    end
+    table.insert(list, 1, atlas)
+end
+
+local function getEpfRaceInfo(frame, race_file)
+    if not frame or type(frame.GetRace) ~= "function" or not race_file then
+        return nil
+    end
+    local ok, race_info = pcall(function() return frame:GetRace(race_file) end)
+    if ok and type(race_info) == "table" and type(race_info.icon) == "table" then
+        return race_info
+    end
+    local enum_key = type(race_file) == "string" and race_file:upper():gsub(" ", "") or race_file
+    ok, race_info = pcall(function() return frame:GetRace(enum_key) end)
+    if ok and type(race_info) == "table" and type(race_info.icon) == "table" then
+        return race_info
+    end
+    if C_CreatureInfo and C_CreatureInfo.GetRaceInfo then
+        for race_id = 1, 200 do
+            local info = C_CreatureInfo.GetRaceInfo(race_id)
+            if info and info.clientFileString == race_file then
+                ok, race_info = pcall(function() return frame:GetRace(race_id) end)
+                if ok and type(race_info) == "table" and type(race_info.icon) == "table" then
+                    return race_info
+                end
+                break
+            end
+        end
+    end
+    return nil
+end
+
+--[[
+ * Extra atlas slug tokens beyond the primary slug (retail uses raceicon128-* as the sharp source).
+--]]
+local function getRaceAtlasSlugVariants(race_file)
+    local primary = getRaceAtlasSlug(race_file)
+    local variants = { primary }
+    local seen = { [primary] = true }
+
+    local function add(slug)
+        if slug and not seen[slug] then
+            seen[slug] = true
+            variants[#variants + 1] = slug
+        end
+    end
+
+    add(string.lower(race_file))
+    if race_file == "Scourge" then
+        add("undead")
+    elseif race_file == "ZandalariTroll" then
+        add("zandalari")
+        add("zandalaritroll")
+    end
+    return variants
+end
+
+--[[
+ * Prefer raceicon128-* (scales cleanly to UI size), then GetRaceAtlas / EPF / 64px raceicon-* fallbacks.
+--]]
+local function getOverrideRaceAtlasCandidates(race_file, sex)
     if isAnyValue(race_file) then
         return nil
     end
-    return ("raceicon128-%s-%s"):format(string.lower(race_file), getRaceSexSuffix(sex))
-end
 
-local function getOverrideFactionIcon(faction)
-    if isAnyValue(faction) then return nil end
-    return FACTION_ICONS[faction]
+    local candidates = {}
+    local frame = EPF_CustomSkins_BaseAddon or getBaseAddon()
+    local suffix = getRaceSexSuffix(sex)
+    local icon_index = (sex == "FEMALE") and 3 or 2
+    local slug_variants = getRaceAtlasSlugVariants(race_file)
+
+    for _, slug in ipairs(slug_variants) do
+        local atlas128 = ("raceicon128-%s-%s"):format(slug, suffix)
+        if atlasExists(atlas128) then
+            prependAtlasCandidate(candidates, atlas128)
+        end
+    end
+
+    if type(GetRaceAtlas) == "function" then
+        for _, token in ipairs(slug_variants) do
+            local ok, atlas = pcall(GetRaceAtlas, token, suffix, true)
+            if ok and atlas and atlasExists(atlas) then
+                appendAtlasCandidate(candidates, atlas)
+            end
+        end
+    end
+
+    local race_info = getEpfRaceInfo(frame, race_file)
+    if race_info and type(race_info.icon) == "table" then
+        local icons = race_info.icon
+        for _, icon_atlas in ipairs({ icons[icon_index], icons[1], icons[3] }) do
+            if atlasExists(icon_atlas) then
+                appendAtlasCandidate(candidates, icon_atlas)
+            end
+        end
+    end
+
+    for _, slug in ipairs(slug_variants) do
+        local atlas64 = ("raceicon-%s-%s"):format(slug, suffix)
+        if atlasExists(atlas64) then
+            appendAtlasCandidate(candidates, atlas64)
+        end
+    end
+
+    return #candidates > 0 and candidates or nil
 end
 
 local function buildSexItems()
@@ -331,11 +656,14 @@ local function buildOverrideTooltip(override)
     local lines = {}
     lines[#lines + 1] = L("OverrideTooltipCriteria", "Match criteria")
     if override.class and override.class ~= ANY_VALUE then
-        local class_id = getClassIdFromFile(override.class)
-        local class_name = override.class
+        local class_file = normalizeClassFile(override.class)
+        local class_name = class_file
+        local class_id = getClassIdFromFile(class_file)
         if class_id and C_CreatureInfo and C_CreatureInfo.GetClassInfo then
-            local info = C_CreatureInfo.GetClassInfo(class_id)
-            if info and info.className then class_name = info.className end
+            local ok, info = pcall(C_CreatureInfo.GetClassInfo, class_id)
+            if ok and info and info.className then
+                class_name = info.className
+            end
         end
         lines[#lines + 1] = (L("OverrideClass", "Class") .. ": " .. class_name)
     end
@@ -372,7 +700,7 @@ local function buildOverrideTooltip(override)
     if #lines == 1 then
         lines[#lines + 1] = L("OverrideAny", "Any")
     end
-    local texture = O.GetCatalogLabel(override.catalogId):gsub("|c%x%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    local texture = O.GetCatalogPlainLabel and O.GetCatalogPlainLabel(override.catalogId) or stripColorCodes(O.GetCatalogLabel(override.catalogId))
     lines[#lines + 1] = " "
     lines[#lines + 1] = L("OverrideTooltipTexture", "Texture")
     lines[#lines + 1] = texture
@@ -382,25 +710,38 @@ end
 local function populateOverrideRow(btn, override, index, is_selected)
     local icon_x = 20
 
-    local function placeRowIcon(texture, icon, use_atlas)
+    local function placeRowIcon(texture, icon, use_atlas, texture_fallback)
         texture:ClearAllPoints()
-        if not icon then
+        if not icon and not texture_fallback then
             texture:Hide()
             return
         end
         texture:SetPoint("LEFT", btn, "LEFT", icon_x, 0)
         icon_x = icon_x + ICON_STEP
-        if use_atlas then
+        if use_atlas and icon then
             setRowAtlasIcon(texture, icon)
-        else
+            if texture:IsShown() then
+                return
+            end
+        end
+        if texture_fallback then
+            setRowIcon(texture, texture_fallback)
+        elseif icon and not use_atlas then
             setRowIcon(texture, icon)
+        else
+            texture:Hide()
         end
     end
 
     if isAnyValue(override.class) then
         btn.ClassIcon:Hide()
     else
-        placeRowIcon(btn.ClassIcon, getOverrideClassIcon(override.class), false)
+        placeRowIcon(
+            btn.ClassIcon,
+            getOverrideClassAtlasCandidates(override.class),
+            true,
+            getOverrideClassIconTextureFallback(override.class)
+        )
     end
     if isAnyValue(override.spec) then
         btn.SpecIcon:Hide()
@@ -410,12 +751,17 @@ local function populateOverrideRow(btn, override, index, is_selected)
     if isAnyValue(override.race) then
         btn.RaceIcon:Hide()
     else
-        placeRowIcon(btn.RaceIcon, getOverrideRaceAtlas(override.race, override.sex), true)
+        placeRowIcon(btn.RaceIcon, getOverrideRaceAtlasCandidates(override.race, override.sex), true)
     end
     if isAnyValue(override.faction) then
         btn.FactionIcon:Hide()
     else
-        placeRowIcon(btn.FactionIcon, getOverrideFactionIcon(override.faction), false)
+        placeRowIcon(
+            btn.FactionIcon,
+            getOverrideFactionAtlasCandidates(override.faction),
+            true,
+            getOverrideFactionIconTextureFallback(override.faction)
+        )
     end
     if btn.IndexText then
         btn.IndexText:SetText(tostring(index))
@@ -465,45 +811,35 @@ local function createOverrideListButton(parent)
     btn:SetScript("OnEnter", function(self)
         local overrides = O.GetOverrides()
         local override = overrides[self.index]
-        if not override or not GameTooltip then return end
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:ClearLines()
-        for _, line in ipairs(buildOverrideTooltip(override)) do
-            if line == " " then
-                GameTooltip:AddLine(" ")
-            else
-                GameTooltip:AddLine(line, 1, 1, 1, true)
-            end
-        end
-        GameTooltip:Show()
+        if not override then return end
+        showCatalogTooltip(self, buildOverrideTooltip(override))
     end)
     btn:SetScript("OnLeave", function()
-        if GameTooltip then GameTooltip:Hide() end
+        hideCatalogTooltip()
     end)
 
     return btn
 end
 
-function OO.Build(root_panel, tab_y_offset)
-    local panel = CreateFrame("Frame", "EPFCustomSkinsOverridesPanel", root_panel)
-    panel:SetPoint("TOPLEFT", root_panel, "TOPLEFT", 0, tab_y_offset or -48)
-    panel:SetPoint("BOTTOMRIGHT", root_panel, "BOTTOMRIGHT", 0, 0)
-    panel:Hide()
+function OO.Build(content_panel)
+    local panel = CreateFrame("Frame", "EPFCustomSkinsOverridesPanel", content_panel)
+    panel:SetAllPoints(content_panel)
 
     local intro = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    intro:SetPoint("TOPLEFT", PAD, -PAD)
-    intro:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD, -PAD)
+    intro:SetPoint("TOPLEFT", panel, "TOPLEFT", SECTION_PADDING, -SECTION_PADDING)
+    intro:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -SECTION_PADDING, -SECTION_PADDING)
     intro:SetJustifyH("LEFT")
     intro:SetText(L("OverrideIntro", "Assign a texture for a class/spec/race/faction/sex combination. Overrides take priority in Automatic mode."))
 
-    local listGroup = CreateFrame("Frame", nil, panel, BackdropTemplate)
+    local listGroup = CreateFrame("Frame", nil, panel)
     listGroup:SetPoint("TOPLEFT", intro, "BOTTOMLEFT", 0, -12)
-    listGroup:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", PAD, PAD)
+    listGroup:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", SECTION_PADDING, SECTION_PADDING)
+    listGroup:SetWidth(LIST_PANEL_WIDTH)
     setSectionBackdrop(listGroup)
 
-    local editorGroup = CreateFrame("Frame", nil, panel, BackdropTemplate)
-    editorGroup:SetPoint("TOPLEFT", listGroup, "TOPRIGHT", 16, 0)
-    editorGroup:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -PAD, PAD)
+    local editorGroup = CreateFrame("Frame", nil, panel)
+    editorGroup:SetPoint("TOPLEFT", listGroup, "TOPRIGHT", 12, 0)
+    editorGroup:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -SECTION_PADDING, SECTION_PADDING)
     setSectionBackdrop(editorGroup)
 
     local listTitle = listGroup:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -568,28 +904,64 @@ function OO.Build(root_panel, tab_y_offset)
     textureLabel:SetPoint("TOPLEFT", sexDropdown, "BOTTOMLEFT", 16, -8)
     textureLabel:SetText(L("OverrideTexture", "Texture"))
 
-    local textureDropdown = CreateFrame("Frame", "EPFCustomSkinsOverrideTextureDropdown", editorGroup, "UIDropDownMenuTemplate")
-    textureDropdown:SetPoint("TOPLEFT", textureLabel, "BOTTOMLEFT", -16, -4)
-    setupDropdown(textureDropdown, 170)
+    local textureSelectBtn = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
+    textureSelectBtn:SetSize(220, 22)
+    textureSelectBtn:SetPoint("TOPLEFT", textureLabel, "BOTTOMLEFT", 0, -4)
+    textureSelectBtn.epfCatalogId = nil
+
+    local texturePicker = CreateFrame("Frame", nil, editorGroup, BackdropTemplate)
+    texturePicker:SetSize(TEXTURE_PICKER_WIDTH, TEXTURE_PICKER_HEIGHT)
+    texturePicker:SetPoint("TOPLEFT", textureSelectBtn, "BOTTOMLEFT", 0, -4)
+    texturePicker:SetFrameStrata("FULLSCREEN_DIALOG")
+    texturePicker:SetFrameLevel(250)
+    texturePicker:Hide()
+    setTexturePickerBackdrop(texturePicker)
+
+    local textureFilter = CreateFrame("EditBox", nil, texturePicker, "InputBoxTemplate")
+    textureFilter:SetSize(TEXTURE_PICKER_WIDTH - 24, 20)
+    textureFilter:SetPoint("TOPLEFT", texturePicker, "TOPLEFT", 12, -10)
+    textureFilter:SetAutoFocus(false)
+    textureFilter:SetMaxLetters(48)
+    textureFilter:SetText("")
+
+    local textureFilterLabel = texturePicker:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    textureFilterLabel:SetPoint("BOTTOMLEFT", textureFilter, "TOPLEFT", 0, 2)
+    textureFilterLabel:SetText(L("OverrideTextureFilter", "Filter textures"))
+
+    local texturePickerScroll = CreateFrame("ScrollFrame", nil, texturePicker, "UIPanelScrollFrameTemplate")
+    texturePickerScroll:SetPoint("TOPLEFT", textureFilter, "BOTTOMLEFT", -6, -8)
+    texturePickerScroll:SetPoint("BOTTOMRIGHT", texturePicker, "BOTTOMRIGHT", -28, 10)
+
+    local texturePickerContent = CreateFrame("Frame", nil, texturePickerScroll)
+    texturePickerContent:SetSize(1, 1)
+    texturePickerScroll:SetScrollChild(texturePickerContent)
+
+    local texturePickerRows = {}
+
+    local BTN_W = 88
+    local BTN_H = 22
+    local BTN_GAP = 6
 
     local btnAdd = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
-    btnAdd:SetSize(120, 22)
-    btnAdd:SetPoint("TOPLEFT", textureDropdown, "BOTTOMLEFT", 16, -20)
+    btnAdd:SetSize(BTN_W, BTN_H)
+    btnAdd:SetPoint("TOPLEFT", textureSelectBtn, "BOTTOMLEFT", 0, -16)
     btnAdd:SetText(L("OverrideAdd", "Add"))
+    btnAdd.tooltipText = L("OverrideNeedCriterion", "Select at least one match criterion (class, spec, race, faction, or sex).")
 
     local btnSave = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
-    btnSave:SetSize(120, 22)
-    btnSave:SetPoint("TOPLEFT", btnAdd, "BOTTOMLEFT", 0, -6)
+    btnSave:SetSize(BTN_W, BTN_H)
+    btnSave:SetPoint("LEFT", btnAdd, "RIGHT", BTN_GAP, 0)
     btnSave:SetText(L("OverrideSave", "Save"))
+    btnSave.tooltipText = btnAdd.tooltipText
 
     local btnDelete = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
-    btnDelete:SetSize(120, 22)
-    btnDelete:SetPoint("TOPLEFT", btnSave, "BOTTOMLEFT", 0, -6)
+    btnDelete:SetSize(BTN_W, BTN_H)
+    btnDelete:SetPoint("LEFT", btnSave, "RIGHT", BTN_GAP, 0)
     btnDelete:SetText(L("OverrideDelete", "Delete"))
 
     local btnClear = CreateFrame("Button", nil, editorGroup, "UIPanelButtonTemplate")
-    btnClear:SetSize(120, 22)
-    btnClear:SetPoint("TOPLEFT", btnDelete, "BOTTOMLEFT", 0, -6)
+    btnClear:SetSize(BTN_W, BTN_H)
+    btnClear:SetPoint("LEFT", btnDelete, "RIGHT", BTN_GAP, 0)
     btnClear:SetText(L("OverrideClear", "Clear"))
 
     local listScroll = CreateFrame("ScrollFrame", nil, listGroup, "UIPanelScrollFrameTemplate")
@@ -610,15 +982,164 @@ function OO.Build(root_panel, tab_y_offset)
         end
     end
 
+    local function syncFormFromDropdowns()
+        if classDropdown.epfSelectedValue ~= nil then
+            form.class = normalizeClassFile(classDropdown.epfSelectedValue)
+        end
+        if specDropdown.epfSelectedValue ~= nil then
+            form.spec = specDropdown.epfSelectedValue
+        end
+        if raceDropdown.epfSelectedValue ~= nil then
+            form.race = raceDropdown.epfSelectedValue
+        end
+        if factionDropdown.epfSelectedValue ~= nil then
+            form.faction = factionDropdown.epfSelectedValue
+        end
+        if sexDropdown.epfSelectedValue ~= nil then
+            form.sex = sexDropdown.epfSelectedValue
+        end
+        if textureSelectBtn.epfCatalogId ~= nil then
+            form.catalogId = O.NormalizeCatalogId(textureSelectBtn.epfCatalogId)
+        end
+    end
+
+    local function getPlainCatalogLabel(catalog_id)
+        if O.GetCatalogPlainLabel then
+            return O.GetCatalogPlainLabel(catalog_id)
+        end
+        return stripColorCodes(O.GetCatalogLabel(catalog_id))
+    end
+
+    local function updateTextureButtonLabel()
+        if form.catalogId then
+            textureSelectBtn.epfCatalogId = O.NormalizeCatalogId(form.catalogId)
+            textureSelectBtn:SetText(getPlainCatalogLabel(form.catalogId))
+        else
+            textureSelectBtn.epfCatalogId = nil
+            textureSelectBtn:SetText(L("OverrideTexturePick", "Select texture..."))
+        end
+    end
+
+    local function formHasMatchCriteria()
+        return O.HasMatchCriteria(form)
+    end
+
+    local function updateEditorActionsState()
+        local can_commit = formHasMatchCriteria() and form.catalogId ~= nil
+        btnAdd:SetEnabled(can_commit)
+        btnSave:SetEnabled(can_commit and selected_index ~= nil)
+    end
+
+    local function refreshOverridePlayerFrame()
+        if O and type(O.ScheduleOverrideDisplayRefresh) == "function" then
+            O.ScheduleOverrideDisplayRefresh()
+        elseif O and type(O.ApplyOverrideDisplayRefresh) == "function" then
+            O.ApplyOverrideDisplayRefresh()
+        elseif O and type(O.RefreshAllOverrideTextures) == "function" then
+            O.RefreshAllOverrideTextures()
+        else
+            requestBaseUpdate(true)
+        end
+    end
+
+    local function onTexturePickerRowClicked(catalog_id)
+        form.catalogId = O.NormalizeCatalogId(catalog_id)
+        texturePicker:Hide()
+        updateTextureButtonLabel()
+        updateEditorActionsState()
+    end
+
+    local function refreshTexturePickerList()
+        local filter_text = (textureFilter:GetText() or ""):lower()
+        local items = buildTextureItems()
+        local y = 0
+        local row_index = 0
+        for _, item in ipairs(items) do
+            local plain = item.text or ""
+            if filter_text == "" or plain:lower():find(filter_text, 1, true) then
+                row_index = row_index + 1
+                local row = texturePickerRows[row_index]
+                if not row then
+                    row = CreateFrame("Button", nil, texturePickerContent)
+                    row:SetHeight(TEXTURE_PICKER_ROW_HEIGHT)
+                    row:SetPoint("LEFT", texturePickerContent, "LEFT", 2, 0)
+                    row:SetPoint("RIGHT", texturePickerContent, "RIGHT", -2, 0)
+                    row.Text = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+                    row.Text:SetPoint("LEFT", 4, 0)
+                    row.Text:SetPoint("RIGHT", -4, 0)
+                    row.Text:SetJustifyH("LEFT")
+                    local highlight = row:CreateTexture(nil, "HIGHLIGHT")
+                    highlight:SetAllPoints()
+                    highlight:SetColorTexture(1, 1, 1, 0.08)
+                    texturePickerRows[row_index] = row
+                end
+                row.catalogId = item.value
+                row.Text:SetText(plain)
+                row:SetPoint("TOP", texturePickerContent, "TOP", 0, -y)
+                row:SetScript("OnClick", function(self)
+                    onTexturePickerRowClicked(self.catalogId)
+                end)
+                row:SetScript("OnEnter", function(self)
+                    showCatalogTooltip(self, { plain })
+                end)
+                row:SetScript("OnLeave", function()
+                    hideCatalogTooltip()
+                end)
+                row:Show()
+                y = y + TEXTURE_PICKER_ROW_HEIGHT
+            end
+        end
+        for i = row_index + 1, #texturePickerRows do
+            if texturePickerRows[i] then
+                texturePickerRows[i]:Hide()
+            end
+        end
+        local width = texturePickerScroll:GetWidth() > 0 and texturePickerScroll:GetWidth() or (TEXTURE_PICKER_WIDTH - 40)
+        texturePickerContent:SetSize(width, math.max(y, 1))
+    end
+
+    local function toggleTexturePicker()
+        if texturePicker:IsShown() then
+            texturePicker:Hide()
+            return
+        end
+        refreshTexturePickerList()
+        texturePicker:Show()
+    end
+
+    textureSelectBtn:SetScript("OnClick", toggleTexturePicker)
+    textureFilter:SetScript("OnTextChanged", function()
+        refreshTexturePickerList()
+    end)
+    textureFilter:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        texturePicker:Hide()
+    end)
+
+    local function buildOverrideFromForm()
+        syncFormFromDropdowns()
+        if not form.catalogId then return nil end
+        return {
+            enabled = true,
+            class = normalizeClassFile(form.class),
+            spec = form.spec,
+            race = form.race,
+            faction = form.faction,
+            sex = form.sex,
+            catalogId = O.NormalizeCatalogId(form.catalogId),
+        }
+    end
+
     local function refreshFormDropdowns()
-        initDropdown(classDropdown, buildClassItems(), form.class, function(value)
-            form.class = value
-            if value == ANY_VALUE then form.spec = ANY_VALUE end
+        local class_items = buildClassItems()
+        local spec_items = buildSpecItems(form.class)
+        initDropdown(classDropdown, class_items, form.class, function(value)
+            form.class = normalizeClassFile(value)
+            form.spec = ANY_VALUE
             refreshFormDropdowns()
         end)
-        initDropdown(specDropdown, buildSpecItems(form.class), form.spec, function(value)
+        initDropdown(specDropdown, spec_items, form.spec, function(value)
             form.spec = value
-            forceDropdownLabel(specDropdown, findItemText(buildSpecItems(form.class), value))
         end)
         initDropdown(raceDropdown, buildRaceItems(), form.race, function(value)
             form.race = value
@@ -629,9 +1150,10 @@ function OO.Build(root_panel, tab_y_offset)
         initDropdown(sexDropdown, buildSexItems(), form.sex, function(value)
             form.sex = value
         end)
-        initDropdown(textureDropdown, buildTextureItems(), form.catalogId, function(value)
-            form.catalogId = O.NormalizeCatalogId(value)
-        end)
+        setDropdownDisplayText(classDropdown, getClassDisplayName(form.class))
+        setDropdownDisplayText(specDropdown, getSpecDisplayName(form.spec, form.class))
+        updateTextureButtonLabel()
+        updateEditorActionsState()
     end
 
     local function loadFormFromOverride(override)
@@ -645,7 +1167,7 @@ function OO.Build(root_panel, tab_y_offset)
             form.catalogId = texture_items[1] and texture_items[1].value or nil
             selected_index = nil
         else
-            form.class = override.class or ANY_VALUE
+            form.class = normalizeClassFile(override.class or ANY_VALUE)
             form.spec = override.spec or ANY_VALUE
             form.race = override.race or ANY_VALUE
             form.faction = override.faction or ANY_VALUE
@@ -680,36 +1202,24 @@ function OO.Build(root_panel, tab_y_offset)
         highlightListSelection()
     end
 
-    local function buildOverrideFromForm()
-        if not form.catalogId then return nil end
-        return {
-            enabled = true,
-            class = form.class,
-            spec = form.spec,
-            race = form.race,
-            faction = form.faction,
-            sex = form.sex,
-            catalogId = O.NormalizeCatalogId(form.catalogId),
-        }
-    end
-
     btnAdd:SetScript("OnClick", function()
+        if not formHasMatchCriteria() then return end
         local override = buildOverrideFromForm()
         if not override then return end
         if O.AddOverride(override) then
             selected_index = #O.GetOverrides()
             refreshList()
-            requestBaseUpdate(true)
+            refreshOverridePlayerFrame()
         end
     end)
 
     btnSave:SetScript("OnClick", function()
-        if not selected_index then return end
+        if not selected_index or not formHasMatchCriteria() then return end
         local override = buildOverrideFromForm()
         if not override then return end
         if O.UpdateOverride(selected_index, override) then
             refreshList()
-            requestBaseUpdate(true)
+            refreshOverridePlayerFrame()
         end
     end)
 
@@ -719,7 +1229,7 @@ function OO.Build(root_panel, tab_y_offset)
             selected_index = nil
             loadFormFromOverride(nil)
             refreshList()
-            requestBaseUpdate(true)
+            refreshOverridePlayerFrame()
         end
     end)
 
@@ -727,9 +1237,11 @@ function OO.Build(root_panel, tab_y_offset)
         selected_index = nil
         loadFormFromOverride(nil)
         refreshList()
+        refreshOverridePlayerFrame()
     end)
 
     function panel:Refresh()
+        local ok, err = pcall(function()
         local addon = getBaseAddon()
         if addon and EPF_CustomSkins_Definitions then
             O.BuildCatalog(addon, EPF_CustomSkins_Definitions)
@@ -749,19 +1261,26 @@ function OO.Build(root_panel, tab_y_offset)
         btnClear:SetText(L("OverrideClear", "Clear"))
         loadFormFromOverride(selected_index and O.GetOverrides()[selected_index] or nil)
         refreshList()
+        end)
+        if not ok and geterrorhandler then
+            geterrorhandler()("EPF Custom Skins Overrides Refresh: " .. tostring(err))
+        end
     end
 
     panel:SetScript("OnShow", function()
-        local panelW = root_panel:GetWidth()
-        if panelW and panelW > 0 then
-            listGroup:SetWidth(panelW * 0.52)
-            editorGroup:SetWidth(panelW * 0.40)
-        end
-        panel:Refresh()
+        pcall(function() panel:Refresh() end)
     end)
 
-    loadFormFromOverride(nil)
-    refreshList()
+    panel:SetScript("OnHide", function()
+        texturePicker:Hide()
+        hideCatalogTooltip()
+    end)
+
+    pcall(function()
+        loadFormFromOverride(nil)
+        refreshList()
+        updateEditorActionsState()
+    end)
 
     return panel
 end

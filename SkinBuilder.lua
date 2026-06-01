@@ -4,6 +4,31 @@ EPF_CustomSkins_SkinBuilder = EPF_CustomSkins_SkinBuilder or {}
 
 local SB = EPF_CustomSkins_SkinBuilder
 
+--[[
+ * Remove WoW |cffRRGGBB and |cAARRGGBB color sequences. Do not use [%x]+ (hex letters eat "Alianza"/"Horda").
+--]]
+function SB.GetEntryPreviewPath(folder_path, entry)
+    if not folder_path or not entry or not entry.name then return nil end
+    local ext = entry.ext or "png"
+    return folder_path .. entry.name .. "-2x." .. ext
+end
+
+function SB.GetEntryPreviewTexCoords(entry, default_frame_layout)
+    local layout = (entry and entry.layout) or default_frame_layout
+    local layer = layout and layout.layers and layout.layers[1]
+    if not layer then
+        return 0, 1, 0, 1
+    end
+    return layer.leftTexCoord or 0, layer.rightTexCoord or 1, layer.topTexCoord or 0, layer.bottomTexCoord or 1
+end
+
+function SB.StripColorCodes(text)
+    if not text or text == "" then return "" end
+    text = text:gsub("|cff%x%x%x%x%x%x", "")
+    text = text:gsub("|c%x%x%x%x%x%x%x%x", "")
+    return text:gsub("|r", "")
+end
+
 function SB.BuildMenuName(addon, data)
     if data.displayName then
         return data.displayName
@@ -123,6 +148,16 @@ function SB.BuildTextures(addon, folder_path, default_frame_layout, data)
 
     local rest_icon_offset = layout.restIconOffset or default_frame_layout.restIconOffset
     return layered, addon.CreatePointOffset(rest_icon_offset[1], rest_icon_offset[2])
+end
+
+function SB.ReplaceLayeredTexture(base_addon, mode_id, layered, rest_offset)
+    if not base_addon or not mode_id then return false end
+    local textures = base_addon.TEXTURES
+    if not textures or not textures[mode_id] then return false end
+    local target = textures[mode_id]
+    target.Frame = nil
+    target.Portrait = nil
+    return SB.ApplyLayeredTexture(base_addon, mode_id, layered, rest_offset)
 end
 
 function SB.ApplyLayeredTexture(base_addon, mode_id, layered, rest_offset)
