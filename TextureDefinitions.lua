@@ -122,7 +122,7 @@ D.textureConfigSpec = {
             layers = {
                 {
                     topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, -10 },
+                    pointOffset = { 172, 0 },
                 },
             },
         },
