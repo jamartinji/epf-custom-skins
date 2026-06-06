@@ -116,7 +116,17 @@ D.textureConfigSpec = {
     },  -- Devourer
 
     -- [ DRUID ]
-    -- { class = "DRUID", spec = 102, name = "druid_balance", ext = "png" },       -- Balance
+    { class = "DRUID", spec = 102, name = "druid_balance", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, -10 },
+                },
+            },
+        },
+    },       -- Balance
     -- { class = "DRUID", spec = 103, name = "druid_feral", ext = "png" },         -- Feral
     { class = "DRUID", spec = 104, name = "druid_guardian", ext = "png" },      -- Guardian
     { class = "DRUID", spec = 105, name = "druid_resto", ext = "png" },         -- Restoration
