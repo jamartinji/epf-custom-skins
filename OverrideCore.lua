@@ -14,6 +14,7 @@ O.override_mode_ids = O.override_mode_ids or {}
 O._mode_pool = O._mode_pool or {}
 O.mode_to_override = O.mode_to_override or {}
 O.catalog = O.catalog or {}
+O.catalog_by_id = O.catalog_by_id or {}
 O._addon = nil
 O._epf_core = nil
 O._reorder_hook = nil
@@ -502,6 +503,80 @@ function O.NormalizeCatalogId(value)
     return tonumber(value) or value
 end
 
+--[[
+ * Stable catalog key from texture definition fields (survives new textures inserted in the list).
+ * Includes displayName when present to disambiguate entries that share the same file name.
+--]]
+function O.BuildCatalogKey(entry)
+    if type(entry) ~= "table" or not entry.name then
+        return nil
+    end
+    local segments = {}
+    if entry.class then
+        segments[#segments + 1] = entry.class
+    end
+    if entry.spec then
+        segments[#segments + 1] = tostring(entry.spec)
+    end
+    if entry.race then
+        segments[#segments + 1] = entry.race
+    end
+    if entry.faction then
+        segments[#segments + 1] = entry.faction
+    end
+    if entry.displayName and entry.displayName ~= "" then
+        local safe_label = tostring(entry.displayName):gsub("[/\\]", "_")
+        segments[#segments + 1] = safe_label
+    end
+    local ext = entry.ext or "png"
+    segments[#segments + 1] = entry.name .. "." .. ext
+    return table.concat(segments, "/")
+end
+
+function O.GetCatalogItem(catalog_id)
+    catalog_id = O.NormalizeCatalogId(catalog_id)
+    if not catalog_id then
+        return nil
+    end
+    if type(catalog_id) == "number" then
+        return O.catalog[catalog_id]
+    end
+    return O.catalog_by_id[catalog_id]
+end
+
+--[[
+ * Legacy overrides stored catalogId as a list index; convert once to a stable key after BuildCatalog.
+--]]
+function O.MigrateOverrideCatalogId(override)
+    if not override or override.catalogId == nil then
+        return
+    end
+    local catalog_id = O.NormalizeCatalogId(override.catalogId)
+    override.catalogId = catalog_id
+    if type(catalog_id) == "string" and O.catalog_by_id[catalog_id] then
+        return
+    end
+    if type(catalog_id) == "number" then
+        local item = O.catalog[catalog_id]
+        if item and item.id then
+            override.catalogId = item.id
+        end
+    end
+end
+
+function O.MigrateAllProfileCatalogIds()
+    if not O.catalog or not next(O.catalog) then
+        return
+    end
+    for _, slot in pairs(O.GetProfilesTable()) do
+        if O.IsValidProfileSlot(slot) and type(slot.overrides) == "table" then
+            for _, override in ipairs(slot.overrides) do
+                O.MigrateOverrideCatalogId(override)
+            end
+        end
+    end
+end
+
 function O.NormalizeRaceKey(race)
     if not race or race == ANY_VALUE then return nil end
     return race:upper():gsub(" ", "")
@@ -605,6 +680,7 @@ end
 
 function O.BuildCatalog(addon, definitions)
     O.catalog = {}
+    O.catalog_by_id = {}
     if not definitions then return O.catalog end
 
     local merged = {}
@@ -619,35 +695,42 @@ function O.BuildCatalog(addon, definitions)
     local folder_path = definitions.folderPath
     local default_layout = definitions.defaultFrameLayout
     for index, entry in ipairs(merged) do
+        local stable_id = O.BuildCatalogKey(entry)
+        if not stable_id then
+            stable_id = "entry/" .. tostring(index)
+        elseif O.catalog_by_id[stable_id] then
+            stable_id = stable_id .. "#" .. tostring(index)
+        end
         local label = addon and SB.BuildMenuName(addon, entry) or (entry.displayName or entry.name or tostring(index))
         local left, right, top, bottom = SB.GetEntryPreviewTexCoords(entry, default_layout)
-        O.catalog[index] = {
-            id = index,
+        local item = {
+            id = stable_id,
+            legacyIndex = index,
             entry = entry,
             label = label,
             plainLabel = SB.StripColorCodes(label),
             previewPath = SB.GetEntryPreviewPath(folder_path, entry),
             previewCoords = { left, right, top, bottom },
         }
+        O.catalog[index] = item
+        O.catalog_by_id[stable_id] = item
     end
+    O.MigrateAllProfileCatalogIds()
     return O.catalog
 end
 
 function O.GetCatalogEntry(catalog_id)
-    catalog_id = O.NormalizeCatalogId(catalog_id)
-    local item = catalog_id and O.catalog[catalog_id]
+    local item = O.GetCatalogItem(catalog_id)
     return item and item.entry or nil
 end
 
 function O.GetCatalogLabel(catalog_id)
-    catalog_id = O.NormalizeCatalogId(catalog_id)
-    local item = catalog_id and O.catalog[catalog_id]
+    local item = O.GetCatalogItem(catalog_id)
     return item and item.label or ("#" .. tostring(catalog_id))
 end
 
 function O.GetCatalogPlainLabel(catalog_id)
-    catalog_id = O.NormalizeCatalogId(catalog_id)
-    local item = catalog_id and O.catalog[catalog_id]
+    local item = O.GetCatalogItem(catalog_id)
     if item and item.plainLabel then
         return item.plainLabel
     end
@@ -655,14 +738,12 @@ function O.GetCatalogPlainLabel(catalog_id)
 end
 
 function O.GetCatalogPreviewPath(catalog_id)
-    catalog_id = O.NormalizeCatalogId(catalog_id)
-    local item = catalog_id and O.catalog[catalog_id]
+    local item = O.GetCatalogItem(catalog_id)
     return item and item.previewPath or nil
 end
 
 function O.GetCatalogPreviewTexCoords(catalog_id)
-    catalog_id = O.NormalizeCatalogId(catalog_id)
-    local item = catalog_id and O.catalog[catalog_id]
+    local item = O.GetCatalogItem(catalog_id)
     if item and item.previewCoords then
         return item.previewCoords[1], item.previewCoords[2], item.previewCoords[3], item.previewCoords[4]
     end
@@ -803,7 +884,8 @@ function O.RegisterSingleOverrideMode(addon, override)
             local menu_name = O.BuildOverrideMenuName(override)
             local entry = O.GetCatalogEntry(override.catalogId)
             if not entry then
-                entry = O.GetCatalogEntry(1) or { name = "warlock", ext = "png" }
+                local first = O.catalog[1]
+                entry = first and first.entry or { name = "warlock", ext = "png" }
             end
             local layered, rest_offset = SB.BuildTextures(a, EPF_CustomSkins_Definitions.folderPath, EPF_CustomSkins_Definitions.defaultFrameLayout, entry)
             return {
@@ -885,6 +967,7 @@ function O.NormalizeOverride(override)
         override.race = O.NormalizeRaceClientFile(override.race)
     end
     override.catalogId = O.NormalizeCatalogId(override.catalogId)
+    O.MigrateOverrideCatalogId(override)
     if override.spec ~= ANY_VALUE then
         override.spec = tonumber(override.spec) or override.spec
     end

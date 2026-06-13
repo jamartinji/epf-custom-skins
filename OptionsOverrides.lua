@@ -540,9 +540,12 @@ end
 local function buildTextureItems()
     local items = {}
     local catalog = O.catalog or {}
-    for id, entry in ipairs(catalog) do
-        local plain = entry.plainLabel or stripColorCodes(entry.label or tostring(id))
-        items[#items + 1] = { text = plain, value = id }
+    for _, entry in ipairs(catalog) do
+        local stable_id = entry.id
+        if stable_id then
+            local plain = entry.plainLabel or stripColorCodes(entry.label or tostring(stable_id))
+            items[#items + 1] = { text = plain, value = stable_id }
+        end
     end
     table.sort(items, function(a, b) return a.text < b.text end)
     return items

@@ -4,6 +4,13 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-06-06
+
+### Fixed
+
+- Override texture references now use **stable catalog keys** (class/spec/name/displayName) instead of list index, so adding new textures no longer shifts saved override assignments.
+- On load, legacy numeric `catalogId` values are migrated once to the stable key for the texture at that index (re-select the texture in the editor if an override was already pointing at the wrong skin after a prior index shift).
+
 ## [1.3.3] - 2026-06-06
 
 ### Fixed
