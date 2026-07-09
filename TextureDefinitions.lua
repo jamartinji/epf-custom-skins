@@ -177,9 +177,39 @@ D.textureConfigSpec = {
     },            -- Frost
 
     -- [ MONK ]
-    -- { class = "MONK", spec = 268, name = "monk_brewmaster", ext = "png" },      -- Brewmaster
-    -- { class = "MONK", spec = 270, name = "monk_mistweaver", ext = "png" },      -- Mistweaver
-    -- { class = "MONK", spec = 269, name = "monk_windwalker", ext = "png" },      -- Windwalker
+    { class = "MONK", spec = 268, name = "monk_base&brew", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 161, 0 },
+                },
+            },
+        },
+    },      -- Brewmaster
+    { class = "MONK", spec = 270, name = "monk_mist&wind", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Mistweaver
+    { class = "MONK", spec = 269, name = "monk_mist&wind", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Windwalker
 
     -- [ PALADIN ]
     -- { class = "PALADIN", spec = 65, name = "paladin_holy", ext = "png" },       -- Holy
