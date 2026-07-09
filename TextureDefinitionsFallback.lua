@@ -23,11 +23,36 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "MONK", name = "monk", ext = "png",
+    { class = "MONK", name = "monk_base&brew", ext = "png", displayName="Celestials",
+        singleLayer = true,
         layout = {
             layers = {
-                { pointOffset = { 42, 10 } },
-                { pointOffset = { 172, 10 } },
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 10 },
+                },
+            },
+        },
+    },
+    { class = "MONK", name = "monk", ext = "png", displayName="Zen Legacy",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 10 },
+                },
+            },
+        },
+    },
+    { class = "MONK", name = "monk", ext = "png", displayName="Niuzao Spirit",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 160, 0 },
+                },
             },
         },
     },
