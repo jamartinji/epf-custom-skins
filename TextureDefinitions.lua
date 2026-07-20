@@ -212,9 +212,40 @@ D.textureConfigSpec = {
     },      -- Windwalker
 
     -- [ PALADIN ]
-    -- { class = "PALADIN", spec = 65, name = "paladin_holy", ext = "png" },       -- Holy
-    -- { class = "PALADIN", spec = 66, name = "paladin_prot", ext = "png" },       -- Protection
-    -- { class = "PALADIN", spec = 70, name = "paladin_ret", ext = "png" },        -- Retribution
+    { class = "PALADIN", spec = 65, name = "paladin_base&holy", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },        -- Holy
+    { class = "PALADIN", spec = 66, name = "paladin_tank&retri", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 192, -8 },
+                },
+            },
+            restIconOffset = { 210, 0 },
+        },
+    },       -- Protection
+    { class = "PALADIN", spec = 70, name = "paladin_tank&retri", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },        -- Retribution
 
     -- [ PRIEST ]
     -- { class = "PRIEST", spec = 256, name = "priest_disc", ext = "png" },        -- Discipline
