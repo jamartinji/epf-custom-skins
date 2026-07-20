@@ -229,9 +229,10 @@ D.textureConfigSpec = {
             layers = {
                 {
                     topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 192, -6 },
+                    pointOffset = { 192, -8 },
                 },
             },
+            restIconOffset = { 210, 0 },
         },
     },       -- Protection
     { class = "PALADIN", spec = 70, name = "paladin_tank&retri", ext = "png",
