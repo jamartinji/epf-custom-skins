@@ -56,13 +56,15 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "PALADIN", name = "paladin", ext = "png",
+    { class = "PALADIN", name = "paladin_base&holy", ext = "png",
+        singleLayer = true,
         layout = {
             layers = {
-                { pointOffset = { 62, -8 } },
-                { pointOffset = { 192, -8 } },
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
+                },
             },
-            restIconOffset = { 210, 0 },
         },
     },
     { class = "PRIEST", name = "priest", ext = "png" },
