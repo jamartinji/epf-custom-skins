@@ -10,14 +10,78 @@ D.textureConfigFallback = {
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
     { class = "DRUID", name = "druid", ext = "png" },
     { class = "EVOKER", name = "evoker", ext = "png" },
-    { class = "HUNTER", name = "hunter", ext = "png" },
+    { class = "HUNTER", name = "hunter_base&bm", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0 / 512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_eagle", ext = "png", displayName = "Eagle Hunter",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Thas'dorah",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+        { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Eagle",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Nelf Thas'dorah",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+        { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Banshee Redemption",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "MAGE", name = "mage", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    topTexCoord = 256 / 512,
-                    bottomTexCoord = 512/512,
+                    topTexCoord = 256 / 512, bottomTexCoord = 512/512,
                     pointOffset = { 172, 0 },
                 },
             },
@@ -67,6 +131,29 @@ D.textureConfigFallback = {
             },
         },
     },
+    { class = "PALADIN", name = "paladin_protection", ext = "png", displayName="Judgement Charger",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 192, -8 },
+                },
+            },
+            restIconOffset = { 210, 0 },
+        },
+    },
+    { class = "PALADIN", name = "paladin_retribution", ext = "png", displayName="Ashbringer Judgement",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "PRIEST", name = "priest", ext = "png" },
     { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman", ext = "png" },
@@ -78,7 +165,17 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "WARRIOR", name = "warrior", ext = "png" },
+    { class = "WARRIOR", name = "warrior_base&protection", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
 
     -- [ GENERIC RACE TEXTURES ] Used when no class texture matched.
     { race = "Dracthyr", name = "dracthyr", ext = "png" },
