@@ -81,7 +81,7 @@ D.textureConfigSpec = {
                 {
                     topTexCoord = 256 / 512,
                     bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
+                    pointOffset = { 188, 0 },
                 },
             },
         },
@@ -93,7 +93,7 @@ D.textureConfigSpec = {
                 {
                     topTexCoord = 0 / 512,
                     bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
+                    pointOffset = { 182, 0 },
                 },
             },
         },
@@ -137,8 +137,28 @@ D.textureConfigSpec = {
     -- { class = "EVOKER", spec = 1473, name = "evoker_augmentation", ext = "png" },-- Augmentation
 
     -- [ HUNTER ]
-    -- { class = "HUNTER", spec = 253, name = "hunter_bm", ext = "png" },          -- Beast Mastery
-    -- { class = "HUNTER", spec = 254, name = "hunter_mm", ext = "png" },          -- Marksmanship
+    { class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 198, 0 },
+                },
+            },
+        },
+    },          -- Beast Mastery
+    { class = "HUNTER", spec = 254, name = "hunter_mm_eagle", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },          -- Marksmanship
     -- { class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png" },    -- Survival
 
     -- [ MAGE ]
@@ -223,24 +243,24 @@ D.textureConfigSpec = {
             },
         },
     },        -- Holy
-    { class = "PALADIN", spec = 66, name = "paladin_tank&retri", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 192, -8 },
-                },
-            },
-            restIconOffset = { 210, 0 },
-        },
-    },       -- Protection
-    { class = "PALADIN", spec = 70, name = "paladin_tank&retri", ext = "png",
+    { class = "PALADIN", spec = 66, name = "paladin_protection", ext = "png",
         singleLayer = true,
         layout = {
             layers = {
                 {
                     topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 192, -8 },
+                },
+            },
+            restIconOffset = { 190, 0 },
+        },
+    },       -- Protection
+    { class = "PALADIN", spec = 70, name = "paladin_retribution", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 172, 0 },
                 },
             },
@@ -283,7 +303,37 @@ D.textureConfigSpec = {
     },    -- Destruction
 
     -- [ WARRIOR ]
-    -- { class = "WARRIOR", spec = 71, name = "warrior_arms", ext = "png" },       -- Arms
-    -- { class = "WARRIOR", spec = 72, name = "warrior_fury", ext = "png" },       -- Fury
-    -- { class = "WARRIOR", spec = 73, name = "warrior_prot", ext = "png" },       -- Protection
+    { class = "WARRIOR", spec = 71, name = "warrior_arms&fury", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 6 },
+                },
+            },
+        },
+    },       -- Arms
+    { class = "WARRIOR", spec = 72, name = "warrior_arms&fury", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },       -- Fury
+    { class = "WARRIOR", spec = 73, name = "warrior_base&protection", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, -18 },
+                },
+            },
+        },
+    },       -- Protection
 }
