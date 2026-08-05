@@ -156,7 +156,17 @@ D.textureConfigFallback = {
     },
     { class = "PRIEST", name = "priest", ext = "png" },
     { class = "ROGUE", name = "rogue", ext = "png" },
-    { class = "SHAMAN", name = "shaman", ext = "png" },
+    { class = "SHAMAN", name = "shaman_base&resto", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "WARLOCK", name = "warlock", ext = "png",
         layout = {
             layers = {

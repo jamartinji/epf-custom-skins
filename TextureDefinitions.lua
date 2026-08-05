@@ -278,9 +278,39 @@ D.textureConfigSpec = {
     -- { class = "ROGUE", spec = 261, name = "rogue_subtlety", ext = "png" },      -- Subtlety
 
     -- [ SHAMAN ]
-    -- { class = "SHAMAN", spec = 262, name = "shaman_elemental", ext = "png" },   -- Elemental
-    -- { class = "SHAMAN", spec = 263, name = "shaman_enhancement", ext = "png" }, -- Enhancement
-    -- { class = "SHAMAN", spec = 264, name = "shaman_resto", ext = "png" },       -- Restoration
+    { class = "SHAMAN", spec = 262, name = "shaman_elemental&enhancement", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },   -- Elemental
+    { class = "SHAMAN", spec = 263, name = "shaman_elemental&enhancement", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    }, -- Enhancement
+    { class = "SHAMAN", spec = 264, name = "shaman_base&resto", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },       -- Restoration
 
     -- [ WARLOCK ]
     -- Affliction: overrides only pointOffset from default layout.
