@@ -154,7 +154,17 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "PRIEST", name = "priest", ext = "png" },
+    { class = "PRIEST", name = "priest", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "ROGUE", name = "rogue", ext = "png" },
     { class = "SHAMAN", name = "shaman_base&resto", ext = "png",
         singleLayer = true,
@@ -218,7 +228,72 @@ D.textureConfigFallback = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
-    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire" },
+    { class = "PRIEST", name = "priest", ext = "png", displayName = "Legacy priest",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "PRIEST", name = "priest_extras", ext = "png", displayName = "Tomekeeper's Spire",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "PRIEST", name = "priest_extras", ext = "png", displayName = "Sacred disciple",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "PRIEST", name = "priest_shadow", ext = "png", displayName = "Dark devotion",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Xal'atath Blade",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "PRIEST", name = "priest_black_empire", ext = "png", displayName = "Black Empire",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
         singleLayer = true,
         layout = {
