@@ -268,10 +268,39 @@ D.textureConfigSpec = {
     },        -- Retribution
 
     -- [ PRIEST ]
-    -- { class = "PRIEST", spec = 256, name = "priest_disc", ext = "png" },        -- Discipline
-    -- { class = "PRIEST", spec = 257, name = "priest_holy", ext = "png" },        -- Holy
-    { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png" },      -- Shadow
-
+    { class = "PRIEST", spec = 256, name = "priest_discipline&holy", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 182, 0 },
+                },
+            },
+        },
+    },        -- Discipline
+    { class = "PRIEST", spec = 257, name = "priest_discipline&holy", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },        -- Holy
+    { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Shadow
     -- [ ROGUE ]
     { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png" }, -- Assassination
     -- { class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png" },        -- Outlaw
