@@ -153,13 +153,23 @@ D.textureConfigSpec = {
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
                     pointOffset = { 172, 0 },
                 },
             },
         },
     },          -- Marksmanship
-    -- { class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png" },    -- Survival
+    { class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },    -- Survival
 
     -- [ MAGE ]
     { class = "MAGE", spec = 62, name = "mage", ext = "png",

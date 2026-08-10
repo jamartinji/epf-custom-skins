@@ -21,61 +21,6 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "HUNTER", name = "hunter_mm_eagle", ext = "png", displayName = "Eagle Hunter",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
-    },
-    { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Thas'dorah",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
-    },
-        { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Eagle",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
-    },
-    { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Nelf Thas'dorah",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
-    },
-        { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Banshee Redemption",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
-    },
     { class = "MAGE", name = "mage", ext = "png",
         singleLayer = true,
         layout = {
@@ -94,62 +39,6 @@ D.textureConfigFallback = {
                 {
                     topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 172, 10 },
-                },
-            },
-        },
-    },
-    { class = "MONK", name = "monk", ext = "png", displayName="Zen Legacy",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 10 },
-                },
-            },
-        },
-    },
-    { class = "MONK", name = "monk", ext = "png", displayName="Niuzao Spirit",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
-                    pointOffset = { 160, 0 },
-                },
-            },
-        },
-    },
-    { class = "PALADIN", name = "paladin_base&holy", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 170, 0 },
-                },
-            },
-        },
-    },
-    { class = "PALADIN", name = "paladin_protection", ext = "png", displayName="Judgement Charger",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 192, -8 },
-                },
-            },
-            restIconOffset = { 210, 0 },
-        },
-    },
-    { class = "PALADIN", name = "paladin_retribution", ext = "png", displayName="Ashbringer Judgement",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256/512, bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
                 },
             },
         },
@@ -228,6 +117,128 @@ D.textureConfigFallback = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
+    { class = "HUNTER", name = "hunter_mm_eagle", ext = "png", displayName = "Eagle Hunter",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Thas'dorah",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_white", ext = "png", displayName = "Azure Eagle",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Nelf Thas'dorah",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_mm_banshee", ext = "png", displayName = "Banshee Redemption",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "HUNTER", name = "hunter_survival", ext = "png", displayName = "Talonclawer",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 178, 0 },
+                },
+            },
+        },
+    },
+    { class = "MONK", name = "monk", ext = "png", displayName="Zen Legacy",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 10 },
+                },
+            },
+        },
+    },
+    { class = "MONK", name = "monk", ext = "png", displayName="Niuzao Spirit",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 160, 0 },
+                },
+            },
+        },
+    },
+    { class = "PALADIN", name = "paladin_base&holy", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
+                },
+            },
+        },
+    },
+    { class = "PALADIN", name = "paladin_protection", ext = "png", displayName="Judgement Charger",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 192, -8 },
+                },
+            },
+            restIconOffset = { 210, 0 },
+        },
+    },
+    { class = "PALADIN", name = "paladin_retribution", ext = "png", displayName="Ashbringer Judgement",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "PRIEST", name = "priest", ext = "png", displayName = "Legacy priest",
         singleLayer = true,
         layout = {
