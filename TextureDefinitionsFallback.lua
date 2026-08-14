@@ -54,7 +54,17 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "ROGUE", name = "rogue", ext = "png" },
+    { class = "ROGUE", name = "rogue_base&subtley", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "SHAMAN", name = "shaman_base&resto", ext = "png",
         singleLayer = true,
         layout = {
@@ -117,6 +127,34 @@ D.textureConfigFallback = {
     },
 
     -- [ ALTERNATIVE TEXTURES ]
+    { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    width = 280,
+                    height = 163,
+                    leftTexCoord = 0/512,
+                    rightTexCoord = 512/512,
+                    topTexCoord = 216/512,
+                    bottomTexCoord = 512/512,
+                    pointOffset = { 190, -12 },
+                },
+            },
+        },
+    },
+    { class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png", displayName = "Devourer Horns",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512,
+                    bottomTexCoord = 256/512,
+                    pointOffset = { 170, 0 },
+                },
+            },
+        },
+    },
     { class = "HUNTER", name = "hunter_mm_eagle", ext = "png", displayName = "Eagle Hunter",
         singleLayer = true,
         layout = {
@@ -305,30 +343,24 @@ D.textureConfigFallback = {
             },
         },
     },
-    { class = "DEATHKNIGHT", spec = 251, name = "dk_frost-by-benjiro_blue", ext = "png", displayName = "Frost by Benjiro Blue",
+    { class = "ROGUE", name = "rogue_assassination", ext = "png", displayName = "Kingslayer",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    width = 280,
-                    height = 163,
-                    leftTexCoord = 0/512,
-                    rightTexCoord = 512/512,
-                    topTexCoord = 216/512,
-                    bottomTexCoord = 512/512,
-                    pointOffset = { 190, -12 },
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
                 },
             },
         },
     },
-    { class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png", displayName = "Devourer Horns",
+    { class = "ROGUE", name = "rogue_outlaw", ext = "png", displayName = "Dreadblades",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512,
-                    bottomTexCoord = 256/512,
-                    pointOffset = { 170, 0 },
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
                 },
             },
         },
@@ -343,13 +375,34 @@ D.textureConfigFallback = {
             },
         },
     },
+    { class = "CUSTOM", name = "corsairs", ext = "png", displayName = "Pirate",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "CUSTOM", name = "corsairs", ext = "png", displayName = "Corsair",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "CUSTOM", name = "void", ext = "png", displayName = "Void Shadow",
         singleLayer = true,
         layout = {
             layers = {
                 {
-                    topTexCoord = 256/512,
-                    bottomTexCoord = 512/512,
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
                     pointOffset = { 170, 0 },
                 },
             },
@@ -360,8 +413,7 @@ D.textureConfigFallback = {
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512,
-                    bottomTexCoord = 256/512,
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 170, 0 },
                 },
             },

@@ -312,9 +312,39 @@ D.textureConfigSpec = {
         },
     },      -- Shadow
     -- [ ROGUE ]
-    { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png" }, -- Assassination
-    -- { class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png" },        -- Outlaw
-    -- { class = "ROGUE", spec = 261, name = "rogue_subtlety", ext = "png" },      -- Subtlety
+    { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    }, -- Assassination
+    { class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },        -- Outlaw
+    { class = "ROGUE", spec = 261, name = "rogue_base&subtley", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Subtlety
 
     -- [ SHAMAN ]
     { class = "SHAMAN", spec = 262, name = "shaman_elemental&enhancement", ext = "png",
