@@ -8,7 +8,17 @@ D.textureConfigFallback = {
     -- [ GENERIC CLASS TEXTURES ] Used when no specialization-specific entry matches.
     -- { class = "DEATHKNIGHT", name = "deathknight", ext = "png" },
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
-    { class = "DRUID", name = "druid", ext = "png" },
+    { class = "DRUID", name = "druid", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
     { class = "EVOKER", name = "evoker", ext = "png" },
     { class = "HUNTER", name = "hunter_base&bm", ext = "png",
         singleLayer = true,
@@ -148,9 +158,107 @@ D.textureConfigFallback = {
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512,
-                    bottomTexCoord = 256/512,
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
                     pointOffset = { 170, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_balance", ext = "png", displayName = "Night Owl",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_feral", ext = "png", displayName = "Fangs of Ashamane",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_feral_savage", ext = "png", displayName = "Savage Feral Beast",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_feral_savage", ext = "png", displayName = "Incarnation of Nightmare",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_guardian", ext = "png", displayName = "Stonepaw",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_restoration", ext = "png", displayName = "Warden's Crown",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_guardian&restoration", ext = "png", displayName = "Alpha Claws",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid_guardian&restoration", ext = "png", displayName = "Gnarled Roots",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },
+    { class = "DRUID", name = "druid", ext = "png", displayName = "Druid old",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
                 },
             },
         },
