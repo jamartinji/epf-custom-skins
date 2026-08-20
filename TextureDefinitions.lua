@@ -121,15 +121,45 @@ D.textureConfigSpec = {
         layout = {
             layers = {
                 {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
                     pointOffset = { 172, 0 },
                 },
             },
         },
     },       -- Balance
-    -- { class = "DRUID", spec = 103, name = "druid_feral", ext = "png" },         -- Feral
-    { class = "DRUID", spec = 104, name = "druid_guardian", ext = "png" },      -- Guardian
-    { class = "DRUID", spec = 105, name = "druid_resto", ext = "png" },         -- Restoration
+    { class = "DRUID", spec = 103, name = "druid_feral", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },         -- Feral
+    { class = "DRUID", spec = 104, name = "druid_guardian", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 0/512, bottomTexCoord = 256/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },      -- Guardian
+    { class = "DRUID", spec = 105, name = "druid_restoration", ext = "png",
+        singleLayer = true,
+        layout = {
+            layers = {
+                {
+                    topTexCoord = 256/512, bottomTexCoord = 512/512,
+                    pointOffset = { 172, 0 },
+                },
+            },
+        },
+    },         -- Restoration
 
     -- [ EVOKER ]
     -- { class = "EVOKER", spec = 1467, name = "evoker_devastation", ext = "png" },-- Devastation
