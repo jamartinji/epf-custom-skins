@@ -1,7 +1,7 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.3.12-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![Version](https://img.shields.io/badge/Version-1.4.0-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
 [![WoW](https://img.shields.io/badge/WoW-12.1.0%20(MN)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 
@@ -54,10 +54,12 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
 
 1. Put texture files (e.g. PNG) in the add-on’s **`assets/`** folder.
 2. Add **`-2x`** versions (e.g. `warlock-2x.png`) for high-DPI.
-3. Edit texture definition tables:
+3. Edit texture definition tables (all fallback files append into `textureConfigFallback` in load order):
    - **`TextureDefinitions.lua`** → specialization-first entries in `textureConfigSpec`.
-   - **`TextureDefinitionsFallback.lua`** → class defaults, race/faction fallbacks, and manual alternatives in `textureConfigFallback`.
-   - **`TextureDefinitionsExtra.lua`** → appends extra manual entries into fallback definitions.
+   - **`TextureDefinitionsClassOnly.lua`** → generic class defaults (no spec).
+   - **`TextureDefinitionsRaceFaction.lua`** → race and faction fallbacks.
+   - **`TextureDefinitionsAlternatives.lua`** → alternative / legacy / CUSTOM manual skins.
+   - **`TextureDefinitionsExtra.lua`** → extra atlas cells appended last.
 
 Each entry has:
    - **class** (required): e.g. `"WARLOCK"`, `"DRUID"`.
