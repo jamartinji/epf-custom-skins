@@ -1,5 +1,5 @@
 -- [ EXTRA ATLAS ] extra-2x.png (1024x1024) with 256x256 cells.
--- singleLayer = true: only one layer per entry (the one with the correct offset for the top layer).
+-- Custom cell crops: keep full layout tables (merged onto the default "top" preset).
 
 local D = EPF_CustomSkins_Definitions
 if not D then return end

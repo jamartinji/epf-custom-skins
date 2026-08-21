@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `TextureDefinitionsRaceFaction.lua` — race and faction fallbacks
   - `TextureDefinitionsAlternatives.lua` — alternative / CUSTOM / manual skins
 - Fallback load order is unchanged: ClassOnly → RaceFaction → Alternatives → Extra.
+- Default frame layout is now **single-layer `top`** (upper half of a 512 atlas). Use `layout = "bot"` for the lower half, `layout = "dual"` for legacy two-layer skins. Optional `pointOffset` / `restIconOffset` shorthands; full custom `layout` tables still work.
 
 ## [1.3.12] - 2026-08-20
 

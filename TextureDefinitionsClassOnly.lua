@@ -9,101 +9,33 @@ local entries = {
     -- { class = "DEATHKNIGHT", name = "deathknight", ext = "png" },
     -- { class = "DEMONHUNTER", name = "demonhunter", ext = "png" },
     { class = "DRUID", name = "druid", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
-    { class = "EVOKER", name = "evoker", ext = "png" },
+    { class = "EVOKER", name = "evoker", ext = "png", layout = "dual" },
     { class = "HUNTER", name = "hunter_base&bm", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0 / 512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
     { class = "MAGE", name = "mage", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 256 / 512, bottomTexCoord = 512/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "bot",
     },
-    { class = "MONK", name = "monk_base&brew", ext = "png", displayName="Celestials",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 10 },
-                },
-            },
-        },
+    { class = "MONK", name = "monk_base&brew", ext = "png",
+        layout = "top",
+        pointOffset = { 172, 10 },
     },
     { class = "PRIEST", name = "priest", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
     { class = "ROGUE", name = "rogue_base&subtley", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
     { class = "SHAMAN", name = "shaman_base&resto", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
     { class = "WARLOCK", name = "warlock", ext = "png",
-        layout = {
-            layers = {
-                { pointOffset = { 38, -4 } },
-                { pointOffset = { 168, -4 } },
-            },
-        },
+        layout = { preset = "dual", layers = { { pointOffset = { 38, -4 } }, { pointOffset = { 168, -4 } } } },
     },
     { class = "WARRIOR", name = "warrior_base&protection", ext = "png",
-        singleLayer = true,
-        layout = {
-            layers = {
-                {
-                    topTexCoord = 0/512, bottomTexCoord = 256/512,
-                    pointOffset = { 172, 0 },
-                },
-            },
-        },
+        layout = "top",
     },
 }
 

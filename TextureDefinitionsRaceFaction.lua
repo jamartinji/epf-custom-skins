@@ -7,33 +7,18 @@ D.textureConfigFallback = D.textureConfigFallback or {}
 
 local entries = {
     -- [ GENERIC RACE TEXTURES ]
-    { race = "Dracthyr", name = "dracthyr", ext = "png" },
+    { race = "Dracthyr", name = "dracthyr", ext = "png", layout = "dual" },
     { race = "Scourge", name = "undead", ext = "png",
-        layout = {
-            layers = {
-                { pointOffset = { 42, 16 } },
-                { pointOffset = { 172, 16 } },
-            },
-        },
+        layout = { preset = "dual", layers = { { pointOffset = { 42, 16 } }, { pointOffset = { 172, 16 } } } },
     },
-    { race = "Pandaren", name = "pandaren", ext = "png" },
+    { race = "Pandaren", name = "pandaren", ext = "png", layout = "dual" },
 
     -- [ FACTION (no class) ] Last auto fallback among race/faction (before alternatives).
     { faction = "Alliance", name = "alliance", ext = "png",
-        layout = {
-            layers = {
-                { pointOffset = { 42, -2} },
-                { pointOffset = { 171, -3 } },
-            },
-        },
+        layout = { preset = "dual", layers = { { pointOffset = { 42, -2 } }, { pointOffset = { 171, -3 } } } },
     },
     { faction = "Horde", name = "horde", ext = "png",
-        layout = {
-            layers = {
-                { pointOffset = { 65, -10 } },
-                { pointOffset = { 195, -10 } },
-            },
-        },
+        layout = { preset = "dual", layers = { { pointOffset = { 65, -10 } }, { pointOffset = { 195, -10 } } } },
     },
 }
 

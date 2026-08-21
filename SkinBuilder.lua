@@ -4,6 +4,130 @@ EPF_CustomSkins_SkinBuilder = EPF_CustomSkins_SkinBuilder or {}
 
 local SB = EPF_CustomSkins_SkinBuilder
 
+local function deep_copy_layer(src)
+    local layer = {}
+    for k, v in pairs(src) do
+        if k == "pointOffset" and type(v) == "table" then
+            layer.pointOffset = { v[1], v[2] }
+        else
+            layer[k] = v
+        end
+    end
+    return layer
+end
+
+local function merge_layer(base, override)
+    local layer = deep_copy_layer(base or {})
+    if type(override) ~= "table" then
+        return layer
+    end
+    for k, v in pairs(override) do
+        if k == "pointOffset" and type(v) == "table" then
+            layer.pointOffset = { v[1], v[2] }
+        else
+            layer[k] = v
+        end
+    end
+    return layer
+end
+
+--[[
+ * Resolve layoutPreset / layout string|table into concrete singleLayer + layout table.
+ * Presets live on EPF_CustomSkins_Definitions.layoutPresets (top, bot, dual).
+ * Default preset is single-layer top half of a 512 atlas (most skins).
+--]]
+function SB.ResolveEntryLayout(definitions, entry)
+    definitions = definitions or EPF_CustomSkins_Definitions or {}
+    entry = entry or {}
+    local presets = definitions.layoutPresets or {}
+    local default_name = definitions.defaultLayoutPreset or "top"
+
+    local preset_name = nil
+    local layout_override = nil
+
+    local layout_field = entry.layout
+    if type(layout_field) == "string" then
+        preset_name = layout_field
+    elseif type(layout_field) == "table" then
+        if type(layout_field.preset) == "string" then
+            preset_name = layout_field.preset
+            layout_override = layout_field
+        else
+            layout_override = layout_field
+        end
+    end
+
+    if entry.dualLayer == true then
+        preset_name = "dual"
+    end
+
+    if not preset_name then
+        if entry.singleLayer == false then
+            preset_name = "dual"
+        elseif layout_override then
+            -- Custom layout table without preset: keep legacy dual default only when clearly dual.
+            local layer_count = layout_override.layers and #layout_override.layers or 0
+            if entry.singleLayer == true or layer_count <= 1 then
+                preset_name = default_name
+            else
+                preset_name = "dual"
+            end
+        else
+            preset_name = default_name
+        end
+    end
+
+    if preset_name == "bottom" then
+        preset_name = "bot"
+    end
+
+    local preset = presets[preset_name]
+    if not preset then
+        preset = presets[default_name] or presets.top
+        preset_name = default_name
+    end
+
+    local single_layer = preset and preset.singleLayer
+    if entry.singleLayer ~= nil then
+        single_layer = entry.singleLayer and true or false
+    elseif entry.dualLayer == true then
+        single_layer = false
+    end
+
+    local base_layout = (preset and preset.layout) or definitions.defaultFrameLayout or { layers = {} }
+    local merged = {
+        layers = {},
+        restIconOffset = base_layout.restIconOffset,
+    }
+
+    local base_layers = base_layout.layers or {}
+    local override_layers = (layout_override and layout_override.layers) or {}
+    local layer_count = single_layer and 1 or math.max(#base_layers, #override_layers, 2)
+    if single_layer then
+        layer_count = 1
+    end
+
+    for i = 1, layer_count do
+        local base_i = base_layers[i] or base_layers[1] or {}
+        merged.layers[i] = merge_layer(base_i, override_layers[i])
+    end
+
+    if layout_override and layout_override.restIconOffset then
+        merged.restIconOffset = layout_override.restIconOffset
+    end
+    if entry.restIconOffset then
+        merged.restIconOffset = entry.restIconOffset
+    end
+
+    -- Shorthand: entry.pointOffset applies to the portrait/single layer.
+    if entry.pointOffset and type(entry.pointOffset) == "table" and merged.layers[1] then
+        local idx = single_layer and 1 or math.min(2, #merged.layers)
+        merged.layers[idx].pointOffset = { entry.pointOffset[1], entry.pointOffset[2] }
+    end
+
+    return single_layer, merged, preset_name
+end
+
 --[[
  * Remove WoW |cffRRGGBB and |cAARRGGBB color sequences. Do not use [%x]+ (hex letters eat "Alianza"/"Horda").
 --]]
@@ -14,9 +138,14 @@ function SB.GetEntryPreviewPath(folder_path, entry)
 end
 
 function SB.GetEntryPreviewTexCoords(entry, default_frame_layout)
-    local layout = (entry and entry.layout) or default_frame_layout
+    local definitions = EPF_CustomSkins_Definitions
+    local _, layout = SB.ResolveEntryLayout(definitions, entry)
     local layer = layout and layout.layers and layout.layers[1]
     if not layer then
+        local fallback = default_frame_layout and default_frame_layout.layers and default_frame_layout.layers[1]
+        if fallback then
+            return fallback.leftTexCoord or 0, fallback.rightTexCoord or 1, fallback.topTexCoord or 0, fallback.bottomTexCoord or 1
+        end
         return 0, 1, 0, 1
     end
     return layer.leftTexCoord or 0, layer.rightTexCoord or 1, layer.topTexCoord or 0, layer.bottomTexCoord or 1
@@ -113,19 +242,23 @@ function SB.BuildTextures(addon, folder_path, default_frame_layout, data)
     local full_path_2x = folder_path .. data.name .. "-2x." .. data.ext
     local full_path = full_path_2x
 
-    local layout = data.layout or default_frame_layout
-    local default_layers = default_frame_layout.layers
-    local custom_layers = layout.layers or {}
-    local single_layer = data.singleLayer
-    local layer_count = single_layer and 1 or #default_layers
+    local definitions = EPF_CustomSkins_Definitions
+    local single_layer, layout = SB.ResolveEntryLayout(definitions, data)
+    if not layout or not layout.layers or not layout.layers[1] then
+        layout = default_frame_layout
+        single_layer = data.singleLayer and true or false
+    end
+
+    local layers = layout.layers
+    local layer_count = single_layer and 1 or #layers
+    if layer_count < 1 then
+        layer_count = 1
+    end
 
     local texture_layers = {}
     for j = 1, layer_count do
-        local i = single_layer and 1 or j
-        local layer = {}
-        for k, v in pairs(default_layers[i]) do layer[k] = v end
-        for k, v in pairs(custom_layers[i] or {}) do layer[k] = v end
-
+        local layer = layers[j] or layers[1]
+        local offset = layer.pointOffset or { 0, 0 }
         local tex = addon.CreateTexture({
             ["file"] = full_path,
             ["file-2x"] = full_path_2x,
@@ -135,7 +268,7 @@ function SB.BuildTextures(addon, folder_path, default_frame_layout, data)
             ["rightTexCoord"] = layer.rightTexCoord,
             ["topTexCoord"] = layer.topTexCoord,
             ["bottomTexCoord"] = layer.bottomTexCoord,
-        }, addon.CreatePointOffset(layer.pointOffset[1], layer.pointOffset[2]))
+        }, addon.CreatePointOffset(offset[1], offset[2]))
         texture_layers[j] = tex
     end
 
@@ -146,7 +279,7 @@ function SB.BuildTextures(addon, folder_path, default_frame_layout, data)
         layered = addon.CreateLayeredTextures(texture_layers[1], texture_layers[2])
     end
 
-    local rest_icon_offset = layout.restIconOffset or default_frame_layout.restIconOffset
+    local rest_icon_offset = layout.restIconOffset or (default_frame_layout and default_frame_layout.restIconOffset) or { 0, 0 }
     return layered, addon.CreatePointOffset(rest_icon_offset[1], rest_icon_offset[2])
 end
 

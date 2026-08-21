@@ -62,23 +62,35 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
    - **`TextureDefinitionsExtra.lua`** → extra atlas cells appended last.
 
 Each entry has:
-   - **class** (required): e.g. `"WARLOCK"`, `"DRUID"`.
+   - **class** (optional): e.g. `"WARLOCK"`, `"DRUID"`.
    - **name** and **ext**: file name and extension (e.g. `"warlock"`, `"png"`).
-   - **spec** (optional): specialization ID for spec-only skins.
-   - **race** (optional): race API string (e.g. `"Human"`, `"Scourge"`, `"Dracthyr"`).
-   - **faction** (optional): `"Alliance"` or `"Horde"`. Only applied when `/epf faction` is on.
+   - **spec** / **race** / **faction** (optional): match criteria.
    - **displayName** (optional): menu label (e.g. for manual-only textures).
-   - **layout** (optional): custom frame layout for this entry; see below. If omitted, `defaultFrameLayout` is used.
+   - **layout** (optional): `"top"` | `"bot"` | `"dual"`, or a table with `preset` + layer overrides.
+     - Default is **`top`** (single layer, upper half of a 512 atlas).
+     - `"bot"` = single layer, lower half.
+     - `"dual"` = two layers (legacy multi-layer skins).
+   - **pointOffset** / **restIconOffset** (optional): quick overrides without a full layout table.
 
 ### Frame layout
 
-In **`TextureDefinitions.lua`**, **`defaultFrameLayout`** defines sizes, texture coordinates (UV), and positions for each texture layer and for the rest icon. All entries in `textureConfigSpec` and `textureConfigFallback` use it unless they set their own **`layout`**.
+In **`TextureDefinitions.lua`**, **`layoutPresets`** define reusable crops for 512-tall atlases:
 
-- **`defaultFrameLayout`** has:
-  - **`layers`**: array of layer tables. Each layer has **`width`**, **`height`**, **`leftTexCoord`**, **`rightTexCoord`**, **`topTexCoord`**, **`bottomTexCoord`**, and **`pointOffset`** = `{ x, y }`.
-  - **`restIconOffset`**: `{ x, y }` for the rest icon position.
+- **`top`** (default): single layer, upper half (`y 0–256`), portrait offset `{ 172, 0 }`.
+- **`bot`**: single layer, lower half (`y 256–512`).
+- **`dual`**: two layers (frame + portrait) — for older multi-layer skins.
 
-To use different dimensions or positions for a specific texture, add a **`layout`** to that entry with the same structure (e.g. different `width`/`height` or `pointOffset` per layer). Example: a texture that uses a 1024×512 atlas with different crop and offsets would set `layout = { layers = { ... }, restIconOffset = { -3, 13 } }` on that entry.
+Examples:
+
+```lua
+{ class = "DRUID", spec = 103, name = "druid_feral", ext = "png", layout = "top" }
+{ class = "MAGE", spec = 64, name = "firefrost", ext = "png", layout = "bot" }
+{ class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png", layout = "bot", pointOffset = { 198, 0 } }
+{ class = "WARLOCK", name = "warlock", ext = "png",
+  layout = { preset = "dual", layers = { { pointOffset = { 38, -4 } }, { pointOffset = { 168, -4 } } } } }
+```
+
+Unusual crops (non-half atlas, extra atlas cells, etc.) still use a full `layout = { layers = { ... } }` table; values merge onto the chosen preset.
 
 ### Load order and priority
 
