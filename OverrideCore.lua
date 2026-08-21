@@ -9,12 +9,14 @@ O.MAX_OVERRIDES = 16
 O.MAX_PROFILES = 32
 O.MAX_PROFILE_NAME_LEN = 32
 O.DEFAULT_PROFILE_NAME = "Default"
-O.STORAGE_VERSION = 2
+O.STORAGE_VERSION = 3
 O.override_mode_ids = O.override_mode_ids or {}
 O._mode_pool = O._mode_pool or {}
 O.mode_to_override = O.mode_to_override or {}
 O.catalog = O.catalog or {}
 O.catalog_by_id = O.catalog_by_id or {}
+O.mode_to_skin_id = O.mode_to_skin_id or {}
+O.skin_id_to_mode = O.skin_id_to_mode or {}
 O._addon = nil
 O._epf_core = nil
 O._reorder_hook = nil
@@ -331,6 +333,9 @@ function O.EnsureSavedVariables()
     EPF_CustomSkins_Options.profiles = EPF_CustomSkins_Options.profiles or {}
     O.RepairProfilesStorage()
     EPF_CustomSkins_Options.characters = EPF_CustomSkins_Options.characters or {}
+    if (EPF_CustomSkins_Options.version or 0) < O.STORAGE_VERSION then
+        EPF_CustomSkins_Options.version = O.STORAGE_VERSION
+    end
     return EPF_CustomSkins_Options
 end
 
@@ -503,9 +508,68 @@ function O.NormalizeCatalogId(value)
     return tonumber(value) or value
 end
 
+local function slugify_fragment(text)
+    if not text then return "" end
+    return tostring(text):lower():gsub("[^a-z0-9]", "")
+end
+
 --[[
- * Stable catalog key from texture definition fields (survives new textures inserted in the list).
- * Includes displayName when present to disambiguate entries that share the same file name.
+ * Prefer entry.id (short slug). Fallback: compact name (+ displayName / spec) for older defs.
+--]]
+function O.BuildEntryId(entry, index, used_ids)
+    used_ids = used_ids or {}
+    local raw = entry and entry.id
+    if type(raw) == "string" and raw ~= "" then
+        local id = raw:lower():gsub("[^a-z0-9_]", "")
+        if #id > 12 then
+            id = id:sub(1, 12)
+        end
+        if id ~= "" and not used_ids[id] then
+            return id
+        end
+        if id ~= "" then
+            local n = 1
+            local candidate = id
+            while used_ids[candidate] do
+                local suffix = tostring(n)
+                candidate = id:sub(1, math.max(1, 12 - #suffix)) .. suffix
+                n = n + 1
+            end
+            return candidate
+        end
+    end
+
+    local name = entry and entry.name and slugify_fragment(entry.name) or ("e" .. tostring(index or 0))
+    local id
+    if entry and entry.displayName and entry.displayName ~= "" then
+        local dn = slugify_fragment(entry.displayName)
+        if name ~= "" and dn:sub(1, #name) == name and #dn > #name then
+            dn = dn:sub(#name + 1)
+        end
+        id = name:sub(1, 5) .. dn:sub(1, 5)
+    elseif entry and entry.spec then
+        id = name:sub(1, 6) .. tostring(entry.spec)
+    else
+        id = name:sub(1, 10)
+    end
+    if id == "" then
+        id = "skin" .. tostring(index or 0)
+    end
+    if #id > 12 then
+        id = id:sub(1, 12)
+    end
+    local n = 0
+    local candidate = id
+    while used_ids[candidate] do
+        n = n + 1
+        local suffix = tostring(n)
+        candidate = id:sub(1, math.max(1, 12 - #suffix)) .. suffix
+    end
+    return candidate
+end
+
+--[[
+ * Legacy path-style key (class/spec/name.png). Kept only for migrating old SavedVariables.
 --]]
 function O.BuildCatalogKey(entry)
     if type(entry) ~= "table" or not entry.name then
@@ -545,7 +609,7 @@ function O.GetCatalogItem(catalog_id)
 end
 
 --[[
- * Legacy overrides stored catalogId as a list index; convert once to a stable key after BuildCatalog.
+ * Migrate override.catalogId: numeric index or legacy path key → short entry.id.
 --]]
 function O.MigrateOverrideCatalogId(override)
     if not override or override.catalogId == nil then
@@ -553,14 +617,9 @@ function O.MigrateOverrideCatalogId(override)
     end
     local catalog_id = O.NormalizeCatalogId(override.catalogId)
     override.catalogId = catalog_id
-    if type(catalog_id) == "string" and O.catalog_by_id[catalog_id] then
-        return
-    end
-    if type(catalog_id) == "number" then
-        local item = O.catalog[catalog_id]
-        if item and item.id then
-            override.catalogId = item.id
-        end
+    local item = O.GetCatalogItem(catalog_id)
+    if item and item.id then
+        override.catalogId = item.id
     end
 end
 
@@ -575,6 +634,81 @@ function O.MigrateAllProfileCatalogIds()
             end
         end
     end
+end
+
+function O.RegisterSkinMode(mode_id, skin_id)
+    if not mode_id or not skin_id then
+        return
+    end
+    O.mode_to_skin_id[mode_id] = skin_id
+    O.skin_id_to_mode[skin_id] = mode_id
+end
+
+function O.ClearSkinModeMaps()
+    O.mode_to_skin_id = {}
+    O.skin_id_to_mode = {}
+end
+
+--[[
+ * Persist which skin the character picked manually (stable id, not EPF frameMode index).
+--]]
+function O.SaveManualSkinPreference(frame_mode)
+    local record = O.EnsureCharacterRecord()
+    local skin_id = frame_mode and O.mode_to_skin_id[frame_mode]
+    if skin_id then
+        record.manualSkinKind = "catalog"
+        record.manualSkinId = skin_id
+        record.manualEpfMode = nil
+        return
+    end
+    record.manualSkinKind = "epf"
+    record.manualSkinId = nil
+    record.manualEpfMode = frame_mode
+end
+
+--[[
+ * After modes register: migrate legacy frameMode index once, then re-apply saved skin id → current mode index.
+--]]
+function O.ApplyManualSkinPreference(addon)
+    addon = addon or O._addon or EPF_CustomSkins_BaseAddon
+    if not addon or not addon.settings then
+        return false
+    end
+    local record = O.EnsureCharacterRecord()
+    local settings = addon.settings
+    local frame_mode = settings.frameMode
+
+    if not record.manualSkinKind and not record.manualSkinId then
+        if frame_mode and O.mode_to_skin_id[frame_mode] then
+            record.manualSkinKind = "catalog"
+            record.manualSkinId = O.mode_to_skin_id[frame_mode]
+        else
+            record.manualSkinKind = "epf"
+            record.manualEpfMode = frame_mode
+        end
+    end
+
+    -- Old overrides / path keys stored as manualSkinId still resolve via catalog aliases.
+    if record.manualSkinKind == "catalog" and record.manualSkinId then
+        local item = O.GetCatalogItem(record.manualSkinId)
+        if item and item.id and item.id ~= record.manualSkinId then
+            record.manualSkinId = item.id
+        end
+        local mode_id = O.skin_id_to_mode[record.manualSkinId]
+        if not mode_id and item then
+            mode_id = O.skin_id_to_mode[item.id]
+        end
+        if mode_id and settings.frameMode ~= mode_id then
+            settings.frameMode = mode_id
+            return true
+        end
+    elseif record.manualSkinKind == "epf" and record.manualEpfMode ~= nil then
+        if settings.frameMode ~= record.manualEpfMode then
+            settings.frameMode = record.manualEpfMode
+            return true
+        end
+    end
+    return false
 end
 
 function O.NormalizeRaceKey(race)
@@ -694,18 +828,25 @@ function O.BuildCatalog(addon, definitions)
 
     local folder_path = definitions.folderPath
     local default_layout = definitions.defaultFrameLayout
-    for index, entry in ipairs(merged) do
-        local stable_id = O.BuildCatalogKey(entry)
-        if not stable_id then
-            stable_id = "entry/" .. tostring(index)
-        elseif O.catalog_by_id[stable_id] then
-            stable_id = stable_id .. "#" .. tostring(index)
+    local used_ids = {}
+    local name_counts = {}
+    for _, entry in ipairs(merged) do
+        if entry.name then
+            name_counts[entry.name] = (name_counts[entry.name] or 0) + 1
         end
+    end
+    for index, entry in ipairs(merged) do
+        local skin_id = O.BuildEntryId(entry, index, used_ids)
+        used_ids[skin_id] = true
+        entry.id = skin_id
+
+        local legacy_key = O.BuildCatalogKey(entry)
         local label = addon and SB.BuildMenuName(addon, entry) or (entry.displayName or entry.name or tostring(index))
         local left, right, top, bottom = SB.GetEntryPreviewTexCoords(entry, default_layout)
         local item = {
-            id = stable_id,
+            id = skin_id,
             legacyIndex = index,
+            legacyKey = legacy_key,
             entry = entry,
             label = label,
             plainLabel = SB.StripColorCodes(label),
@@ -713,7 +854,14 @@ function O.BuildCatalog(addon, definitions)
             previewCoords = { left, right, top, bottom },
         }
         O.catalog[index] = item
-        O.catalog_by_id[stable_id] = item
+        O.catalog_by_id[skin_id] = item
+        -- Migration aliases: old path keys (and unique bare file names) still resolve.
+        if legacy_key and not O.catalog_by_id[legacy_key] then
+            O.catalog_by_id[legacy_key] = item
+        end
+        if entry.name and name_counts[entry.name] == 1 and not O.catalog_by_id[entry.name] then
+            O.catalog_by_id[entry.name] = item
+        end
     end
     O.MigrateAllProfileCatalogIds()
     return O.catalog

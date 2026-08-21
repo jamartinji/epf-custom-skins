@@ -62,10 +62,11 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
    - **`TextureDefinitionsExtra.lua`** → extra atlas cells appended last.
 
 Each entry has:
+   - **id** (recommended): short stable slug (e.g. `"voidmatte"`, `"druidf103"`). Used for saves/overrides.
    - **class** (optional): e.g. `"WARLOCK"`, `"DRUID"`.
    - **name** and **ext**: file name and extension (e.g. `"warlock"`, `"png"`).
    - **spec** / **race** / **faction** (optional): match criteria.
-   - **displayName** (optional): menu label (e.g. for manual-only textures).
+   - **displayName** (optional): menu label (e.g. for manual-only textures). Override picker shows this, not the id.
    - **layout** (optional): `"top"` | `"bot"` | `"dual"`, or a table with `preset` + layer overrides.
      - Default is **`top`** (single layer, upper half of a 512 atlas).
      - `"bot"` = single layer, lower half.

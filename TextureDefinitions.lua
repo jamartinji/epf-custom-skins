@@ -8,6 +8,8 @@ local D = EPF_CustomSkins_Definitions
 D.folderPath = "Interface\\AddOns\\ElitePlayerFrame_Enhanced_CustomSkins\\assets\\"
 
 -- Optional fields per textureConfig entry:
+--   id       = short stable slug (3–12 chars). Used for SavedVariables / overrides; survives renames.
+--              If omitted, a fallback slug is generated from name (+ displayName / spec).
 --   class / spec / race / faction / name / ext / displayName / menuColor — as before.
 --   layout = "top" | "bot" | "dual" | { preset = "bot", layers = {...}, restIconOffset = {...} }
 --     "top"  = single layer, upper half of a 512 atlas (y 0-256). DEFAULT.
@@ -89,7 +91,7 @@ D.defaultFrameLayout = D.layoutPresets.dual.layout
 D.textureConfigSpec = {
 
     -- [ DEATH KNIGHT ]
-    { class = "DEATHKNIGHT", spec = 250, name = "dk_blood-by-benjiro_blue", ext = "png",
+    { id = "dkbloo250", class = "DEATHKNIGHT", spec = 250, name = "dk_blood-by-benjiro_blue", ext = "png",
         layout = {
             layers = {
                 {
@@ -104,11 +106,11 @@ D.textureConfigSpec = {
             },
         },
     },      -- Blood
-    { class = "DEATHKNIGHT", spec = 251, name = "dk_unholyfrost", ext = "png",
+    { id = "dkunho251", class = "DEATHKNIGHT", spec = 251, name = "dk_frost", ext = "png",
         layout = "bot",
         pointOffset = { 188, 0 },
     },      -- Frost
-    { class = "DEATHKNIGHT", spec = 252, name = "dk_unholyfrost", ext = "png",
+    { id = "dkunho252", class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", ext = "png",
         layout = "top",
         pointOffset = { 182, 0 },
     },     -- Unholy
@@ -116,22 +118,22 @@ D.textureConfigSpec = {
     -- [ DEMON HUNTER ]
     -- { class = "DEMONHUNTER", spec = 577, name = "dh_havoc", ext = "png" },      -- Havoc
     -- { class = "DEMONHUNTER", spec = 581, name = "dh_vengeance", ext = "png" },  -- Vengeance
-    { class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png",
+    { id = "dhdevo1480", class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", ext = "png",
         layout = "bot",
         pointOffset = { 170, 0 },
     },  -- Devourer
 
     -- [ DRUID ]
-    { class = "DRUID", spec = 102, name = "druid_balance", ext = "png",
+    { id = "druidb102", class = "DRUID", spec = 102, name = "druid_balance", ext = "png",
         layout = "bot",
     },       -- Balance
-    { class = "DRUID", spec = 103, name = "druid_feral", ext = "png",
+    { id = "druidf103", class = "DRUID", spec = 103, name = "druid_feral", ext = "png",
         layout = "top",
     },         -- Feral
-    { class = "DRUID", spec = 104, name = "druid_guardian", ext = "png",
+    { id = "druidg104", class = "DRUID", spec = 104, name = "druid_guardian", ext = "png",
         layout = "top",
     },      -- Guardian
-    { class = "DRUID", spec = 105, name = "druid_restoration", ext = "png",
+    { id = "druidr105", class = "DRUID", spec = 105, name = "druid_restoration", ext = "png",
         layout = "bot",
     },         -- Restoration
 
@@ -141,105 +143,105 @@ D.textureConfigSpec = {
     -- { class = "EVOKER", spec = 1473, name = "evoker_augmentation", ext = "png" },-- Augmentation
 
     -- [ HUNTER ]
-    { class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png",
+    { id = "hunter253", class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png",
         layout = "bot",
         pointOffset = { 198, 0 },
     },          -- Beast Mastery
-    { class = "HUNTER", spec = 254, name = "hunter_mm_eagle", ext = "png",
+    { id = "hunter254", class = "HUNTER", spec = 254, name = "hunter_mm_eagle", ext = "png",
         layout = "bot",
     },          -- Marksmanship
-    { class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png",
+    { id = "hunter255", class = "HUNTER", spec = 255, name = "hunter_survival", ext = "png",
         layout = "bot",
     },    -- Survival
 
     -- [ MAGE ]
-    { class = "MAGE", spec = 62, name = "mage", ext = "png",
+    { id = "mage62", class = "MAGE", spec = 62, name = "mage", ext = "png",
         layout = "top",
     },           -- Arcane
-    { class = "MAGE", spec = 63, name = "firefrost", ext = "png",
+    { id = "firefr63", class = "MAGE", spec = 63, name = "firefrost", ext = "png",
         layout = "top",
     },             -- Fire
-    { class = "MAGE", spec = 64, name = "firefrost", ext = "png",
+    { id = "firefr64", class = "MAGE", spec = 64, name = "firefrost", ext = "png",
         layout = "bot",
     },            -- Frost
 
     -- [ MONK ]
-    { class = "MONK", spec = 268, name = "monk_base&brew", ext = "png",
+    { id = "monkba268", class = "MONK", spec = 268, name = "monk_base&brew", ext = "png",
         layout = "bot",
         pointOffset = { 161, 0 },
     },      -- Brewmaster
-    { class = "MONK", spec = 270, name = "monk_mist&wind", ext = "png",
+    { id = "monkmi270", class = "MONK", spec = 270, name = "monk_mist&wind", ext = "png",
         layout = "top",
     },      -- Mistweaver
-    { class = "MONK", spec = 269, name = "monk_mist&wind", ext = "png",
+    { id = "monkmi269", class = "MONK", spec = 269, name = "monk_mist&wind", ext = "png",
         layout = "bot",
     },      -- Windwalker
 
     -- [ PALADIN ]
-    { class = "PALADIN", spec = 65, name = "paladin_base&holy", ext = "png",
+    { id = "paladi65", class = "PALADIN", spec = 65, name = "paladin_base&holy", ext = "png",
         layout = "bot",
     },        -- Holy
-    { class = "PALADIN", spec = 66, name = "paladin_protection", ext = "png",
+    { id = "paladi66", class = "PALADIN", spec = 66, name = "paladin_protection", ext = "png",
         layout = "bot",
         pointOffset = { 192, -8 },
         restIconOffset = { 190, 0 },
     },       -- Protection
-    { class = "PALADIN", spec = 70, name = "paladin_retribution", ext = "png",
+    { id = "paladi70", class = "PALADIN", spec = 70, name = "paladin_retribution", ext = "png",
         layout = "top",
     },        -- Retribution
 
     -- [ PRIEST ]
-    { class = "PRIEST", spec = 256, name = "priest_discipline&holy", ext = "png",
+    { id = "priest256", class = "PRIEST", spec = 256, name = "priest_discipline&holy", ext = "png",
         layout = "top",
         pointOffset = { 182, 0 },
     },        -- Discipline
-    { class = "PRIEST", spec = 257, name = "priest_discipline&holy", ext = "png",
+    { id = "priest257", class = "PRIEST", spec = 257, name = "priest_discipline&holy", ext = "png",
         layout = "bot",
     },        -- Holy
-    { class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png",
+    { id = "priest258", class = "PRIEST", spec = 258, name = "priest_shadow", ext = "png",
         layout = "top",
     },      -- Shadow
     -- [ ROGUE ]
-    { class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png",
+    { id = "roguea259", class = "ROGUE", spec = 259, name = "rogue_assassination", ext = "png",
         layout = "top",
     }, -- Assassination
-    { class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png",
+    { id = "rogueo260", class = "ROGUE", spec = 260, name = "rogue_outlaw", ext = "png",
         layout = "top",
     },        -- Outlaw
-    { class = "ROGUE", spec = 261, name = "rogue_base&subtley", ext = "png",
+    { id = "rogueb261", class = "ROGUE", spec = 261, name = "rogue_base&subtley", ext = "png",
         layout = "bot",
     },      -- Subtlety
 
     -- [ SHAMAN ]
-    { class = "SHAMAN", spec = 262, name = "shaman_elemental&enhancement", ext = "png",
+    { id = "shaman262", class = "SHAMAN", spec = 262, name = "shaman_elemental&enhancement", ext = "png",
         layout = "top",
     },   -- Elemental
-    { class = "SHAMAN", spec = 263, name = "shaman_elemental&enhancement", ext = "png",
+    { id = "shaman263", class = "SHAMAN", spec = 263, name = "shaman_elemental&enhancement", ext = "png",
         layout = "bot",
     }, -- Enhancement
-    { class = "SHAMAN", spec = 264, name = "shaman_base&resto", ext = "png",
+    { id = "shaman264", class = "SHAMAN", spec = 264, name = "shaman_base&resto", ext = "png",
         layout = "bot",
     },       -- Restoration
 
     -- [ WARLOCK ]
     -- Affliction: overrides only pointOffset from default layout.
-    { class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png",
+    { id = "warloc265", class = "WARLOCK", spec = 265, name = "warlock_affliction", ext = "png",
         layout = { preset = "dual", layers = { { pointOffset = { 42, -10 } }, { pointOffset = { 172, -10 } } } },
     },
-    { class = "WARLOCK", spec = 266, name = "warlock_demonology", ext = "png", layout = "dual" },-- Demonology
-    { class = "WARLOCK", spec = 267, name = "warlock_destro", ext = "png",
+    { id = "warloc266", class = "WARLOCK", spec = 266, name = "warlock_demonology", ext = "png", layout = "dual" },-- Demonology
+    { id = "warloc267", class = "WARLOCK", spec = 267, name = "warlock_destruction", ext = "png",
         layout = { preset = "dual", layers = { { pointOffset = { 42, 6 } }, { pointOffset = { 172, 6 } } } },
     },    -- Destruction
 
     -- [ WARRIOR ]
-    { class = "WARRIOR", spec = 71, name = "warrior_arms&fury", ext = "png",
+    { id = "warrio71", class = "WARRIOR", spec = 71, name = "warrior_arms&fury", ext = "png",
         layout = "bot",
         pointOffset = { 172, 6 },
     },       -- Arms
-    { class = "WARRIOR", spec = 72, name = "warrior_arms&fury", ext = "png",
+    { id = "warrio72", class = "WARRIOR", spec = 72, name = "warrior_arms&fury", ext = "png",
         layout = "top",
     },       -- Fury
-    { class = "WARRIOR", spec = 73, name = "warrior_base&protection", ext = "png",
+    { id = "warrio73", class = "WARRIOR", spec = 73, name = "warrior_base&protection", ext = "png",
         layout = "bot",
         pointOffset = { 172, -18 },
     },       -- Protection

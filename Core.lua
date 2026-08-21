@@ -35,6 +35,10 @@ local function RegisterCustomSkins(addon)
 
     EPF_CustomSkins_BaseAddon = addon
 
+    if O and type(O.ClearSkinModeMaps) == "function" then
+        O.ClearSkinModeMaps()
+    end
+
     local registered_count = 0
     local failed_count = 0
     local own_spec_mode_ids = {}
@@ -83,6 +87,16 @@ local function RegisterCustomSkins(addon)
         if ok and type(mode_id) == "number" then
             registered_count = registered_count + 1
             own_all_mode_ids[#own_all_mode_ids + 1] = mode_id
+            if O and type(O.RegisterSkinMode) == "function" then
+                local skin_id = data.id
+                if (not skin_id or skin_id == "") and type(O.BuildEntryId) == "function" then
+                    skin_id = O.BuildEntryId(data, #own_all_mode_ids, {})
+                    data.id = skin_id
+                end
+                if skin_id then
+                    O.RegisterSkinMode(mode_id, skin_id)
+                end
+            end
             if data.spec and data.class and data.class ~= "CUSTOM" then
                 own_spec_mode_ids[#own_spec_mode_ids + 1] = mode_id
             elseif data.class and data.class ~= "CUSTOM" then
@@ -163,6 +177,21 @@ local function RegisterCustomSkins(addon)
             C_Timer.After(0, ReorderCustomModes)
             C_Timer.After(0.2, ReorderCustomModes)
         end
+    end
+
+    local function apply_saved_manual_skin()
+        if O and type(O.ApplyManualSkinPreference) == "function" then
+            if O.ApplyManualSkinPreference(addon) then
+                if type(addon.Update) == "function" then
+                    pcall(function() addon:Update(true) end)
+                end
+            end
+        end
+    end
+    apply_saved_manual_skin()
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0, apply_saved_manual_skin)
+        C_Timer.After(0.25, apply_saved_manual_skin)
     end
 
     EPF_CustomSkins_Loaded = registered_count > 0
