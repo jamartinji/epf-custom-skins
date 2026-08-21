@@ -4,6 +4,18 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-21
+
+### Changed
+
+- Split `TextureDefinitionsFallback.lua` into focused files for maintainability:
+  - `TextureDefinitionsClassOnly.lua` — generic class defaults
+  - `TextureDefinitionsRaceFaction.lua` — race and faction fallbacks
+  - `TextureDefinitionsAlternatives.lua` — alternative / CUSTOM / manual skins
+- Fallback load order is unchanged: ClassOnly → RaceFaction → Alternatives → Extra.
+- Default frame layout is now **single-layer `top`** (upper half of a 512 atlas). Use `layout = "bot"` for the lower half, `layout = "dual"` for legacy two-layer skins. Optional `pointOffset` / `restIconOffset` shorthands; full custom `layout` tables still work.
+- Every texture definition has a short stable **`id`** slug. Manual frame selection and override `catalogId` values migrate from old list indices / path keys to that id (no texture list changes in this release, so index→id stays correct).
+
 ## [1.3.12] - 2026-08-20
 
 ### Added

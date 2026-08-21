@@ -1,7 +1,7 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.3.12-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![Version](https://img.shields.io/badge/Version-1.4.0-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
 [![WoW](https://img.shields.io/badge/WoW-12.1.0%20(MN)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 
@@ -54,29 +54,44 @@ The addon adds a configuration panel under **Esc → System → AddOns → EPF C
 
 1. Put texture files (e.g. PNG) in the add-on’s **`assets/`** folder.
 2. Add **`-2x`** versions (e.g. `warlock-2x.png`) for high-DPI.
-3. Edit texture definition tables:
+3. Edit texture definition tables (all fallback files append into `textureConfigFallback` in load order):
    - **`TextureDefinitions.lua`** → specialization-first entries in `textureConfigSpec`.
-   - **`TextureDefinitionsFallback.lua`** → class defaults, race/faction fallbacks, and manual alternatives in `textureConfigFallback`.
-   - **`TextureDefinitionsExtra.lua`** → appends extra manual entries into fallback definitions.
+   - **`TextureDefinitionsClassOnly.lua`** → generic class defaults (no spec).
+   - **`TextureDefinitionsRaceFaction.lua`** → race and faction fallbacks.
+   - **`TextureDefinitionsAlternatives.lua`** → alternative / legacy / CUSTOM manual skins.
+   - **`TextureDefinitionsExtra.lua`** → extra atlas cells appended last.
 
 Each entry has:
-   - **class** (required): e.g. `"WARLOCK"`, `"DRUID"`.
+   - **id** (recommended): short stable slug (e.g. `"voidmatte"`, `"druidf103"`). Used for saves/overrides.
+   - **class** (optional): e.g. `"WARLOCK"`, `"DRUID"`.
    - **name** and **ext**: file name and extension (e.g. `"warlock"`, `"png"`).
-   - **spec** (optional): specialization ID for spec-only skins.
-   - **race** (optional): race API string (e.g. `"Human"`, `"Scourge"`, `"Dracthyr"`).
-   - **faction** (optional): `"Alliance"` or `"Horde"`. Only applied when `/epf faction` is on.
-   - **displayName** (optional): menu label (e.g. for manual-only textures).
-   - **layout** (optional): custom frame layout for this entry; see below. If omitted, `defaultFrameLayout` is used.
+   - **spec** / **race** / **faction** (optional): match criteria.
+   - **displayName** (optional): menu label (e.g. for manual-only textures). Override picker shows this, not the id.
+   - **layout** (optional): `"top"` | `"bot"` | `"dual"`, or a table with `preset` + layer overrides.
+     - Default is **`top`** (single layer, upper half of a 512 atlas).
+     - `"bot"` = single layer, lower half.
+     - `"dual"` = two layers (legacy multi-layer skins).
+   - **pointOffset** / **restIconOffset** (optional): quick overrides without a full layout table.
 
 ### Frame layout
 
-In **`TextureDefinitions.lua`**, **`defaultFrameLayout`** defines sizes, texture coordinates (UV), and positions for each texture layer and for the rest icon. All entries in `textureConfigSpec` and `textureConfigFallback` use it unless they set their own **`layout`**.
+In **`TextureDefinitions.lua`**, **`layoutPresets`** define reusable crops for 512-tall atlases:
 
-- **`defaultFrameLayout`** has:
-  - **`layers`**: array of layer tables. Each layer has **`width`**, **`height`**, **`leftTexCoord`**, **`rightTexCoord`**, **`topTexCoord`**, **`bottomTexCoord`**, and **`pointOffset`** = `{ x, y }`.
-  - **`restIconOffset`**: `{ x, y }` for the rest icon position.
+- **`top`** (default): single layer, upper half (`y 0–256`), portrait offset `{ 172, 0 }`.
+- **`bot`**: single layer, lower half (`y 256–512`).
+- **`dual`**: two layers (frame + portrait) — for older multi-layer skins.
 
-To use different dimensions or positions for a specific texture, add a **`layout`** to that entry with the same structure (e.g. different `width`/`height` or `pointOffset` per layer). Example: a texture that uses a 1024×512 atlas with different crop and offsets would set `layout = { layers = { ... }, restIconOffset = { -3, 13 } }` on that entry.
+Examples:
+
+```lua
+{ class = "DRUID", spec = 103, name = "druid_feral", ext = "png", layout = "top" }
+{ class = "MAGE", spec = 64, name = "firefrost", ext = "png", layout = "bot" }
+{ class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png", layout = "bot", pointOffset = { 198, 0 } }
+{ class = "WARLOCK", name = "warlock", ext = "png",
+  layout = { preset = "dual", layers = { { pointOffset = { 38, -4 } }, { pointOffset = { 168, -4 } } } } }
+```
+
+Unusual crops (non-half atlas, extra atlas cells, etc.) still use a full `layout = { layers = { ... } }` table; values merge onto the chosen preset.
 
 ### Load order and priority
 

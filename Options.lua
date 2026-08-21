@@ -486,6 +486,9 @@ if hasScrollBoxAPI then
 
     local function applyFrameMode(index)
         if not setBaseSetting("frameMode", index) then return end
+        if EPF_CustomSkins_Overrides and type(EPF_CustomSkins_Overrides.SaveManualSkinPreference) == "function" then
+            EPF_CustomSkins_Overrides.SaveManualSkinPreference(index)
+        end
         requestBaseUpdate(true)
         if C_Timer and C_Timer.After then
             C_Timer.After(0, function()
