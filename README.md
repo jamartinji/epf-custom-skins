@@ -1,7 +1,7 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.4.0-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![Version](https://img.shields.io/badge/Version-1.4.1-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
 [![WoW](https://img.shields.io/badge/WoW-12.1.0%20(MN)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 
@@ -84,9 +84,9 @@ In **`TextureDefinitions.lua`**, **`layoutPresets`** define reusable crops for 5
 Examples:
 
 ```lua
-{ class = "DRUID", spec = 103, name = "druid_feral", ext = "png", layout = "top" }
-{ class = "MAGE", spec = 64, name = "firefrost", ext = "png", layout = "bot" }
-{ class = "HUNTER", spec = 253, name = "hunter_base&bm", ext = "png", layout = "bot", pointOffset = { 198, 0 } }
+{ class = "DRUID", spec = 103, name = "druid_feral", layout = "top" }
+{ class = "MAGE", spec = 64, name = "firefrost", layout = "bot" }
+{ class = "HUNTER", spec = 253, name = "hunter_base&bm", layout = "bot", pointOffset = { 198, 0 } }
 { class = "WARLOCK", name = "warlock", ext = "png",
   layout = { preset = "dual", layers = { { pointOffset = { 38, -4 } }, { pointOffset = { 168, -4 } } } } }
 ```

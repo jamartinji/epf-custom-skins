@@ -239,7 +239,8 @@ function SB.BuildMenuName(addon, data)
 end
 
 function SB.BuildTextures(addon, folder_path, default_frame_layout, data)
-    local full_path_2x = folder_path .. data.name .. "-2x." .. data.ext
+    local ext = data.ext or "png"
+    local full_path_2x = folder_path .. data.name .. "-2x." .. ext
     local full_path = full_path_2x
 
     local definitions = EPF_CustomSkins_Definitions
