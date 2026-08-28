@@ -111,9 +111,9 @@ D.textureConfigSpec = {
     { id = "dkunho252", class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", layout = "top", pointOffset = { 182, 0 } }, -- Unholy
 
     -- [ DEMON HUNTER ]
-    -- { id = "dhhavoc577", class = "DEMONHUNTER", spec = 577, name = "dh_havoc" },      -- Havoc
-    -- { id = "dhvenge581", class = "DEMONHUNTER", spec = 581, name = "dh_vengeance" },  -- Vengeance
-    { id = "dhdevo1480", class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", layout = "bot", pointOffset = { 170, 0 } }, -- Devourer
+    { id = "dhhavoc577", class = "DEMONHUNTER", spec = 577, name = "dh_havoc", layout = "top" }, -- Havoc
+    { id = "dhvenge581", class = "DEMONHUNTER", spec = 581, name = "dh_vengeance", layout = "top" }, -- Vengeance
+    { id = "dhdevo1480", class = "DEMONHUNTER", spec = 1480, name = "dh_devourer", layout = "top", pointOffset = { 170, 0 } }, -- Devourer
 
     -- [ DRUID ]
     { id = "druidb102", class = "DRUID", spec = 102, name = "druid_balance", layout = "bot" }, -- Balance
