@@ -92,23 +92,9 @@ D.defaultFrameLayout = D.layoutPresets.dual.layout
 D.textureConfigSpec = {
 
     -- [ DEATH KNIGHT ]
-    { id = "dkbloo250", class = "DEATHKNIGHT", spec = 250, name = "dk_blood-by-benjiro_blue",
-        layout = {
-            layers = {
-                {
-                    width = 280,
-                    height = 163,
-                    leftTexCoord = 0/512,
-                    rightTexCoord = 512/512,
-                    topTexCoord = 216/512,
-                    bottomTexCoord = 512/512,
-                    pointOffset = { 190, -2 },
-                },
-            },
-        },
-    },      -- Blood
-    { id = "dkunho251", class = "DEATHKNIGHT", spec = 251, name = "dk_frost", layout = "bot", pointOffset = { 188, 0 } }, -- Frost
-    { id = "dkunho252", class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", layout = "top", pointOffset = { 182, 0 } }, -- Unholy
+    { id = "dkbloo250", class = "DEATHKNIGHT", spec = 250, name = "dk_blood", layout = "top" }, -- Blood
+    { id = "dkunho251", class = "DEATHKNIGHT", spec = 251, name = "dk_frost", layout = "bot", pointOffset = { 188, 0 }, restIconOffset = { 30, 5 } }, -- Frost
+    { id = "dkunho252", class = "DEATHKNIGHT", spec = 252, name = "dk_unholy", layout = "top", pointOffset = { 178, 0 } }, -- Unholy
 
     -- [ DEMON HUNTER ]
     { id = "dhhavoc577", class = "DEMONHUNTER", spec = 577, name = "dh_havoc", layout = "top" }, -- Havoc
@@ -143,18 +129,11 @@ D.textureConfigSpec = {
 
     -- [ PALADIN ]
     { id = "paladi65", class = "PALADIN", spec = 65, name = "paladin_base&holy", layout = "bot" }, -- Holy
-    { id = "paladi66", class = "PALADIN", spec = 66, name = "paladin_protection",
-        layout = "bot",
-        pointOffset = { 192, -8 },
-        restIconOffset = { 190, 0 },
-    },       -- Protection
+    { id = "paladi66", class = "PALADIN", spec = 66, name = "paladin_protection", layout = "bot", pointOffset = { 192, -8 }, restIconOffset = { 190, 0 } }, -- Protection
     { id = "paladi70", class = "PALADIN", spec = 70, name = "paladin_retribution", layout = "top" }, -- Retribution
 
     -- [ PRIEST ]
-    { id = "priest256", class = "PRIEST", spec = 256, name = "priest_discipline&holy",
-        layout = "top",
-        pointOffset = { 182, 0 },
-    },        -- Discipline
+    { id = "priest256", class = "PRIEST", spec = 256, name = "priest_discipline&holy", layout = "top", pointOffset = { 182, 0 } }, -- Discipline
     { id = "priest257", class = "PRIEST", spec = 257, name = "priest_discipline&holy", layout = "bot" }, -- Holy
     { id = "priest258", class = "PRIEST",  spec = 258, name = "priest_shadow",                layout = "top" }, -- Shadow
 
