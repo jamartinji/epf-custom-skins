@@ -6,6 +6,9 @@ local D = EPF_CustomSkins_Definitions
 D.textureConfigFallback = D.textureConfigFallback or {}
 
 local entries = {
+    { id = "dkcrimsonb", class = "DEATHKNIGHT", name = "dk_blood", layout = "bot", displayName = "Crimson Blade"},
+    { id = "dklichking", class = "DEATHKNIGHT", name = "dk_frost", layout = "top", displayName = "The lich King"},
+    { id = "dkplaguebr", class = "DEATHKNIGHT", name = "dk_unholy", layout = "bot", displayName = "Plaguebringer's Herald"},
     { id = "dkbloodbbb", class = "DEATHKNIGHT", name = "dk_blood-by-benjiro_blue", displayName = "Blood by Benjiro Blue",
         layout = {
             layers = {
