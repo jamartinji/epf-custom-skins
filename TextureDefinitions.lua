@@ -135,7 +135,7 @@ D.textureConfigSpec = {
     -- [ PRIEST ]
     { id = "priest256", class = "PRIEST", spec = 256, name = "priest_discipline&holy", layout = "top", pointOffset = { 182, 0 } }, -- Discipline
     { id = "priest257", class = "PRIEST", spec = 257, name = "priest_discipline&holy", layout = "bot" }, -- Holy
-    { id = "priest258", class = "PRIEST",  spec = 258, name = "priest_shadow",                layout = "top" }, -- Shadow
+    { id = "priest258", class = "PRIEST",  spec = 258, name = "priest_shadow", layout = "top" }, -- Shadow
 
     -- [ ROGUE ]
     { id = "roguea259", class = "ROGUE", spec = 259, name = "rogue_assassination", layout = "top" }, -- Assassination
