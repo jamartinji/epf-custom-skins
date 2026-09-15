@@ -71,11 +71,17 @@ local entries = {
     { id = "priesblack", class = "PRIEST", name = "priest_black_empire", displayName = "Black Empire", layout = "bot" },
     { id = "roguekings", class = "ROGUE", name = "rogue_assassination", displayName = "Kingslayer", layout = "bot" },
     { id = "roguedread", class = "ROGUE", name = "rogue_outlaw", displayName = "Dreadblades", layout = "bot" },
+    { id = "wafelagony", class = "WARLOCK", name = "warlock_affliction", displayName = "Fel Agony", layout = "top", pointOffset = { 172, -10 } },
     { id = "warloredhe", class = "WARLOCK", name = "warlock_demonhead", displayName = "Warlock (Old Red)", layout = "top" },
     { id = "warlopurhe", class = "WARLOCK", name = "warlock_demonhead", displayName = "Warlock (Old Purple)", layout = "bot" },
     { id = "felcofelco", class = "WARLOCK", name = "fel_corruption", displayName = "Fel corruption", layout = "dual" },
+    { id = "chaosincar", class = "WARLOCK", name = "warlock_destruction", layout = "top", displayName = "Chaos Incarnation" },
     { id = "destrinfer", class = "WARLOCK", name = "warlock_inferno", displayName = "Inferno Succubus", layout = "bot", pointOffset = { 172, 6 }, },
     { id = "destrintop", class = "WARLOCK", name = "warlock_inferno", displayName = "Infernal Ascendant", layout = "top", pointOffset = { 172, 6 }, },
+    { id = "tcorruptor", class = "WARLOCK", name = "warlock_diabolist&corruptor", displayName = "The Corruptor", layout = "top" },
+    { id = "tdiabolist", class = "WARLOCK", name = "warlock_diabolist&corruptor", displayName = "The Diabolist", layout = "bot" },
+    { id = "tvoidheart", class = "WARLOCK", name = "warlock_void&nemesis", displayName = "The Void Heart", layout = "top" },
+    { id = "thenemesis", class = "WARLOCK", name = "warlock_void&nemesis", displayName = "The Nemesis", layout = "bot" },
 
     -- [ MANUAL-ONLY ] No class/race/spec; never auto-selected.
     { id = "corsapirat", class = "CUSTOM", name = "corsairs", displayName = "Pirate", layout = "top" },

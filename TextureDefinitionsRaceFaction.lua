@@ -14,12 +14,9 @@ local entries = {
     { id = "pandaren", race = "Pandaren", name = "pandaren", layout = "dual" },
 
     -- [ FACTION (no class) ] Last auto fallback among race/faction (before alternatives).
-    { id = "alliance", faction = "Alliance", name = "alliance",
-        layout = { preset = "dual", layers = { { pointOffset = { 42, -2 } }, { pointOffset = { 171, -3 } } } },
-    },
-    { id = "horde", faction = "Horde", name = "horde",
-        layout = { preset = "dual", layers = { { pointOffset = { 65, -10 } }, { pointOffset = { 195, -10 } } } },
-    },
+    { id = "alliance", faction = "Alliance", name = "alliance", layout = "bot", pointOffset = { 173, -2 } },
+    { id = "stormking", faction = "Alliance", name = "alliance", displayName = "The King of Stormwind", layout = "top"},
+    { id = "horde", faction = "Horde", name = "horde", layout = "top", pointOffset = { 195, -10 } },
 }
 
 for _, entry in ipairs(entries) do
