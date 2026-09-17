@@ -72,6 +72,7 @@ local entries = {
     { id = "roguekings", class = "ROGUE", name = "rogue_assassination", displayName = "Kingslayer", layout = "bot" },
     { id = "roguedread", class = "ROGUE", name = "rogue_outlaw", displayName = "Dreadblades", layout = "bot" },
     { id = "wafelagony", class = "WARLOCK", name = "warlock_affliction", displayName = "Fel Agony", layout = "top", pointOffset = { 172, -10 } },
+    { id = "skullofman", class = "WARLOCK", name = "warlock_demonology", displayName = "Skull of Man'ari", layout = "bot" },
     { id = "warloredhe", class = "WARLOCK", name = "warlock_demonhead", displayName = "Warlock (Old Red)", layout = "top" },
     { id = "warlopurhe", class = "WARLOCK", name = "warlock_demonhead", displayName = "Warlock (Old Purple)", layout = "bot" },
     { id = "felcofelco", class = "WARLOCK", name = "fel_corruption", displayName = "Fel corruption", layout = "dual" },

@@ -150,7 +150,7 @@ D.textureConfigSpec = {
     -- [ WARLOCK ]
     -- Affliction: overrides only pointOffset from default layout.
     { id = "warloc265", class = "WARLOCK", spec = 265, name = "warlock_affliction", layout = "bot" }, -- Affliction
-    { id = "warloc266", class = "WARLOCK", spec = 266, name = "warlock_demonology", layout = "dual" }, -- Demonology
+    { id = "warloc266", class = "WARLOCK", spec = 266, name = "warlock_demonology", layout = "top" }, -- Demonology
     { id = "warloc267", class = "WARLOCK", spec = 267, name = "warlock_destruction", layout = "bot" }, -- Destruction
 
     -- [ WARRIOR ]
