@@ -83,6 +83,16 @@ local function RegisterCustomSkins(addon)
                     layered,
                     rest_offset,
                     function()
+                        -- Manual-only catalog entries (alternatives without spec) never auto-select.
+                        if data.auto == false then
+                            return false
+                        end
+                        -- Forever: match via UnitClass + C_Traits tree points (EPF CharacterIs*
+                        -- gates on *Selection toggles and often has nil specialization).
+                        local SC = EPF_CustomSkins_SpecCompat
+                        if SC and type(SC.MatchesSkinDefinition) == "function" then
+                            return SC.MatchesSkinDefinition(addon, data)
+                        end
                         return data.class ~= "CUSTOM"
                             and (not data.class or addon:CharacterIsClass(data.class))
                             and (not data.spec or addon:CharacterIsSpecialization(data.spec))

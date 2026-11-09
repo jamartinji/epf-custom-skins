@@ -93,5 +93,11 @@ local entries = {
 }
 
 for _, entry in ipairs(entries) do
+    -- Class skins here are catalog/manual alternatives. Auto mode must use
+    -- TextureDefinitions.lua (spec) or EPF built-in deathknight/demonhunter modes —
+    -- otherwise the first alternative (e.g. Devourer Horns) steals every DH/DK.
+    if entry.class and entry.class ~= "CUSTOM" and not entry.spec and not entry.race and not entry.faction then
+        entry.auto = false
+    end
     D.textureConfigFallback[#D.textureConfigFallback + 1] = entry
 end

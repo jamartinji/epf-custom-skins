@@ -5,6 +5,16 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.6.0] - 2026-11-09
+
+### Added
+
+- Camelot (`*_Camelot.toc`, Interface 16001) load support for WoW Forever.
+
+### Fixed
+
+- Auto skins match Forever talent trees: texture defs still use retail spec IDs; EPF stores Forever trait `groupID`s — map by tree index.
+
 ## [1.5.0] - 2026-11-09
 
 ### Changed
