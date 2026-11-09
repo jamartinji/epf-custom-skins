@@ -32,19 +32,55 @@ local RACE_FILE_ALIASES = {
 local RACE_SCAN_MAX_ID = 250
 
 --[[
- * EPF stores TEXTURES on the addon core table (select(2,...)), not on the XML frame global.
+ * EPF stores TEXTURES / FRAME_MODES on the private core table (select(2,...)), not on the XML frame.
+ * 1.10 exposed GetCore(); 1.11 removed it. Capture the live tables when EPF CopyTable's them
+ * inside GetTextures / GetFrameModes / GetFrameModesIndex.
 --]]
 function O.GetEpfCore()
     if O._epf_core and O._epf_core.TEXTURES then
         return O._epf_core
     end
-    local frame = O._addon or EPF_CustomSkins_BaseAddon
+    local frame = O._addon or EPF_CustomSkins_BaseAddon or ElitePlayerFrame_Enhanced
     if frame and type(frame.GetCore) == "function" then
         local ok, core = pcall(function() return frame:GetCore() end)
         if ok and type(core) == "table" and core.TEXTURES then
             O._epf_core = core
             return core
         end
+    end
+    if not frame or type(CopyTable) ~= "function" then
+        return nil
+    end
+
+    local original_copy = CopyTable
+    local textures, modes, modes_index
+    CopyTable = function(settings, shallow)
+        if type(settings) == "table" then
+            if settings.disabled ~= nil then
+                textures = settings
+            elseif settings.normal and type(settings.normal) == "table" and settings.normal.index ~= nil then
+                modes = settings
+            elseif settings[0] and type(settings[0]) == "string" then
+                modes_index = settings
+            end
+        end
+        return original_copy(settings, shallow)
+    end
+
+    pcall(function()
+        if type(frame.GetTextures) == "function" then frame:GetTextures() end
+        if type(frame.GetFrameModes) == "function" then frame:GetFrameModes() end
+        if type(frame.GetFrameModesIndex) == "function" then frame:GetFrameModesIndex() end
+    end)
+    CopyTable = original_copy
+
+    if textures then
+        O._epf_core = {
+            TEXTURES = textures,
+            FRAME_MODES = modes,
+            FRAME_MODES_INDEX = modes_index,
+        }
+        return O._epf_core
     end
     return nil
 end
@@ -485,7 +521,7 @@ function O.ReloadActiveProfileOverrides()
             O.RefreshOverrideTexture(mode_id, override)
             O.UpdateOverrideModeLabels(mode_id, override)
         else
-            mode_id = O.RegisterSingleOverrideMode(addon, override)
+            mode_id = O.RegisterSingleOverrideMode(addon, override, index)
             O._mode_pool[index] = mode_id
         end
     end
@@ -636,6 +672,81 @@ function O.MigrateAllProfileCatalogIds()
     end
 end
 
+--[[
+ * EPF 1.11+ keys FRAME_MODES / TEXTURES / settings.frameMode by string id.
+ * Older builds used numeric indices; detect via GetFrameModesIndex.
+--]]
+function O.UsesStringModeIds(addon)
+    addon = addon or O._addon or EPF_CustomSkins_BaseAddon or ElitePlayerFrame_Enhanced
+    return addon and type(addon.GetFrameModesIndex) == "function"
+end
+
+--[[
+ * Register a custom frame mode and return the id EPF expects for settings/textures.
+ * On EPF 1.11+: string id (addon:stable_id). On older EPF: numeric index.
+ * IMPORTANT: call this from the companion addon's own stack frames (not an extra
+ * pcall wrapper higher up) so EPF GetCallerAddon() resolves the right namespace.
+--]]
+function O.AddCustomFrameMode(addon, definition, stable_id)
+    if not addon or type(addon.AddCustomFrameMode) ~= "function" or type(definition) ~= "function" then
+        return nil, "AddCustomFrameMode unavailable"
+    end
+
+    -- Do not wrap AddCustomFrameMode in pcall here: EPF GetCallerAddon() walks
+    -- debugstack and a pcall frame makes it mis-identify the caller addon.
+    local index, mode_key
+    if O.UsesStringModeIds(addon) then
+        index, mode_key = addon:AddCustomFrameMode(definition, stable_id)
+    else
+        index = addon:AddCustomFrameMode(definition)
+    end
+
+    local mode_id = mode_key or index
+    if mode_id == nil then
+        return nil, "AddCustomFrameMode returned nil"
+    end
+    return mode_id
+end
+
+function O.GetFrameModesIndex(addon)
+    addon = addon or O._addon or EPF_CustomSkins_BaseAddon or ElitePlayerFrame_Enhanced
+    if not addon then return nil end
+    if type(addon.GetFrameModesIndex) == "function" then
+        local ok, index = pcall(function() return addon:GetFrameModesIndex() end)
+        if ok and type(index) == "table" then return index end
+    end
+    local core = O.GetEpfCore and O.GetEpfCore()
+    if core and type(core.FRAME_MODES_INDEX) == "table" then
+        return core.FRAME_MODES_INDEX
+    end
+    return nil
+end
+
+--[[
+ * Map a legacy numeric frameMode / manualEpfMode to the EPF 1.11+ string id when possible.
+--]]
+function O.ResolveLegacyEpfModeId(mode_id, addon)
+    if mode_id == nil or type(mode_id) == "string" then
+        return mode_id
+    end
+    if type(mode_id) ~= "number" then
+        return mode_id
+    end
+    local index = O.GetFrameModesIndex(addon)
+    if index and index[mode_id] then
+        return index[mode_id]
+    end
+    local legacy = {
+        [0] = "normal",
+        [1] = "auto",
+        [2] = "silver",
+        [3] = "silver-winged",
+        [4] = "gold",
+        [5] = "gold-winged",
+    }
+    return legacy[mode_id] or mode_id
+end
+
 function O.RegisterSkinMode(mode_id, skin_id)
     if not mode_id or not skin_id then
         return
@@ -678,13 +789,17 @@ function O.ApplyManualSkinPreference(addon)
     local settings = addon.settings
     local frame_mode = settings.frameMode
 
+    if type(record.manualEpfMode) == "number" then
+        record.manualEpfMode = O.ResolveLegacyEpfModeId(record.manualEpfMode, addon)
+    end
+
     if not record.manualSkinKind and not record.manualSkinId then
         if frame_mode and O.mode_to_skin_id[frame_mode] then
             record.manualSkinKind = "catalog"
             record.manualSkinId = O.mode_to_skin_id[frame_mode]
         else
             record.manualSkinKind = "epf"
-            record.manualEpfMode = frame_mode
+            record.manualEpfMode = O.ResolveLegacyEpfModeId(frame_mode, addon)
         end
     end
 
@@ -703,8 +818,10 @@ function O.ApplyManualSkinPreference(addon)
             return true
         end
     elseif record.manualSkinKind == "epf" and record.manualEpfMode ~= nil then
-        if settings.frameMode ~= record.manualEpfMode then
-            settings.frameMode = record.manualEpfMode
+        local epf_mode = O.ResolveLegacyEpfModeId(record.manualEpfMode, addon)
+        record.manualEpfMode = epf_mode
+        if settings.frameMode ~= epf_mode then
+            settings.frameMode = epf_mode
             return true
         end
     end
@@ -1022,43 +1139,45 @@ function O.UpdateOverrideModeLabels(mode_id, override)
     end
 end
 
-function O.RegisterSingleOverrideMode(addon, override)
+function O.RegisterSingleOverrideMode(addon, override, pool_index)
     if not addon or not override then return nil end
 
     local hidden_color = CreateColor(0.6, 0.6, 0.6)
+    local stable_id = "override-" .. tostring(pool_index or ((O._mode_pool and #O._mode_pool or 0) + 1))
 
-    local ok, result = pcall(function()
-        return addon:AddCustomFrameMode(function(a)
-            local menu_name = O.BuildOverrideMenuName(override)
-            local entry = O.GetCatalogEntry(override.catalogId)
-            if not entry then
-                local first = O.catalog[1]
-                entry = first and first.entry or { name = "warlock", ext = "png" }
-            end
-            local layered, rest_offset = SB.BuildTextures(a, EPF_CustomSkins_Definitions.folderPath, EPF_CustomSkins_Definitions.defaultFrameLayout, entry)
-            return {
-                menu_name,
-                hidden_color,
-                layered,
-                rest_offset,
-                function(epf_frame)
-                    local mid = override.modeId
-                    if mid and O.mode_to_override[mid] then
-                        return O.MatchesCharacter(epf_frame or a, O.mode_to_override[mid])
-                    end
-                    return O.MatchesCharacter(epf_frame or a, override)
-                end,
-            }
-        end)
-    end)
+    local result, err = O.AddCustomFrameMode(addon, function(a)
+        local menu_name = O.BuildOverrideMenuName(override)
+        local entry = O.GetCatalogEntry(override.catalogId)
+        if not entry then
+            local first = O.catalog[1]
+            entry = first and first.entry or { name = "warlock", ext = "png" }
+        end
+        local layered, rest_offset = SB.BuildTextures(a, EPF_CustomSkins_Definitions.folderPath, EPF_CustomSkins_Definitions.defaultFrameLayout, entry)
+        return {
+            menu_name,
+            hidden_color,
+            layered,
+            rest_offset,
+            function(epf_frame)
+                local mid = override.modeId
+                if mid and O.mode_to_override[mid] then
+                    return O.MatchesCharacter(epf_frame or a, O.mode_to_override[mid])
+                end
+                return O.MatchesCharacter(epf_frame or a, override)
+            end,
+        }
+    end, stable_id)
 
-    if ok and type(result) == "number" then
+    if result then
         override.modeId = result
         O.override_mode_ids[result] = true
         O.mode_to_override[result] = override
         O.SetOverrideAutoCondition(result)
         O.RefreshOverrideTexture(result, override)
         return result
+    end
+    if err and geterrorhandler then
+        geterrorhandler()("EPF Custom Skins - RegisterSingleOverrideMode: " .. tostring(err))
     end
     return nil
 end
@@ -1143,7 +1262,12 @@ function O.AddOverride(override)
 
     local addon = O._addon or EPF_CustomSkins_BaseAddon
     if addon then
-        O.RegisterSingleOverrideMode(addon, override)
+        local pool_index = #overrides
+        local mode_id = O.RegisterSingleOverrideMode(addon, override, pool_index)
+        if mode_id then
+            O._mode_pool = O._mode_pool or {}
+            O._mode_pool[pool_index] = mode_id
+        end
         if O._reorder_hook then
             O._reorder_hook()
         end
@@ -1174,9 +1298,13 @@ function O.UpdateOverride(index, override)
         O.RefreshOverrideTexture(existing_mode_id, override)
         O.UpdateOverrideModeLabels(existing_mode_id, override)
     elseif addon then
-        existing_mode_id = O.RegisterSingleOverrideMode(addon, override)
+        existing_mode_id = O.RegisterSingleOverrideMode(addon, override, index)
         override.modeId = existing_mode_id
         overrides[index] = override
+        if existing_mode_id then
+            O._mode_pool = O._mode_pool or {}
+            O._mode_pool[index] = existing_mode_id
+        end
     end
 
     O.ScheduleOverrideDisplayRefresh()

@@ -56,8 +56,17 @@ local function RegisterCustomSkins(addon)
     end
 
     for _, data in ipairs(merged_config) do
-        local ok, mode_id = pcall(function()
-            return addon:AddCustomFrameMode(function(a)
+        local skin_id = data.id
+        if (not skin_id or skin_id == "") and O and type(O.BuildEntryId) == "function" then
+            skin_id = O.BuildEntryId(data, #own_all_mode_ids + 1, {})
+            data.id = skin_id
+        end
+
+        local mode_id, err
+        if O and type(O.AddCustomFrameMode) == "function" then
+            -- pcall the named helper directly (no extra anonymous wrapper) so EPF
+            -- GetCallerAddon() still resolves ElitePlayerFrame_Enhanced_CustomSkins.
+            local ok, result, result_err = pcall(O.AddCustomFrameMode, addon, function(a)
                 local menu_name = SB.BuildMenuName(a, data)
                 local class_color = CreateColor(1, 1, 1)
                 if data.class and type(a.GetClass) == "function" then
@@ -81,21 +90,22 @@ local function RegisterCustomSkins(addon)
                             and (not data.race or addon:CharacterIsRace(data.race))
                     end
                 }
-            end)
-        end)
+            end, skin_id or tostring(#own_all_mode_ids + 1))
+            if ok then
+                mode_id = result
+                err = result_err
+            else
+                err = result
+            end
+        else
+            err = "Override helpers unavailable"
+        end
 
-        if ok and type(mode_id) == "number" then
+        if mode_id ~= nil then
             registered_count = registered_count + 1
             own_all_mode_ids[#own_all_mode_ids + 1] = mode_id
-            if O and type(O.RegisterSkinMode) == "function" then
-                local skin_id = data.id
-                if (not skin_id or skin_id == "") and type(O.BuildEntryId) == "function" then
-                    skin_id = O.BuildEntryId(data, #own_all_mode_ids, {})
-                    data.id = skin_id
-                end
-                if skin_id then
-                    O.RegisterSkinMode(mode_id, skin_id)
-                end
+            if O and type(O.RegisterSkinMode) == "function" and skin_id then
+                O.RegisterSkinMode(mode_id, skin_id)
             end
             if data.spec and data.class and data.class ~= "CUSTOM" then
                 own_spec_mode_ids[#own_spec_mode_ids + 1] = mode_id
@@ -106,9 +116,7 @@ local function RegisterCustomSkins(addon)
             end
         else
             failed_count = failed_count + 1
-            if not ok then
-                LogError("AddCustomFrameMode", mode_id)
-            end
+            LogError("AddCustomFrameMode", err or "unknown")
         end
     end
 
