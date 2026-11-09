@@ -153,7 +153,63 @@ local function getFrameModes(addon)
         local ok, modes = pcall(function() return addon:GetFrameModes() end)
         if ok and type(modes) == "table" then return modes end
     end
+    if type(addon.GetCore) == "function" then
+        local ok, core = pcall(function() return addon:GetCore() end)
+        if ok and type(core) == "table" and type(core.FRAME_MODES) == "table" then
+            return core.FRAME_MODES
+        end
+    end
     return addon.FRAME_MODES
+end
+
+--[[
+ * EPF 1.11+ orders modes in FRAME_MODES_INDEX (0..n -> string ids).
+ * Older EPF used numeric keys directly on FRAME_MODES.
+--]]
+local function getOrderedModeIds(addon, modes)
+    local ordered = {}
+    local overrides = EPF_CustomSkins_Overrides
+    if overrides and type(overrides.GetFrameModesIndex) == "function" then
+        local index = overrides.GetFrameModesIndex(addon)
+        if type(index) == "table" then
+            local max_index = 0
+            for k in pairs(index) do
+                if type(k) == "number" and k > max_index then max_index = k end
+            end
+            for i = 0, max_index do
+                if index[i] ~= nil then
+                    ordered[#ordered + 1] = index[i]
+                end
+            end
+            if #ordered > 0 then return ordered end
+        end
+    end
+
+    if type(modes) ~= "table" then return ordered end
+
+    local max_index = 0
+    local has_numeric = false
+    for k in pairs(modes) do
+        if type(k) == "number" then
+            has_numeric = true
+            if k > max_index then max_index = k end
+        end
+    end
+    if has_numeric then
+        for i = 0, max_index do
+            if modes[i] ~= nil then
+                ordered[#ordered + 1] = i
+            end
+        end
+        return ordered
+    end
+
+    -- Fallback: unordered string keys (should not happen when GetFrameModesIndex exists).
+    for mode_id in pairs(modes) do
+        ordered[#ordered + 1] = mode_id
+    end
+    table.sort(ordered, function(a, b) return tostring(a) < tostring(b) end)
+    return ordered
 end
 
 local function requestBaseUpdate(force)
@@ -484,10 +540,35 @@ if hasScrollBoxAPI then
     scrollBar:SetPoint("TOPLEFT", listContainer, "TOPRIGHT", 6, 0)
     scrollBar:SetPoint("BOTTOMLEFT", listContainer, "BOTTOMRIGHT", 6, 0)
 
-    local function applyFrameMode(index)
-        if not setBaseSetting("frameMode", index) then return end
+    -- Settings canvas often lays out this panel at 0 height first; paint only after a real size.
+    local function forceScrollBoxPaint()
+        if not scrollBox or not scrollBox.FullUpdate then
+            return
+        end
+        local width, height = scrollBox:GetWidth(), scrollBox:GetHeight()
+        if not width or not height or width < 1 or height < 1 then
+            return
+        end
+        local immediately = ScrollBoxConstants and ScrollBoxConstants.UpdateImmediately
+        if immediately == nil then
+            immediately = true
+        end
+        pcall(function()
+            scrollBox:FullUpdate(immediately)
+        end)
+    end
+
+    scrollBox:HookScript("OnSizeChanged", function()
+        forceScrollBoxPaint()
+    end)
+    listContainer:HookScript("OnSizeChanged", function()
+        forceScrollBoxPaint()
+    end)
+
+    local function applyFrameMode(mode_id)
+        if not setBaseSetting("frameMode", mode_id) then return end
         if EPF_CustomSkins_Overrides and type(EPF_CustomSkins_Overrides.SaveManualSkinPreference) == "function" then
-            EPF_CustomSkins_Overrides.SaveManualSkinPreference(index)
+            EPF_CustomSkins_Overrides.SaveManualSkinPreference(mode_id)
         end
         requestBaseUpdate(true)
         if C_Timer and C_Timer.After then
@@ -498,7 +579,7 @@ if hasScrollBoxAPI then
         if scrollBox.GetDataProvider then
             scrollBox:ForEachFrame(function(button, elementData)
                 local refreshedSettings = getBaseSettings()
-                local isSelected = (refreshedSettings and refreshedSettings.frameMode == elementData.index)
+                local isSelected = (refreshedSettings and refreshedSettings.frameMode == elementData.modeId)
                 if button.SelectedTexture then
                     button.SelectedTexture:SetShown(isSelected)
                 end
@@ -506,25 +587,28 @@ if hasScrollBoxAPI then
         end
     end
 
-    local function getModeDisplayName(modes, i, L)
-        local mode = modes[i]
+    local function getModeDisplayName(modes, mode_id, L)
+        local mode = modes and modes[mode_id]
+        local display_index = (mode and mode.index ~= nil) and mode.index or mode_id
         local displayName
-        if i == 0 then
+        if mode_id == 0 or mode_id == "normal" then
             displayName = L.DefaultNoTexture or "Default (no texture)"
         elseif mode and mode.name then
             displayName = tostring(mode.name)
+        elseif mode_id == 1 or mode_id == "auto" then
+            displayName = L.Automatic or "Automatic"
         else
-            displayName = (i == 1 and (L.Automatic or "Automatic")) or (L.Custom or "Custom")
+            displayName = L.Custom or "Custom"
         end
         if mode and mode.color and mode.color.GetRGB then
             local r, g, b = mode.color:GetRGB()
-            return format("|cff%02x%02x%02x[%d] %s|r", r * 255, g * 255, b * 255, i, displayName)
+            return format("|cff%02x%02x%02x[%s] %s|r", r * 255, g * 255, b * 255, tostring(display_index), displayName)
         end
-        return format("[%d] %s", i, displayName)
+        return format("[%s] %s", tostring(display_index), displayName)
     end
 
-    local function getModeDisplayNamePlain(modes, i, L)
-        local raw = getModeDisplayName(modes, i, L)
+    local function getModeDisplayNamePlain(modes, mode_id, L)
+        local raw = getModeDisplayName(modes, mode_id, L)
         if not raw then return "" end
         return raw:gsub("|c%x%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):lower()
     end
@@ -551,18 +635,17 @@ if hasScrollBoxAPI then
             selected:Hide()
         end
 
-        local index = elementData.index
+        local mode_id = elementData.modeId
         local L = EPF_CustomSkins_L or {}
-        local displayName = getModeDisplayName(elementData.allModes, index, L)
+        local displayName = getModeDisplayName(elementData.allModes, mode_id, L)
         button.Text:SetText(displayName)
 
         button:SetScript("OnClick", function()
-            applyFrameMode(index)
+            applyFrameMode(mode_id)
         end)
 
-        local addon = getBaseAddon()
         local settings = getBaseSettings()
-        local isSelected = (settings and settings.frameMode == index)
+        local isSelected = (settings and settings.frameMode == mode_id)
         if button.SelectedTexture then
             button.SelectedTexture:SetShown(isSelected)
         end
@@ -577,22 +660,21 @@ if hasScrollBoxAPI then
         end
 
         local dataProvider = CreateDataProvider()
-        local maxIndex = 0
-        for k in pairs(modes) do
-            if type(k) == "number" and k > maxIndex then maxIndex = k end
-        end
-
         local L = EPF_CustomSkins_L or {}
         local filter = currentSearchFilter
         local overrides_module = EPF_CustomSkins_Overrides
-        for i = 0, maxIndex do
-            local is_override_mode = overrides_module and overrides_module.IsOverrideModeId(i)
-            if not is_override_mode and (filter == "" or (getModeDisplayNamePlain(modes, i, L):find(filter, 1, true))) then
-                dataProvider:Insert({index = i, allModes = modes})
+        local ordered_ids = getOrderedModeIds(addon, modes)
+
+        for _, mode_id in ipairs(ordered_ids) do
+            local is_override_mode = overrides_module and type(overrides_module.IsOverrideModeId) == "function"
+                and overrides_module.IsOverrideModeId(mode_id)
+            if not is_override_mode and (filter == "" or (getModeDisplayNamePlain(modes, mode_id, L):find(filter, 1, true))) then
+                dataProvider:Insert({modeId = mode_id, allModes = modes})
             end
         end
 
         scrollBox:SetDataProvider(dataProvider)
+        forceScrollBoxPaint()
     end
 
     local view = CreateScrollBoxListLinearView and CreateScrollBoxListLinearView() or CreateScrollBoxListGridView(1)
@@ -643,13 +725,15 @@ panel:SetScript("OnShow", function()
     btnReset:SetText(L.Reset or "Reset")
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
     listLabel:SetText(getSectionTexturesLabel())
-    local addon = getBaseAddon()
-    local modes = getFrameModes(addon)
-    local settings = getBaseSettings()
     refreshMainAddonChecks()
     updateFrameModeList()
+    -- Settings canvas finishes layout after OnShow; refresh again once size is real.
     if C_Timer and C_Timer.After then
-        C_Timer.After(0, refreshMainAddonChecks)
+        C_Timer.After(0, function()
+            refreshMainAddonChecks()
+            updateFrameModeList()
+        end)
+        C_Timer.After(0.05, updateFrameModeList)
     end
 end)
 

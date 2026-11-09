@@ -5,6 +5,20 @@ All notable changes to **EPF Custom Skins** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.0] - 2026-11-09
+
+### Changed
+
+- Requires Elite Player Frame (Enhanced) 1.11.0+ (string `frameMode` / `FRAME_MODES` ids).
+- Interface tags updated for WoW 12.1.x.
+- Custom mode registration and overrides use EPF string mode ids (`GetFrameModesIndex` / `AddCustomFrameMode(..., id)`).
+- Live `TEXTURES` access no longer depends on the removed `GetCore()` API.
+
+### Fixed
+
+- Skin selection list shows all modes again after EPF 1.11 (was stuck on `[0]`).
+- Skin list paints on first open in the Settings canvas (`ScrollBox` `FullUpdate` after real layout size).
+
 ## [1.4.4] - 2026-09-17
 
 ### Added
