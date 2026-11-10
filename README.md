@@ -1,8 +1,8 @@
 # EPF Custom Skins
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Version](https://img.shields.io/badge/Version-1.4.4-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
-[![WoW](https://img.shields.io/badge/WoW-12.1.0%20(MN)-orange)](https://worldofwarcraft.blizzard.com/)
+[![Version](https://img.shields.io/badge/Version-1.6.1-informational)](ElitePlayerFrame_Enhanced_CustomSkins.toc)
+[![WoW](https://img.shields.io/badge/WoW-12.1.7%20(Midnight)-orange)](https://worldofwarcraft.blizzard.com/)
 [![Lua](https://img.shields.io/badge/Lua-5.x-blue)](https://www.lua.org/)
 
 Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com/wow/addons/elite-player-frame-enhanced)** with custom frame textures and extra selection options.
@@ -25,7 +25,7 @@ Add-on that **extends [Elite Player Frame (Enhanced)](https://www.curseforge.com
 ## 📌 Requirements
 
 - **ElitePlayerFrame_Enhanced** must be installed and enabled.
-- Recommended EPF version: **1.10.4+**.
+- Recommended EPF version: **1.11.0+**.
 
 ## 📥 Installation
 

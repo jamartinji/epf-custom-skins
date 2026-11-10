@@ -1,5 +1,6 @@
-## Interface: 120105, 120107
-## X-OnlyTestInterface: 120107
+## Interface: 16001, 120107
+## X-GameType: Standard, Mainline [AllowLoadGameType standard]
+## X-GameType: Forever, Mainline [AllowLoadGameType forever][ExcludeLoadGameType standard, classic]
 ## Title: EPF Custom Skins
 ## Notes: Custom frame textures for Elite Player Frame (Enhanced). Adds spec, race, and faction-based skins; updates on spec change.
 ## Notes-deDE: Benutzerdefinierte Rahmen-Texturen für Elite Player Frame (Enhanced). Skins nach Spezialisierung, Rasse und Fraktion; aktualisiert sich beim Spezialisierungswechsel.
@@ -12,7 +13,7 @@
 ## Notes-ruRU: Пользовательские текстуры рамки для Elite Player Frame (Enhanced). Скины по специализации, расе и фракции; обновляется при смене специализации.
 ## Notes-zhCN: 为 Elite Player Frame (Enhanced) 自定义框架纹理。支持专精、种族和阵营皮肤；切换专精时自动更新。
 ## Notes-zhTW: 為 Elite Player Frame (Enhanced) 自訂框架紋理。支援專精、種族與陣營皮膚；切換專精時自動更新。
-## Version: 1.6.0
+## Version: 1.6.1
 ## Author: Drakeinhart
 ## Dependencies: ElitePlayerFrame_Enhanced
 ## X-RequiredEPFVersion: 1.11.0
@@ -28,9 +29,8 @@
 ## Category-ruRU: Рамки юнитов
 ## Category-zhCN: 单位框体
 ## Category-zhTW: 單位框架
-## AllowLoadGameType: mainline
 ## IconTexture: Interface\AddOns\ElitePlayerFrame_Enhanced_CustomSkins\assets\icon.png
-## IconAtlas: Adventure-Mission-Gold-Dragon
+## IconAtlas: Adventure-Mission-Gold-Dragon [AllowLoadGameType mainline]
 ## SavedVariables: EPF_CustomSkins_Options
 
 Locales\enUS.lua
