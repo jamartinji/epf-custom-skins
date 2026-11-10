@@ -1726,8 +1726,8 @@ function OO.Build(content_panel)
     end)
 
     pcall(function()
-        refreshProfileDropdown()
-        loadFormFromOverride(nil)
+        -- Dropdowns initialize in Refresh, when the overrides tab is shown.
+        -- Doing it here, at load, taints shared menu buttons and blocks secure clicks.
         refreshList()
         updateEditorActionsState()
     end)

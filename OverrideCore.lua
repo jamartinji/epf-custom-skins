@@ -18,8 +18,8 @@ O.catalog_by_id = O.catalog_by_id or {}
 O.mode_to_skin_id = O.mode_to_skin_id or {}
 O.skin_id_to_mode = O.skin_id_to_mode or {}
 O._addon = nil
-O._epf_core = nil
 O._reorder_hook = nil
+O.registered_textures = O.registered_textures or {}
 
 local ANY_VALUE = ""
 
@@ -32,57 +32,79 @@ local RACE_FILE_ALIASES = {
 local RACE_SCAN_MAX_ID = 250
 
 --[[
- * EPF stores TEXTURES / FRAME_MODES on the private core table (select(2,...)), not on the XML frame.
- * 1.10 exposed GetCore(); 1.11 removed it. Capture the live tables when EPF CopyTable's them
- * inside GetTextures / GetFrameModes / GetFrameModesIndex.
+ * EPF 1.11.7 keeps the atlas, offset and rest-icon tables passed to AddCustomFrameMode.
+ * Later edits write into those same tables. Replacing the global CopyTable to reach the
+ * private TEXTURES table tainted every later copy in the client.
 --]]
-function O.GetEpfCore()
-    if O._epf_core and O._epf_core.TEXTURES then
-        return O._epf_core
-    end
-    local frame = O._addon or EPF_CustomSkins_BaseAddon or ElitePlayerFrame_Enhanced
-    if frame and type(frame.GetCore) == "function" then
-        local ok, core = pcall(function() return frame:GetCore() end)
-        if ok and type(core) == "table" and core.TEXTURES then
-            O._epf_core = core
-            return core
-        end
-    end
-    if not frame or type(CopyTable) ~= "function" then
-        return nil
-    end
+local function empty_layer(addon)
+    return addon.CreateTexture({
+        ["width"] = 0,
+        ["height"] = 0,
+    }, addon.CreatePointOffset(0, 0))
+end
 
-    local original_copy = CopyTable
-    local textures, modes, modes_index
-    CopyTable = function(settings, shallow)
-        if type(settings) == "table" then
-            if settings.disabled ~= nil then
-                textures = settings
-            elseif settings.normal and type(settings.normal) == "table" and settings.normal.index ~= nil then
-                modes = settings
-            elseif settings[0] and type(settings[0]) == "string" then
-                modes_index = settings
+function O.EnsureBothLayers(addon, layered)
+    if not addon or type(addon.CreateTexture) ~= "function" or type(addon.CreatePointOffset) ~= "function" then
+        return layered
+    end
+    layered = layered or {}
+    if type(layered.Frame) ~= "table" then
+        layered.Frame = empty_layer(addon)
+    end
+    if type(layered.Portrait) ~= "table" then
+        layered.Portrait = empty_layer(addon)
+    end
+    return layered
+end
+
+function O.RememberTexture(mode_id, layered, rest_offset)
+    if not mode_id or type(layered) ~= "table" then return end
+    O.registered_textures[mode_id] = {
+        layered = layered,
+        rest = rest_offset,
+    }
+end
+
+local function copy_table_fields(dest, src)
+    if type(dest) ~= "table" then return end
+    for key in pairs(dest) do
+        dest[key] = nil
+    end
+    if type(src) ~= "table" then return end
+    for key, value in pairs(src) do
+        dest[key] = value
+    end
+end
+
+function O.WriteTrackedTexture(mode_id, layered, rest_offset)
+    local tracked = O.registered_textures[mode_id]
+    if not tracked or type(tracked.layered) ~= "table" or type(layered) ~= "table" then
+        return false
+    end
+    for _, key in ipairs({ "Frame", "Portrait" }) do
+        local dest = tracked.layered[key]
+        local src = layered[key]
+        if type(dest) == "table" then
+            if type(src) == "table" then
+                copy_table_fields(dest.atlas, src.atlas)
+                if type(dest.offsets) == "table" and type(src.offsets) == "table" then
+                    dest.offsets.x = src.offsets.x or 0
+                    dest.offsets.y = src.offsets.y or 0
+                end
+            elseif type(dest.atlas) == "table" then
+                copy_table_fields(dest.atlas, { ["width"] = 0, ["height"] = 0 })
+                if type(dest.offsets) == "table" then
+                    dest.offsets.x = 0
+                    dest.offsets.y = 0
+                end
             end
         end
-        return original_copy(settings, shallow)
     end
-
-    pcall(function()
-        if type(frame.GetTextures) == "function" then frame:GetTextures() end
-        if type(frame.GetFrameModes) == "function" then frame:GetFrameModes() end
-        if type(frame.GetFrameModesIndex) == "function" then frame:GetFrameModesIndex() end
-    end)
-    CopyTable = original_copy
-
-    if textures then
-        O._epf_core = {
-            TEXTURES = textures,
-            FRAME_MODES = modes,
-            FRAME_MODES_INDEX = modes_index,
-        }
-        return O._epf_core
+    if type(tracked.rest) == "table" and type(rest_offset) == "table" then
+        tracked.rest.x = rest_offset.x or 0
+        tracked.rest.y = rest_offset.y or 0
     end
-    return nil
+    return true
 end
 
 local function resolve_class_id(addon, class_value)
@@ -168,10 +190,6 @@ local function resolve_sex_id(addon, sex_value)
         if ok and type(info) == "table" and info.id then
             return info.id
         end
-    end
-    local core = O.GetEpfCore()
-    if core and core.SEXES_ENUM and core.SEXES_ENUM[sex_value] then
-        return core.SEXES_ENUM[sex_value]
     end
     return nil
 end
@@ -492,11 +510,7 @@ function O.SetActiveProfile(name)
 end
 
 function O.DisablePooledOverrideMode(mode_id)
-    local core = O.GetEpfCore()
-    if not core or not core.TEXTURES or not core.TEXTURES[mode_id] then return end
-    core.TEXTURES[mode_id].autoCondition = function()
-        return false
-    end
+    if not mode_id then return end
     O.override_mode_ids[mode_id] = nil
     O.mode_to_override[mode_id] = nil
 end
@@ -512,8 +526,7 @@ function O.ReloadActiveProfileOverrides()
 
     for index, override in ipairs(overrides) do
         local mode_id = O._mode_pool[index]
-        local core = O.GetEpfCore()
-        if mode_id and core and core.TEXTURES and core.TEXTURES[mode_id] then
+        if mode_id then
             override.modeId = mode_id
             O.override_mode_ids[mode_id] = true
             O.mode_to_override[mode_id] = override
@@ -715,10 +728,6 @@ function O.GetFrameModesIndex(addon)
         local ok, index = pcall(function() return addon:GetFrameModesIndex() end)
         if ok and type(index) == "table" then return index end
     end
-    local core = O.GetEpfCore and O.GetEpfCore()
-    if core and type(core.FRAME_MODES_INDEX) == "table" then
-        return core.FRAME_MODES_INDEX
-    end
     return nil
 end
 
@@ -859,10 +868,6 @@ local function get_epf_character(addon)
         if ok and type(char) == "table" then
             return char
         end
-    end
-    local core = O.GetEpfCore()
-    if core and core.info and core.info.character then
-        return core.info.character
     end
     return nil
 end
@@ -1056,17 +1061,11 @@ function O.GetOverrideModeIdList()
 end
 
 --[[
- * Keep autoCondition tied to mode_to_override[mode_id] so edits replace the override table without stale closures.
+ * The autoCondition passed to AddCustomFrameMode reads mode_to_override[mode_id] live.
+ * 1.11.7 does not expose a setter for that function.
 --]]
 function O.SetOverrideAutoCondition(mode_id)
-    if not mode_id then return end
-    local core = O.GetEpfCore()
-    if not core or not core.TEXTURES or not core.TEXTURES[mode_id] then return end
-    local frame = O._addon or EPF_CustomSkins_BaseAddon
-    core.TEXTURES[mode_id].autoCondition = function(epf_frame)
-        local active = O.mode_to_override[mode_id]
-        return active and O.MatchesCharacter(epf_frame or frame, active)
-    end
+    return mode_id
 end
 
 function O.RefreshOverrideTexture(mode_id, override)
@@ -1082,9 +1081,8 @@ function O.RefreshOverrideTexture(mode_id, override)
     if not entry then return false end
 
     local layered, rest_offset = SB.BuildTextures(addon, definitions.folderPath, definitions.defaultFrameLayout, entry)
-    local core = O.GetEpfCore()
-    if not core then return false end
-    return SB.ReplaceLayeredTexture(core, mode_id, layered, rest_offset)
+    layered = O.EnsureBothLayers(addon, layered)
+    return O.WriteTrackedTexture(mode_id, layered, rest_offset)
 end
 
 function O.ResolveOverrideModeId(override, index)
@@ -1127,16 +1125,9 @@ function O.RefreshAllOverrideTextures()
 end
 
 function O.UpdateOverrideModeLabels(mode_id, override)
-    if not mode_id or not override then return end
-    local core = O.GetEpfCore()
-    if not core then return end
-    local menu_name = O.BuildOverrideMenuName(override)
-    if core.TEXTURES and core.TEXTURES[mode_id] then
-        core.TEXTURES[mode_id].name = menu_name
-    end
-    if core.FRAME_MODES and core.FRAME_MODES[mode_id] then
-        core.FRAME_MODES[mode_id].name = menu_name
-    end
+    -- 1.11.7 copies frame-mode names out and has no rename API. The label is fixed at registration
+    -- and refreshes on the next UI reload, when the mode is registered again.
+    return mode_id, override
 end
 
 function O.RegisterSingleOverrideMode(addon, override, pool_index)
@@ -1144,6 +1135,7 @@ function O.RegisterSingleOverrideMode(addon, override, pool_index)
 
     local hidden_color = CreateColor(0.6, 0.6, 0.6)
     local stable_id = "override-" .. tostring(pool_index or ((O._mode_pool and #O._mode_pool or 0) + 1))
+    local tracked_layered, tracked_rest
 
     local result, err = O.AddCustomFrameMode(addon, function(a)
         local menu_name = O.BuildOverrideMenuName(override)
@@ -1153,6 +1145,9 @@ function O.RegisterSingleOverrideMode(addon, override, pool_index)
             entry = first and first.entry or { name = "warlock", ext = "png" }
         end
         local layered, rest_offset = SB.BuildTextures(a, EPF_CustomSkins_Definitions.folderPath, EPF_CustomSkins_Definitions.defaultFrameLayout, entry)
+        layered = O.EnsureBothLayers(a, layered)
+        tracked_layered = layered
+        tracked_rest = rest_offset
         return {
             menu_name,
             hidden_color,
@@ -1160,16 +1155,16 @@ function O.RegisterSingleOverrideMode(addon, override, pool_index)
             rest_offset,
             function(epf_frame)
                 local mid = override.modeId
-                if mid and O.mode_to_override[mid] then
-                    return O.MatchesCharacter(epf_frame or a, O.mode_to_override[mid])
-                end
-                return O.MatchesCharacter(epf_frame or a, override)
+                local active = mid and O.mode_to_override[mid]
+                if not active then return false end
+                return O.MatchesCharacter(epf_frame or a, active)
             end,
         }
     end, stable_id)
 
     if result then
         override.modeId = result
+        O.RememberTexture(result, tracked_layered, tracked_rest)
         O.override_mode_ids[result] = true
         O.mode_to_override[result] = override
         O.SetOverrideAutoCondition(result)
@@ -1327,8 +1322,6 @@ end
 
 function O.RegisterOverrideModes(addon, reorder_callback)
     O._addon = addon
-    O._epf_core = nil
-    O.GetEpfCore()
     O._reorder_hook = reorder_callback
     O.BuildCatalog(addon, EPF_CustomSkins_Definitions)
     O._mode_pool = {}
