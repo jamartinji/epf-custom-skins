@@ -77,27 +77,25 @@ local function RegisterCustomSkins(addon)
                 end
 
                 local layered, rest_offset = SB.BuildTextures(a, D.folderPath, D.defaultFrameLayout, data)
+                local entry = data
                 return {
                     menu_name,
                     class_color,
                     layered,
                     rest_offset,
                     function()
-                        -- Manual-only catalog entries (alternatives without spec) never auto-select.
-                        if data.auto == false then
+                        if entry.auto == false then
                             return false
                         end
-                        -- Forever: match via UnitClass + C_Traits tree points (EPF CharacterIs*
-                        -- gates on *Selection toggles and often has nil specialization).
                         local SC = EPF_CustomSkins_SpecCompat
                         if SC and type(SC.MatchesSkinDefinition) == "function" then
-                            return SC.MatchesSkinDefinition(addon, data)
+                            return SC.MatchesSkinDefinition(addon, entry)
                         end
-                        return data.class ~= "CUSTOM"
-                            and (not data.class or addon:CharacterIsClass(data.class))
-                            and (not data.spec or addon:CharacterIsSpecialization(data.spec))
-                            and (not data.faction or addon:CharacterIsFaction(data.faction))
-                            and (not data.race or addon:CharacterIsRace(data.race))
+                        return entry.class ~= "CUSTOM"
+                            and (not entry.class or addon:CharacterIsClass(entry.class))
+                            and (not entry.spec or addon:CharacterIsSpecialization(entry.spec))
+                            and (not entry.faction or addon:CharacterIsFaction(entry.faction))
+                            and (not entry.race or addon:CharacterIsRace(entry.race))
                     end
                 }
             end, skin_id or tostring(#own_all_mode_ids + 1))
@@ -213,6 +211,9 @@ local function RegisterCustomSkins(addon)
     end
 
     EPF_CustomSkins_Loaded = registered_count > 0
+    if type(addon.Update) == "function" then
+        pcall(function() addon:Update(true) end)
+    end
     Log("Textures loaded. Registered modes: " .. tostring(registered_count) .. ", failed/skipped: " .. tostring(failed_count))
 end
 
@@ -228,3 +229,22 @@ if ElitePlayerFrame_Enhanced and type(ElitePlayerFrame_Enhanced.WhenInitialised)
 else
     LogError("Startup", "ElitePlayerFrame_Enhanced API unavailable")
 end
+
+local mode_events = CreateFrame("Frame")
+mode_events:RegisterEvent("PLAYER_ENTERING_WORLD")
+mode_events:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+mode_events:RegisterEvent("PLAYER_TALENT_UPDATE")
+mode_events:RegisterEvent("PLAYER_LEVEL_UP")
+mode_events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+mode_events:RegisterEvent("BARBER_SHOP_APPEARANCE_APPLIED")
+mode_events:RegisterEvent("NEUTRAL_FACTION_SELECT_RESULT")
+mode_events:RegisterEvent("TRAIT_CONFIG_UPDATED")
+if mode_events.RegisterUnitEvent then
+    mode_events:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+end
+mode_events:SetScript("OnEvent", function()
+    local addon = EPF_CustomSkins_BaseAddon
+    if EPF_CustomSkins_Loaded and addon and type(addon.Update) == "function" then
+        pcall(function() addon:Update(true) end)
+    end
+end)

@@ -58,7 +58,9 @@ settingsPanel:SetAllPoints(contentPanel)
 
 local overridesPanel
 local overridesBuildError
-if EPF_CustomSkins_OptionsOverrides and EPF_CustomSkins_OptionsOverrides.Build then
+local function ensureOverridesPanel()
+    if overridesPanel or overridesBuildError then return end
+    if not (EPF_CustomSkins_OptionsOverrides and EPF_CustomSkins_OptionsOverrides.Build) then return end
     local ok, built = pcall(EPF_CustomSkins_OptionsOverrides.Build, contentPanel)
     if ok and built then
         overridesPanel = built
@@ -81,6 +83,9 @@ end
 
 local function selectOptionsTab(tabIndex)
     activeTab = tabIndex
+    if tabIndex == 2 then
+        ensureOverridesPanel()
+    end
     settingsPanel:SetShown(tabIndex == 1)
     if overridesPanel then
         overridesPanel:SetShown(tabIndex == 2)
@@ -310,31 +315,35 @@ outputLabel:SetPoint("TOPLEFT", checkHideInInstance, "BOTTOMLEFT", 0, -14)
 outputLabel:SetText(L.OutputLevel or "Message output level")
 outputLabel:SetJustifyH("LEFT")
 
-local outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group1, "UIDropDownMenuTemplate")
-outputDropdown:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", 0, -4)
-outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
-if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
-outputDropdown.initialize = function()
-    local addon = getBaseAddon()
-    local list = getOutputLevels(addon)
-    if not list then return end
-    local maxIdx = 0
-    for k in pairs(list) do
-        if type(k) == "number" and k > maxIdx then maxIdx = k end
-    end
-    for i = 0, maxIdx do
-        local info = list[i]
-        local nameStr = (info and info.name) and tostring(info.name) or tostring(i)
-        local option = UIDropDownMenu_CreateInfo()
-        option.text = nameStr
-        option.value = i
-        option.func = function(self)
-            if setBaseSetting("outputLevel", self.value) then
-                UIDropDownMenu_SetSelectedValue(outputDropdown, self.value)
-                requestBaseUpdate(true)
-            end
+local outputDropdown
+local function ensureOutputDropdown()
+    if outputDropdown then return end
+    outputDropdown = CreateFrame("Frame", "EPFCustomSkinsOutputDropdown", group1, "UIDropDownMenuTemplate")
+    outputDropdown:SetPoint("TOPLEFT", outputLabel, "BOTTOMLEFT", 0, -4)
+    outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
+    if outputDropdown.SetWidth then outputDropdown:SetWidth(200) end
+    outputDropdown.initialize = function()
+        local addon = getBaseAddon()
+        local list = getOutputLevels(addon)
+        if not list then return end
+        local maxIdx = 0
+        for k in pairs(list) do
+            if type(k) == "number" and k > maxIdx then maxIdx = k end
         end
-        UIDropDownMenu_AddButton(option)
+        for i = 0, maxIdx do
+            local info = list[i]
+            local nameStr = (info and info.name) and tostring(info.name) or tostring(i)
+            local option = UIDropDownMenu_CreateInfo()
+            option.text = nameStr
+            option.value = i
+            option.func = function(self)
+                if setBaseSetting("outputLevel", self.value) then
+                    UIDropDownMenu_SetSelectedValue(outputDropdown, self.value)
+                    requestBaseUpdate(true)
+                end
+            end
+            UIDropDownMenu_AddButton(option)
+        end
     end
 end
 
@@ -357,7 +366,10 @@ local function refreshMainAddonChecks()
     end
     local addon = getBaseAddon()
     local outputLevels = getOutputLevels(addon)
-    if settings and outputLevels and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+    -- Initializing while the panel is hidden taints the shared dropdown buttons.
+    -- Secure clicks (spellbook casts, logout) are then blocked.
+    if panel:IsShown() and settings and outputLevels and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+        ensureOutputDropdown()
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
         UIDropDownMenu_SetSelectedValue(outputDropdown, settings.outputLevel)
         if UIDropDownMenu_Refresh then
@@ -374,7 +386,8 @@ local function updateUIFromDefaults(def)
     setCheckFromSetting(checkFaction, def.factionSelection)
     setCheckFromSetting(checkHideInInstance, def.instances)
     local addon = getBaseAddon()
-    if addon and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+    if panel:IsShown() and addon and addon.OUTPUT_LEVELS and UIDropDownMenu_Initialize and UIDropDownMenu_SetSelectedValue then
+        ensureOutputDropdown()
         UIDropDownMenu_Initialize(outputDropdown, outputDropdown.initialize)
         UIDropDownMenu_SetSelectedValue(outputDropdown, def.outputLevel)
         if UIDropDownMenu_Refresh then
@@ -721,6 +734,7 @@ panel:SetScript("OnShow", function()
     checkHideInInstanceLabel:SetText(L.HideInInstance or "Display in instances")
     checkHideInInstance.tooltipText = L.HideInInstanceDesc or "Use custom frame in instances, raids, battlegrounds and arenas."
     outputLabel:SetText(L.OutputLevel or "Message output level")
+    ensureOutputDropdown()
     outputDropdown.tooltipText = L.OutputLevelDesc or "Message verbosity (0 = critical, higher = more debug)."
     btnReset:SetText(L.Reset or "Reset")
     btnReset.tooltipText = L.ResetDesc or "Reset Elite Player Frame (Enhanced) settings to defaults."
